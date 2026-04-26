@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 
 // Layout Components
@@ -8,7 +8,7 @@ import OrganizationLayout from './components/layouts/OrganizationLayout';
 function App() {
   return (
     <Router>
-      <div className="App min-h-screen bg-gray-50">
+      <div className="App">
         <Routes>
           {/* Organization Routes */}
           <Route element={<OrganizationLayout />}>
