@@ -1,3 +1,46 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Floating animation for decorative elements */
+@keyframes floating {
+	0% { transform: translateY(0px); }
+	50% { transform: translateY(-12px); }
+	100% { transform: translateY(0px); }
+}
+.animate-floating {
+	animation: floating 6s ease-in-out infinite;
+}
+
+/* Simple fade-in for hero */
+.hero-fade {
+	animation: fadeIn 1s ease both;
+}
+@keyframes fadeIn {
+	from { opacity: 0; transform: translateY(6px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+/* subtle parallax background overlay */
+.parallax {
+	background-attachment: fixed;
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+
+/* small delay helper */
+.delay-2000 {
+	animation-delay: 2s;
+}
+
+/* responsive video container */
+.video-cover {
+	object-fit: cover;
+}
+
+/* small utility for link underline on hover */
+.link-underline:hover { text-decoration: underline; }
+
+/* ensure main content doesn't hide behind sticky navbar */
+main { padding-top: 1rem; }
