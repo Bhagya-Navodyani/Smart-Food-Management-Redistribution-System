@@ -4,6 +4,8 @@ import './App.css';
 
 // Layout Components
 import OrganizationLayout from './components/layouts/OrganizationLayout';
+import Navbar from './components/common/Navbar';
+import Footer from './components/common/Footer';
 // Auth pages
 import SignIn from './pages/Auth/SignIn';
 import SignUp from './pages/Auth/SignUp';
@@ -16,6 +18,7 @@ function App() {
   return (
     <Router>
       <div className="App">
+        <Navbar />
         <Routes>
           {/* Organization Routes */}
           <Route element={<OrganizationLayout />}>
@@ -40,6 +43,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
+        <Footer />
       </div>
     </Router>
   );
