@@ -4,6 +4,9 @@ import './App.css';
 
 // Layout Components
 import OrganizationLayout from './components/layouts/OrganizationLayout';
+// Auth pages
+import SignIn from './pages/Auth/SignIn';
+import SignUp from './pages/Auth/SignUp';
 
 function App() {
   return (
@@ -20,9 +23,13 @@ function App() {
             <Route path="/organization/settings" element={<div className="p-6"><h1 className="text-3xl font-bold text-gray-900 mb-6">Settings</h1><div className="bg-white rounded-lg shadow p-6"><p className="text-gray-600">Profile and notification management.</p></div></div>} />
           </Route>
 
+          {/* Auth Routes */}
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+
           {/* Default Routes */}
-          <Route path="/" element={<Navigate to="/organization/dashboard" />} />
-          <Route path="*" element={<Navigate to="/organization/dashboard" />} />
+          <Route path="/" element={<Navigate to="/signin" />} />
+          <Route path="*" element={<Navigate to="/signin" />} />
         </Routes>
       </div>
     </Router>
