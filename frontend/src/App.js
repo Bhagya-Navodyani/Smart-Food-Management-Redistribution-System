@@ -7,6 +7,10 @@ import OrganizationLayout from './components/layouts/OrganizationLayout';
 // Auth pages
 import SignIn from './pages/Auth/SignIn';
 import SignUp from './pages/Auth/SignUp';
+import Home from './pages/Home';
+import CustomerDashboard from './pages/Dashboards/CustomerDashboard';
+import AdminDashboard from './pages/Dashboards/AdminDashboard';
+import FoodSellerDashboard from './pages/Dashboards/FoodSellerDashboard';
 
 function App() {
   return (
@@ -27,9 +31,14 @@ function App() {
           <Route path="/signin" element={<SignIn />} />
           <Route path="/signup" element={<SignUp />} />
 
-          {/* Default Routes */}
-          <Route path="/" element={<Navigate to="/signin" />} />
-          <Route path="*" element={<Navigate to="/signin" />} />
+          {/* Role Dashboards */}
+          <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/foodsellers/dashboard" element={<FoodSellerDashboard />} />
+
+          {/* Default / Home */}
+          <Route path="/" element={<Home />} />
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </div>
     </Router>

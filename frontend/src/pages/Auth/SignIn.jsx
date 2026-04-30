@@ -11,8 +11,13 @@ export default function SignIn() {
     e.preventDefault();
     console.log({ email, password, role });
     // TODO: call backend auth, then redirect based on role
-    if (role === 'Organizations') navigate('/organization/dashboard');
-    else navigate('/');
+    const redirectMap = {
+      'Customer': '/customer/dashboard',
+      'Admin': '/admin/dashboard',
+      'Organizations': '/organization/dashboard',
+      'Food sellers': '/foodsellers/dashboard'
+    };
+    navigate(redirectMap[role] || '/');
   }
 
   return (
