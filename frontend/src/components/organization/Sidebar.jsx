@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Utensils, 
-  ClipboardList, 
-  History, 
-  BarChart3, 
-  Settings, 
-  Menu, 
-  X, 
+import {
+  LayoutDashboard,
+  Utensils,
+  ClipboardList,
+  History,
+  BarChart3,
+  Settings,
+  Menu,
+  X,
   LogOut,
   AlertTriangle
 } from 'lucide-react';
@@ -82,14 +82,20 @@ const Sidebar = () => {
       `}>
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="p-6 border-b border-slate-700">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
-                <Utensils size={24} />
-              </div>
+          <div className="px-3 py-3 border-b border-slate-700">
+            <div className="flex items-center gap-1">
+              <img
+                src="/uploads/images/Fresh_Track-removebg-preview.png"
+                alt="Fresh Track Logo"
+                style={{ width: '90px', height: '90px' }}
+                className="object-contain flex-shrink-0"
+              />
               <div>
-                <h1 className="text-lg font-bold text-white">FoodShare</h1>
-                <p className="text-xs text-slate-400">Organization Portal</p>
+                <h1 className="text-lg font-bold leading-tight">
+                  <span style={{ color: '#2E9E3E' }}>Fresh</span>{' '}
+                  <span style={{ color: '#3BBF5E' }}>Track</span>
+                </h1>
+                <p className="text-xs leading-tight mt-0.5" style={{ color: '#4AADAD' }}>Smart Food Management</p>
               </div>
             </div>
           </div>
@@ -104,8 +110,8 @@ const Sidebar = () => {
                   to={link.path}
                   className={({ isActive }) => `
                     flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200
-                    ${isActive 
-                      ? 'bg-green-600 text-white shadow-lg' 
+                    ${isActive
+                      ? 'bg-green-600 text-white shadow-lg'
                       : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                     }
                   `}
