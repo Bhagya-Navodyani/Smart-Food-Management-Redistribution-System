@@ -4,11 +4,21 @@ import './App.css';
 
 // Layout Components
 import OrganizationLayout from './components/layouts/OrganizationLayout';
+import Navbar from './components/common/Navbar';
+import Footer from './components/common/Footer';
+// Auth pages
+import SignIn from './pages/Auth/SignIn';
+import SignUp from './pages/Auth/SignUp';
+import Home from './pages/Home';
+import CustomerDashboard from './pages/Dashboards/CustomerDashboard';
+import AdminDashboard from './pages/Dashboards/AdminDashboard';
+import FoodSellerDashboard from './pages/Dashboards/FoodSellerDashboard';
 
 function App() {
   return (
     <Router>
       <div className="App">
+        <Navbar />
         <Routes>
           {/* Organization Routes */}
           <Route element={<OrganizationLayout />}>
@@ -20,10 +30,20 @@ function App() {
             <Route path="/organization/settings" element={<div className="p-6"><h1 className="text-3xl font-bold text-gray-900 mb-6">Settings</h1><div className="bg-white rounded-lg shadow p-6"><p className="text-gray-600">Profile and notification management.</p></div></div>} />
           </Route>
 
-          {/* Default Routes */}
-          <Route path="/" element={<Navigate to="/organization/dashboard" />} />
-          <Route path="*" element={<Navigate to="/organization/dashboard" />} />
+          {/* Auth Routes */}
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
+
+          {/* Role Dashboards */}
+          <Route path="/customer/dashboard" element={<CustomerDashboard />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/foodsellers/dashboard" element={<FoodSellerDashboard />} />
+
+          {/* Default / Home */}
+          <Route path="/" element={<Home />} />
+          <Route path="*" element={<Navigate to="/" />} />
         </Routes>
+        <Footer />
       </div>
     </Router>
   );
