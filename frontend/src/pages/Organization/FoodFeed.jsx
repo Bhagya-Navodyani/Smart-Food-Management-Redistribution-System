@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   Search, MapPin, Clock, ShieldCheck, Package, Filter,
   ChevronDown, Truck, Leaf, X, Store, SlidersHorizontal,
+  CheckCircle, AlertTriangle
 } from 'lucide-react';
 
 /* ── Realistic Sample Data ── */
@@ -77,6 +78,9 @@ const FoodFeed = () => {
   const [activeSource, setActiveSource] = useState('All Sources');
   const [activeDistance, setActiveDistance] = useState('Any Distance');
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [pickupConfirmed, setPickupConfirmed] = useState(false);
 
   /* Client-side filtering */
   const filtered = feedData.filter((item) => {
@@ -444,6 +448,11 @@ const FoodFeed = () => {
                   {/* CTA */}
                   <button
                     id={`request-pickup-${item.id}`}
+                    onClick={() => {
+                      setSelectedItem(item);
+                      setPickupConfirmed(false);
+                      setIsModalOpen(true);
+                    }}
                     className="
                       w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl
                       bg-gradient-to-r from-emerald-600 to-emerald-500
@@ -464,6 +473,95 @@ const FoodFeed = () => {
           </div>
         )}
       </div>
+
+      {/* ── Pickup Request Modal ── */}
+      {isModalOpen && selectedItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"
+            onClick={() => !pickupConfirmed && setIsModalOpen(false)}
+          />
+          
+          <div className="relative w-full max-w-md bg-slate-800 border border-slate-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-300">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-700 flex items-center justify-between bg-slate-800/50">
+              <h3 className="text-lg font-bold text-white">
+                {pickupConfirmed ? 'Pickup Confirmed!' : 'Confirm Pickup Request'}
+              </h3>
+              {!pickupConfirmed && (
+                <button 
+                  onClick={() => setIsModalOpen(false)}
+                  className="text-slate-400 hover:text-white transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              )}
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6">
+              {pickupConfirmed ? (
+                <div className="flex flex-col items-center justify-center text-center py-6">
+                  <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mb-4">
+                    <CheckCircle size={32} className="text-emerald-400" />
+                  </div>
+                  <h4 className="text-xl font-bold text-white mb-2">Request Sent Successfully!</h4>
+                  <p className="text-slate-400 text-sm mb-6">
+                    The donor ({selectedItem.donor}) has been notified. Please collect the items {selectedItem.collectBefore.toLowerCase()}.
+                  </p>
+                  <button
+                    onClick={() => { setIsModalOpen(false); setTimeout(() => setSelectedItem(null), 300); }}
+                    className="w-full px-4 py-3 rounded-xl bg-slate-700 text-white font-semibold hover:bg-slate-600 transition-colors"
+                  >
+                    Done
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="flex gap-4 mb-6">
+                    <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 border border-slate-600">
+                      <img src={selectedItem.image} alt={selectedItem.name} className="w-full h-full object-cover" />
+                    </div>
+                    <div>
+                      <h4 className="text-white font-bold text-lg leading-tight mb-1">{selectedItem.name}</h4>
+                      <p className="text-slate-400 text-sm mb-2">From: <span className="text-slate-300 font-medium">{selectedItem.donor}</span></p>
+                      <div className="flex gap-2">
+                        <span className="px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 text-xs font-semibold">{selectedItem.quantity}</span>
+                        <span className="px-2 py-1 rounded-md bg-slate-700 text-slate-300 text-xs">{selectedItem.distance}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-6 flex gap-3 items-start">
+                    <AlertTriangle size={20} className="text-amber-400 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h5 className="text-amber-400 font-semibold text-sm mb-1">Important Requirement</h5>
+                      <p className="text-amber-200/70 text-xs leading-relaxed">
+                        You must be able to collect this item {selectedItem.collectBefore.toLowerCase()}. Failure to pick up requested items may result in a temporary suspension of your account.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => setIsModalOpen(false)}
+                      className="flex-1 px-4 py-3 rounded-xl bg-slate-700 text-white font-semibold hover:bg-slate-600 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => setPickupConfirmed(true)}
+                      className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold hover:from-emerald-500 hover:to-emerald-400 transition-all shadow-lg shadow-emerald-900/20"
+                    >
+                      Confirm Request
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Page-scoped Animations ── */}
       <style>{`
