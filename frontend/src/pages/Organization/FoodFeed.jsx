@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Search, MapPin, Clock, ShieldCheck, Package, Filter,
   ChevronDown, Truck, Leaf, X, Store, SlidersHorizontal,
@@ -6,7 +7,7 @@ import {
 } from 'lucide-react';
 
 /* ── Realistic Sample Data ── */
-const feedData = [
+const initialFeedData = [
   { id: 1, name: 'Hotel Buffet Leftovers', category: 'Cooked Leftovers', source: 'Hotel', quantity: '45kg', collectBefore: 'Before 10:00 PM', distance: '12km away', safe: true, image: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=480&q=80', donor: 'Grand Palace Hotel', posted: '25 min ago' },
   { id: 2, name: 'Cabbage & Carrot Trimmings', category: 'Vegetable Scraps', source: 'Market Stall', quantity: '30kg', collectBefore: 'Before 6:00 PM', distance: '5km away', safe: true, image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=480&q=80', donor: 'City Market Stall #12', posted: '40 min ago' },
   { id: 3, name: 'Day-Old Bread & Pastries', category: 'Bakery Items', source: 'Bakery', quantity: '20kg', collectBefore: 'Before 8:00 PM', distance: '8km away', safe: true, image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=480&q=80', donor: 'Sunrise Bakery', posted: '1 hr ago' },
@@ -49,41 +50,66 @@ const DISTANCES = ['Any Distance', '< 5 km', '< 10 km', '< 20 km'];
 
 /* ── Category badge colour map ── */
 const categoryStyle = {
-  'Cooked Leftovers':    'bg-amber-500/20 text-amber-300 border-amber-400/30',
-  'Raw / Uncooked':      'bg-orange-500/20 text-orange-300 border-orange-400/30',
-  'Spoiled Fruits':      'bg-rose-500/20 text-rose-300 border-rose-400/30',
-  'Spoiled Vegetables':  'bg-lime-500/20 text-lime-300 border-lime-400/30',
-  'Vegetable Scraps':    'bg-emerald-500/20 text-emerald-300 border-emerald-400/30',
-  'Short Eats & Snacks': 'bg-yellow-500/20 text-yellow-300 border-yellow-400/30',
-  'Bakery Items':        'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-400/30',
-  'Grains & Rice':       'bg-sky-500/20 text-sky-300 border-sky-400/30',
-  'Mixed Waste':         'bg-slate-500/20 text-slate-300 border-slate-400/30',
+  'Cooked Leftovers':    'bg-slate-900/80 text-amber-400 border-amber-500/30',
+  'Raw / Uncooked':      'bg-slate-900/80 text-orange-400 border-orange-500/30',
+  'Spoiled Fruits':      'bg-slate-900/80 text-rose-400 border-rose-500/30',
+  'Spoiled Vegetables':  'bg-slate-900/80 text-lime-400 border-lime-500/30',
+  'Vegetable Scraps':    'bg-slate-900/80 text-emerald-400 border-emerald-500/30',
+  'Short Eats & Snacks': 'bg-slate-900/80 text-yellow-400 border-yellow-500/30',
+  'Bakery Items':        'bg-slate-900/80 text-fuchsia-400 border-fuchsia-500/30',
+  'Grains & Rice':       'bg-slate-900/80 text-sky-400 border-sky-500/30',
+  'Mixed Waste':         'bg-slate-900/80 text-slate-300 border-slate-500/30',
 };
 
 /* ── Source badge colour map ── */
 const sourceStyle = {
-  Home:              'bg-teal-500/20 text-teal-300 border-teal-400/30',
-  Hotel:             'bg-indigo-500/20 text-indigo-300 border-indigo-400/30',
-  Restaurant:        'bg-purple-500/20 text-purple-300 border-purple-400/30',
-  Bakery:            'bg-pink-500/20 text-pink-300 border-pink-400/30',
-  Supermarket:       'bg-blue-500/20 text-blue-300 border-blue-400/30',
-  'Market Stall':    'bg-orange-500/20 text-orange-300 border-orange-400/30',
-  'Cafe / Juice Bar':'bg-cyan-500/20 text-cyan-300 border-cyan-400/30',
+  Home:              'bg-slate-900/80 text-teal-400 border-teal-500/30',
+  Hotel:             'bg-slate-900/80 text-indigo-400 border-indigo-500/30',
+  Restaurant:        'bg-slate-900/80 text-purple-400 border-purple-500/30',
+  Bakery:            'bg-slate-900/80 text-pink-400 border-pink-500/30',
+  Supermarket:       'bg-slate-900/80 text-blue-400 border-blue-500/30',
+  'Market Stall':    'bg-slate-900/80 text-orange-400 border-orange-500/30',
+  'Cafe / Juice Bar':'bg-slate-900/80 text-cyan-400 border-cyan-500/30',
 };
 
 /* ── Component ── */
 const FoodFeed = () => {
+  const navigate = useNavigate();
+  const [feedItems, setFeedItems] = useState(() => {
+    const saved = localStorage.getItem('foodFeedItemsData');
+    return saved ? JSON.parse(saved) : initialFeedData;
+  });
+
+  // Process restored requests queue
+  useEffect(() => {
+    const restored = localStorage.getItem('restoredRequestsQueue');
+    if (restored) {
+      const parsed = JSON.parse(restored);
+      if (parsed.length > 0) {
+        setFeedItems(prev => {
+          const existingIds = new Set(prev.map(i => i.id));
+          const trulyNew = parsed.filter(i => !existingIds.has(i.id));
+          return [...trulyNew, ...prev];
+        });
+      }
+      localStorage.removeItem('restoredRequestsQueue');
+    }
+  }, []);
+
+  // Sync to localStorage
+  useEffect(() => {
+    localStorage.setItem('foodFeedItemsData', JSON.stringify(feedItems));
+  }, [feedItems]);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All Types');
   const [activeSource, setActiveSource] = useState('All Sources');
   const [activeDistance, setActiveDistance] = useState('Any Distance');
-  const [showFilters, setShowFilters] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [pickupConfirmed, setPickupConfirmed] = useState(false);
 
   /* Client-side filtering */
-  const filtered = feedData.filter((item) => {
+  const filtered = feedItems.filter((item) => {
     const q = search.toLowerCase();
     const matchSearch = item.name.toLowerCase().includes(q)
       || item.donor.toLowerCase().includes(q)
@@ -128,7 +154,7 @@ const FoodFeed = () => {
           {/* ── Stats Row ── */}
           <div className="flex flex-wrap gap-4 mt-6 ml-[52px]">
             {[
-              { label: 'Items Available', value: feedData.length, color: 'emerald' },
+              { label: 'Items Available', value: feedItems.length, color: 'emerald' },
               { label: 'Total Quantity', value: '248 kg', color: 'cyan' },
               { label: 'Active Donors', value: '6', color: 'violet' },
             ].map((s) => (
@@ -309,7 +335,7 @@ const FoodFeed = () => {
         <div className="flex items-center justify-between mb-6">
           <p className="text-sm text-slate-400">
             Showing <span className="text-white font-semibold">{filtered.length}</span> of{' '}
-            <span className="text-white font-semibold">{feedData.length}</span> items
+            <span className="text-white font-semibold">{feedItems.length}</span> items
           </p>
         </div>
 
@@ -348,7 +374,7 @@ const FoodFeed = () => {
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/20 to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/10 to-slate-900/90" />
 
                   {/* Top Badges */}
                   <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
@@ -510,10 +536,16 @@ const FoodFeed = () => {
                     The donor ({selectedItem.donor}) has been notified. Please collect the items {selectedItem.collectBefore.toLowerCase()}.
                   </p>
                   <button
-                    onClick={() => { setIsModalOpen(false); setTimeout(() => setSelectedItem(null), 300); }}
+                    onClick={() => {
+                      setIsModalOpen(false);
+                      setTimeout(() => {
+                        setSelectedItem(null);
+                        navigate('/organization/my-requests');
+                      }, 150);
+                    }}
                     className="w-full px-4 py-3 rounded-xl bg-slate-700 text-white font-semibold hover:bg-slate-600 transition-colors"
                   >
-                    Done
+                    Go to My Requests
                   </button>
                 </div>
               ) : (
@@ -550,7 +582,28 @@ const FoodFeed = () => {
                       Cancel
                     </button>
                     <button
-                      onClick={() => setPickupConfirmed(true)}
+                      onClick={() => {
+                        const queue = JSON.parse(localStorage.getItem('newRequestsQueue') || '[]');
+                        queue.push({
+                          id: Date.now(),
+                          name: selectedItem.name,
+                          category: selectedItem.category,
+                          quantity: selectedItem.quantity,
+                          status: 'Pending',
+                          requestDate: 'Just now',
+                          pickupTime: selectedItem.collectBefore,
+                          donor: selectedItem.donor,
+                          donorType: selectedItem.source,
+                          address: 'Pickup Address (Awaiting Details)',
+                          image: selectedItem.image,
+                          location: selectedItem.distance,
+                          contact: 'System Generated'
+                        });
+                        localStorage.setItem('newRequestsQueue', JSON.stringify(queue));
+
+                        setFeedItems(prev => prev.filter(item => item.id !== selectedItem.id));
+                        setPickupConfirmed(true);
+                      }}
                       className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold hover:from-emerald-500 hover:to-emerald-400 transition-all shadow-lg shadow-emerald-900/20"
                     >
                       Confirm Request

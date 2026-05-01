@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Package, Clock, MapPin, CheckCircle, Clock3, XCircle, 
   ChevronRight, Inbox, Truck, Trash2, Calendar,
@@ -57,19 +57,77 @@ const sampleRequests = [
 const statusStyles = {
   Pending: { bg: 'bg-amber-500/10', border: 'border-amber-500/20', text: 'text-amber-400', icon: Clock3 },
   Approved: { bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-400', icon: Truck },
+  'Awaiting Confirmation': { bg: 'bg-violet-500/10', border: 'border-violet-500/20', text: 'text-violet-400', icon: Clock },
   Completed: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', text: 'text-emerald-400', icon: CheckCircle },
-  Rejected: { bg: 'bg-red-500/10', border: 'border-red-500/20', text: 'text-red-400', icon: XCircle }
+  Rejected: { bg: 'bg-red-500/10', border: 'border-red-500/20', text: 'text-red-400', icon: XCircle },
+  Cancelled: { bg: 'bg-red-500/10', border: 'border-red-500/20', text: 'text-red-400', icon: XCircle }
 };
 
 const MyRequests = () => {
-  const [requests, setRequests] = useState(sampleRequests);
+  const [requests, setRequests] = useState(() => {
+    const saved = localStorage.getItem('myRequestsData');
+    return saved ? JSON.parse(saved) : sampleRequests;
+  });
+
+  // Process any incoming requests from the Food Feed queue
+  useEffect(() => {
+    const queue = localStorage.getItem('newRequestsQueue');
+    if (queue) {
+      const parsedQueue = JSON.parse(queue);
+      if (parsedQueue.length > 0) {
+        setRequests(prev => {
+          // Avoid duplicates if strict mode double-fires
+          const existingIds = new Set(prev.map(r => r.id));
+          const trulyNew = parsedQueue.filter(r => !existingIds.has(r.id));
+          return [...trulyNew, ...prev];
+        });
+      }
+      localStorage.removeItem('newRequestsQueue');
+    }
+  }, []);
+
+  // Sync back to localStorage whenever requests change
+  useEffect(() => {
+    localStorage.setItem('myRequestsData', JSON.stringify(requests));
+  }, [requests]);
   const [activeTab, setActiveTab] = useState('All');
   const [viewFormat, setViewFormat] = useState('list'); // 'list' or 'table'
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [showConfirmCollect, setShowConfirmCollect] = useState(false);
+  const [reqToDelete, setReqToDelete] = useState(null);
+
+  const handleDeleteConfirm = () => {
+    if (!reqToDelete) return;
+    
+    // Mark as Cancelled in MyRequests instead of deleting it
+    setRequests(prev => prev.map(r => 
+      r.id === reqToDelete.id ? { ...r, status: 'Cancelled' } : r
+    ));
+
+    // Send to restored queue for Food Feed
+    const queue = JSON.parse(localStorage.getItem('restoredRequestsQueue') || '[]');
+    queue.push({
+      id: reqToDelete.id,
+      name: reqToDelete.name,
+      category: reqToDelete.category,
+      source: reqToDelete.donorType || 'Home', // Fallback
+      quantity: reqToDelete.quantity,
+      collectBefore: reqToDelete.pickupTime,
+      distance: reqToDelete.location,
+      safe: true,
+      image: reqToDelete.image,
+      donor: reqToDelete.donor,
+      posted: 'Just restored'
+    });
+    localStorage.setItem('restoredRequestsQueue', JSON.stringify(queue));
+
+    setReqToDelete(null);
+  };
 
   // Filter requests based on tab
   const filteredRequests = requests.filter(req => {
     if (activeTab === 'All') return true;
+    if (activeTab === 'Awaiting') return req.status === 'Awaiting Confirmation';
     return req.status === activeTab;
   });
 
@@ -82,7 +140,9 @@ const MyRequests = () => {
     All: 'bg-slate-600 text-white shadow-lg shadow-black/20',
     Pending: 'bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-lg shadow-amber-900/20',
     Approved: 'bg-blue-500/20 text-blue-400 border border-blue-500/40 shadow-lg shadow-blue-900/20',
-    Completed: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-lg shadow-emerald-900/20'
+    Awaiting: 'bg-violet-500/20 text-violet-400 border border-violet-500/40 shadow-lg shadow-violet-900/20',
+    Completed: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-lg shadow-emerald-900/20',
+    Cancelled: 'bg-red-500/20 text-red-400 border border-red-500/40 shadow-lg shadow-red-900/20'
   };
 
   return (
@@ -129,13 +189,13 @@ const MyRequests = () => {
 
         {/* Tabs & Controls */}
         <div className="flex items-center justify-between mb-8">
-          <div className="flex p-1.5 rounded-2xl bg-slate-800/60 border border-slate-700/50 w-fit backdrop-blur-xl shadow-inner">
-            {['All', 'Pending', 'Approved', 'Completed'].map(tab => (
+          <div className="flex p-1.5 rounded-2xl bg-slate-800/60 border border-slate-700/50 w-fit backdrop-blur-xl shadow-inner overflow-x-auto max-w-full">
+            {['All', 'Pending', 'Approved', 'Awaiting', 'Completed', 'Cancelled'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`
-                  px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300
+                  px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex-shrink-0
                   ${activeTab === tab 
                     ? tabColors[tab]
                     : 'text-slate-400 hover:text-white hover:bg-white/[0.04] border border-transparent'}
@@ -248,7 +308,7 @@ const MyRequests = () => {
                         </td>
                         <td className="p-4 text-right">
                           <button 
-                            onClick={() => setSelectedRequest(req)}
+                            onClick={() => { setSelectedRequest(req); setShowConfirmCollect(false); }}
                             className="px-3 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-emerald-400 hover:text-emerald-300 text-xs font-semibold transition-colors border border-white/[0.1]"
                           >
                             View Details
@@ -291,13 +351,9 @@ const MyRequests = () => {
                   </div>
 
                   {/* Content */}
-                  <div className="flex-1 flex flex-col justify-center">
-                    <div className="flex justify-between items-start mb-1">
+                  <div className="flex-1 flex flex-col justify-center pr-4">
+                    <div className="mb-1">
                       <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">{req.name}</h3>
-                      {/* Status Badge (Desktop) */}
-                      <span className={`hidden md:flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-bold uppercase tracking-wider border ${statusStyles[req.status].bg} ${statusStyles[req.status].border} ${statusStyles[req.status].text}`}>
-                        <StatusIcon size={14} /> {req.status}
-                      </span>
                     </div>
                     
                     <p className="text-sm text-slate-400 mb-4">
@@ -321,23 +377,32 @@ const MyRequests = () => {
                   </div>
 
                   {/* Actions/Info Right Side */}
-                  <div className="flex flex-col justify-between items-start md:items-end md:pl-5 md:border-l border-white/[0.08] min-w-[200px] mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0">
-                    <div className="mb-4 md:text-right">
-                      <p className="text-[11px] text-slate-500 uppercase tracking-widest font-semibold mb-1">
-                        {req.status === 'Completed' ? 'Collected At' : 'Collect By'}
-                      </p>
-                      <div className="flex items-center gap-1.5 text-sm font-semibold text-white md:justify-end">
-                        <Clock size={16} className="text-emerald-500" />
-                        {req.pickupTime}
+                  {/* Actions/Info Right Side */}
+                  <div className="flex flex-col justify-between items-center md:pl-6 md:border-l border-white/[0.08] w-full md:w-[220px] flex-shrink-0 mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0">
+                    <div className="w-full flex flex-col items-center gap-3 mb-4 md:mb-0">
+                      {/* Status Badge (Desktop) */}
+                      <span className={`hidden md:flex justify-center items-center gap-1.5 px-2 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider border w-full ${statusStyles[req.status].bg} ${statusStyles[req.status].border} ${statusStyles[req.status].text}`}>
+                        <StatusIcon size={14} className="flex-shrink-0" /> 
+                        <span className="truncate">{req.status}</span>
+                      </span>
+                      
+                      <div className="text-center w-full">
+                        <p className="text-[11px] text-slate-500 uppercase tracking-widest font-semibold mb-1">
+                          {req.status === 'Completed' ? 'Collected At' : 'Collect By'}
+                        </p>
+                        <div className="flex items-center justify-center gap-1.5 text-sm font-semibold text-white">
+                          <Clock size={16} className="text-emerald-500 flex-shrink-0" />
+                          <span className="truncate">{req.pickupTime}</span>
+                        </div>
                       </div>
                     </div>
 
                     <button 
-                      onClick={() => setSelectedRequest(req)}
-                      className="w-full md:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-white text-sm font-medium transition-colors border border-white/[0.1]"
+                      onClick={() => { setSelectedRequest(req); setShowConfirmCollect(false); }}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-white text-sm font-medium transition-colors border border-white/[0.1]"
                     >
                       View Details
-                      <ChevronRight size={16} className="text-slate-400 group-hover:translate-x-0.5 transition-transform" />
+                      <ChevronRight size={16} className="text-slate-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
                     </button>
                   </div>
                 </div>
@@ -352,10 +417,10 @@ const MyRequests = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div 
             className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"
-            onClick={() => setSelectedRequest(null)}
+            onClick={() => { setSelectedRequest(null); setShowConfirmCollect(false); }}
           />
           
-          <div className="relative w-full max-w-2xl bg-slate-800 border border-slate-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-300 max-h-[90vh]">
+          <div className="relative w-full max-w-2xl bg-slate-800 border border-slate-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-300">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-slate-700 flex items-center justify-between bg-slate-800/80 sticky top-0 z-10">
               <div className="flex items-center gap-3">
@@ -367,7 +432,7 @@ const MyRequests = () => {
                 </h3>
               </div>
               <button 
-                onClick={() => setSelectedRequest(null)}
+                onClick={() => { setSelectedRequest(null); setShowConfirmCollect(false); }}
                 className="text-slate-400 hover:text-white transition-colors p-1"
               >
                 <X size={24} />
@@ -375,7 +440,7 @@ const MyRequests = () => {
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 overflow-y-auto">
+            <div className="p-6">
               {/* Top Section - Status & Basics */}
               <div className="flex flex-col md:flex-row gap-6 mb-8">
                 <div className="w-full md:w-48 h-40 rounded-xl overflow-hidden flex-shrink-0 border border-slate-700 bg-slate-800">
@@ -456,18 +521,97 @@ const MyRequests = () => {
               </div>
 
               {/* Action Footer inside Modal */}
-              <div className="mt-6 pt-6 border-t border-slate-700 flex justify-end gap-3">
-                <button 
-                  onClick={() => setSelectedRequest(null)}
-                  className="px-6 py-2.5 rounded-xl bg-slate-700 text-white font-medium hover:bg-slate-600 transition-colors"
-                >
-                  Close
-                </button>
-                {selectedRequest.status !== 'Completed' && selectedRequest.status !== 'Rejected' && (
-                  <button className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold hover:from-emerald-500 hover:to-emerald-400 transition-all shadow-lg shadow-emerald-900/20 flex items-center gap-2">
-                    <MapPin size={16} /> Get Directions
-                  </button>
+              <div className="mt-6 pt-6 border-t border-slate-700 flex flex-wrap justify-end gap-3">
+                {showConfirmCollect ? (
+                  <div className="w-full flex items-center justify-between bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl animate-in fade-in zoom-in-95">
+                    <p className="text-amber-400 text-sm font-medium">Are you sure you have physically collected this item?</p>
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={() => setShowConfirmCollect(false)}
+                        className="px-4 py-2 rounded-lg bg-slate-700 text-white text-sm font-medium hover:bg-slate-600 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        onClick={() => {
+                          setRequests(prev => prev.map(r => r.id === selectedRequest.id ? { ...r, status: 'Awaiting Confirmation', pickupTime: 'Waiting for donor confirmation' } : r));
+                          setShowConfirmCollect(false);
+                          setSelectedRequest(null);
+                        }}
+                        className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-500 transition-colors"
+                      >
+                        Confirm Collection
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {selectedRequest.status === 'Pending' && (
+                      <button 
+                        onClick={() => { setReqToDelete(selectedRequest); setSelectedRequest(null); }}
+                        className="px-6 py-2.5 rounded-xl bg-red-500/10 text-red-400 font-medium hover:bg-red-500/20 transition-colors flex items-center gap-2 border border-red-500/20 mr-auto"
+                      >
+                        <Trash2 size={16} /> Cancel Request
+                      </button>
+                    )}
+                    <button 
+                      onClick={() => { setSelectedRequest(null); setShowConfirmCollect(false); }}
+                      className="px-6 py-2.5 rounded-xl bg-slate-800 border border-slate-600 text-white font-medium hover:bg-slate-700 transition-colors"
+                    >
+                      Close
+                    </button>
+                    {selectedRequest.status === 'Approved' && (
+                      <>
+                        <button className="px-6 py-2.5 rounded-xl bg-slate-700 text-white font-medium hover:bg-slate-600 transition-colors flex items-center gap-2">
+                          <MapPin size={16} className="text-emerald-400" /> Get Directions
+                        </button>
+                        <button 
+                          onClick={() => setShowConfirmCollect(true)}
+                          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold hover:from-emerald-500 hover:to-emerald-400 transition-all shadow-lg shadow-emerald-900/20 flex items-center gap-2"
+                        >
+                          <CheckCircle size={16} /> Mark as Collected
+                        </button>
+                      </>
+                    )}
+                  </>
                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ────────────── Cancel Confirmation Modal ────────────── */}
+      {reqToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"
+            onClick={() => setReqToDelete(null)}
+          />
+          
+          <div className="relative w-full max-w-sm bg-slate-800 border border-slate-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-300">
+            <div className="p-6 flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4 border border-red-500/20">
+                <Trash2 size={32} className="text-red-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Cancel Request?</h3>
+              <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+                Are you sure you want to cancel the pickup request for <span className="text-white font-semibold">{reqToDelete.name}</span>? This item will be returned to the Food Feed for others to claim.
+              </p>
+              
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={() => setReqToDelete(null)}
+                  className="flex-1 px-4 py-3 rounded-xl bg-slate-700 text-white font-semibold hover:bg-slate-600 transition-colors"
+                >
+                  Keep Request
+                </button>
+                <button
+                  onClick={handleDeleteConfirm}
+                  className="flex-1 px-4 py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors shadow-lg shadow-red-900/20"
+                >
+                  Yes, Cancel
+                </button>
               </div>
             </div>
           </div>
