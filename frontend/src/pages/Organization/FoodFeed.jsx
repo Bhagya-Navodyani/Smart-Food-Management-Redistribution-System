@@ -107,6 +107,12 @@ const FoodFeed = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [pickupConfirmed, setPickupConfirmed] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, activeCategory, activeSource, activeDistance]);
 
   /* Client-side filtering */
   const filtered = feedItems.filter((item) => {
@@ -126,6 +132,11 @@ const FoodFeed = () => {
     }
     return matchSearch && matchCat && matchSrc && matchDist;
   });
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filtered.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 -m-6 p-6 lg:p-10">
@@ -352,7 +363,7 @@ const FoodFeed = () => {
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {filtered.map((item, idx) => (
+            {currentItems.map((item, idx) => (
               <div
                 key={item.id}
                 className="
@@ -496,6 +507,29 @@ const FoodFeed = () => {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-4 mt-10">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${currentPage === 1 ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/[0.1]'}`}
+            >
+              Previous
+            </button>
+            <span className="text-slate-400 text-sm font-medium">
+              Page <span className="text-white">{currentPage}</span> of <span className="text-white">{totalPages}</span>
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${currentPage === totalPages ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/[0.1]'}`}
+            >
+              Next
+            </button>
           </div>
         )}
       </div>

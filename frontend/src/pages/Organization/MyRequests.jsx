@@ -95,6 +95,12 @@ const MyRequests = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [showConfirmCollect, setShowConfirmCollect] = useState(false);
   const [reqToDelete, setReqToDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, viewFormat]);
 
   const handleDeleteConfirm = () => {
     if (!reqToDelete) return;
@@ -130,6 +136,11 @@ const MyRequests = () => {
     if (activeTab === 'Awaiting') return req.status === 'Awaiting Confirmation';
     return req.status === activeTab;
   });
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredRequests.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
 
   // Calculate stats
   const pendingCount = requests.filter(r => r.status === 'Pending').length;
@@ -269,7 +280,7 @@ const MyRequests = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/[0.05]">
-                  {filteredRequests.map((req, idx) => {
+                  {currentItems.map((req, idx) => {
                     const StatusIcon = statusStyles[req.status].icon;
                     return (
                       <tr 
@@ -324,7 +335,7 @@ const MyRequests = () => {
         ) : (
           /* ────────────── List View ────────────── */
           <div className="flex flex-col gap-4">
-            {filteredRequests.map((req, idx) => {
+            {currentItems.map((req, idx) => {
               const StatusIcon = statusStyles[req.status].icon;
               return (
                 <div 
@@ -408,6 +419,29 @@ const MyRequests = () => {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${currentPage === 1 ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/[0.1]'}`}
+            >
+              Previous
+            </button>
+            <span className="text-slate-400 text-sm font-medium">
+              Page <span className="text-white">{currentPage}</span> of <span className="text-white">{totalPages}</span>
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${currentPage === totalPages ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/[0.1]'}`}
+            >
+              Next
+            </button>
           </div>
         )}
       </div>
