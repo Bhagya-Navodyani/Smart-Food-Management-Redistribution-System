@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Calendar, Package, CheckCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Calendar, Package, CheckCircle, Search, X, ChevronDown, Filter } from 'lucide-react';
 
 const DonationHistory = () => {
   const [historyData] = useState(() => {
@@ -23,6 +23,87 @@ const DonationHistory = () => {
 
     return [...myCompletedRequests, ...dummyData];
   });
+
+  const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('All Categories');
+  const [weightFilter, setWeightFilter] = useState('All Weights');
+  const [sortOrder, setSortOrder] = useState('Date (Newest First)');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  const categories = ['All Categories', ...Array.from(new Set(historyData.map(item => item.category)))];
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, categoryFilter, weightFilter, sortOrder]);
+
+  const parseWeight = (qStr) => {
+    if (!qStr) return 0;
+    const clean = qStr.replace(/[^\d.]/g, '');
+    return parseFloat(clean) || 0;
+  };
+
+  const filteredHistory = historyData.filter((item) => {
+    const q = search.toLowerCase();
+    const matchSearch = 
+      item.donor.toLowerCase().includes(q) ||
+      item.category.toLowerCase().includes(q) ||
+      item.date.toLowerCase().includes(q);
+
+    const matchCategory = categoryFilter === 'All Categories' || item.category === categoryFilter;
+
+    const w = parseWeight(item.quantity);
+    let matchWeight = true;
+    if (weightFilter === '< 25 kg') matchWeight = w < 25;
+    else if (weightFilter === '25 - 50 kg') matchWeight = w >= 25 && w <= 50;
+    else if (weightFilter === '51 - 100 kg') matchWeight = w > 50 && w <= 100;
+    else if (weightFilter === '> 100 kg') matchWeight = w > 100;
+
+    return matchSearch && matchCategory && matchWeight;
+  });
+
+  const parseDate = (dateStr) => {
+    if (!dateStr) return new Date(0);
+    const lower = dateStr.toLowerCase().trim();
+    const now = new Date();
+
+    if (lower.includes('today')) {
+      return now;
+    }
+
+    if (lower.includes('yesterday')) {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      return yesterday;
+    }
+
+    if (lower.includes('just now')) {
+      return now;
+    }
+
+    const parsed = new Date(dateStr);
+    return isNaN(parsed.getTime()) ? now : parsed;
+  };
+
+  // Sort logic
+  const sortedHistory = [...filteredHistory].sort((a, b) => {
+    if (sortOrder === 'Date (Newest First)') {
+      return parseDate(b.date).getTime() - parseDate(a.date).getTime();
+    } else if (sortOrder === 'Date (Oldest First)') {
+      return parseDate(a.date).getTime() - parseDate(b.date).getTime();
+    } else if (sortOrder === 'Weight (High to Low)') {
+      return parseWeight(b.quantity) - parseWeight(a.quantity);
+    } else if (sortOrder === 'Weight (Low to High)') {
+      return parseWeight(a.quantity) - parseWeight(b.quantity);
+    }
+    return 0;
+  });
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = sortedHistory.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(sortedHistory.length / itemsPerPage);
 
   const getCategoryBadge = (category) => {
     switch (category) {
@@ -51,6 +132,144 @@ const DonationHistory = () => {
           </p>
         </header>
 
+        {/* Glassmorphic Search & Advanced Filters */}
+        <div className="flex flex-col gap-4 mb-8 p-5 bg-white/[0.03] backdrop-blur-xl border border-white/20 rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]">
+          {/* Row 1: Search and Main Selects */}
+          <div className="flex flex-col lg:flex-row gap-3">
+            {/* Search */}
+            <div className="relative flex-1">
+              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-300/50" />
+              <input
+                id="donor-search"
+                type="text"
+                placeholder="Search by Donor, Category, or Date..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-11 pr-10 py-3 rounded-xl bg-white/[0.04] border border-white/20 backdrop-blur-md text-white placeholder-blue-200/40 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/40 transition-all duration-300 text-sm"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch('')}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-300/40 hover:text-white transition-colors"
+                >
+                  <X size={16} />
+                </button>
+              )}
+            </div>
+
+            {/* Category Dropdown */}
+            <div className="relative min-w-[200px]">
+              <Filter size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-300/50 pointer-events-none" />
+              <select
+                id="category-filter"
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="w-full pl-11 pr-10 py-3 rounded-xl appearance-none cursor-pointer bg-white/[0.04] border border-white/20 backdrop-blur-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all duration-300 text-sm select-none"
+              >
+                {categories.map((cat) => (
+                  <option key={cat} value={cat} className="bg-[#101B3A] text-white">
+                    {cat}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-300/50 pointer-events-none" />
+            </div>
+
+            {/* Weight Dropdown */}
+            <div className="relative min-w-[180px]">
+              <Package size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-300/50 pointer-events-none" />
+              <select
+                id="weight-filter"
+                value={weightFilter}
+                onChange={(e) => setWeightFilter(e.target.value)}
+                className="w-full pl-11 pr-10 py-3 rounded-xl appearance-none cursor-pointer bg-white/[0.04] border border-white/20 backdrop-blur-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all duration-300 text-sm select-none"
+              >
+                {['All Weights', '< 25 kg', '25 - 50 kg', '51 - 100 kg', '> 100 kg'].map((w) => (
+                  <option key={w} value={w} className="bg-[#101B3A] text-white">
+                    {w}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-300/50 pointer-events-none" />
+            </div>
+
+            {/* Sorting Dropdown */}
+            <div className="relative min-w-[180px]">
+              <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-300/50 pointer-events-none" />
+              <select
+                id="sort-order"
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value)}
+                className="w-full pl-11 pr-10 py-3 rounded-xl appearance-none cursor-pointer bg-white/[0.04] border border-white/20 backdrop-blur-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all duration-300 text-sm select-none"
+              >
+                {['Date (Newest First)', 'Date (Oldest First)', 'Weight (High to Low)', 'Weight (Low to High)'].map((s) => (
+                  <option key={s} value={s} className="bg-[#101B3A] text-white">
+                    {s}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-300/50 pointer-events-none" />
+            </div>
+          </div>
+
+          {/* Quick Filter Tags */}
+          <div className="flex flex-wrap items-center gap-2 mt-1 px-1">
+            <span className="text-[10px] text-blue-300/40 uppercase tracking-wider font-bold mr-1">Categories:</span>
+            {categories.slice(1).map((tag) => (
+              <button
+                key={tag}
+                onClick={() => setCategoryFilter(categoryFilter === tag ? 'All Categories' : tag)}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 ${
+                  categoryFilter === tag
+                    ? 'bg-blue-500/20 border-blue-400/40 text-blue-300 shadow-sm shadow-blue-900/20'
+                    : 'bg-white/[0.03] border-white/[0.08] text-blue-200/50 hover:bg-white/[0.08] hover:text-blue-200'
+                }`}
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+
+          {/* Active Filter Pills */}
+          {(categoryFilter !== 'All Categories' || weightFilter !== 'All Weights' || search) && (
+            <div className="flex flex-wrap items-center gap-2 mt-1 px-1 border-t border-white/[0.05] pt-3">
+              <span className="text-[10px] text-blue-300/40 uppercase tracking-wider font-bold mr-1">Active:</span>
+              {search && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.05] border border-white/[0.1] text-xs text-blue-200">
+                  "{search}"
+                  <button onClick={() => setSearch('')} className="hover:text-white transition"><X size={12} /></button>
+                </span>
+              )}
+              {categoryFilter !== 'All Categories' && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-500/30 text-xs text-blue-300">
+                  {categoryFilter}
+                  <button onClick={() => setCategoryFilter('All Categories')} className="hover:text-white transition"><X size={12} /></button>
+                </span>
+              )}
+              {weightFilter !== 'All Weights' && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-xs text-emerald-300">
+                  {weightFilter}
+                  <button onClick={() => setWeightFilter('All Weights')} className="hover:text-white transition"><X size={12} /></button>
+                </span>
+              )}
+              <button
+                onClick={() => { setSearch(''); setCategoryFilter('All Categories'); setWeightFilter('All Weights'); }}
+                className="text-xs text-blue-300/40 hover:text-red-400 underline transition ml-1"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Results count */}
+        <div className="flex items-center justify-between mb-4 px-1">
+          <p className="text-sm text-blue-200/50">
+            Showing <span className="text-white font-semibold">{currentItems.length}</span> of{' '}
+            <span className="text-white font-semibold">{sortedHistory.length}</span> completed donations
+          </p>
+        </div>
+
         {/* Glassmorphism Table Container */}
         <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/[0.05] rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden transition-all duration-500 hover:border-white/[0.08]">
           <div className="overflow-x-auto">
@@ -65,7 +284,7 @@ const DonationHistory = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/[0.03]">
-                {historyData.map((row) => (
+                {currentItems.map((row) => (
                   <tr 
                     key={row.id} 
                     className="hover:bg-white/[0.02] transition-colors duration-300 group"
@@ -102,6 +321,37 @@ const DonationHistory = () => {
             </table>
           </div>
         </div>
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                currentPage === 1
+                  ? 'bg-white/[0.02] text-slate-500 border border-white/[0.03] cursor-not-allowed'
+                  : 'bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/[0.1] hover:border-white/[0.15] active:scale-95'
+              }`}
+            >
+              Previous
+            </button>
+            <span className="text-blue-200/50 text-sm font-medium">
+              Page <span className="text-white font-bold">{currentPage}</span> of <span className="text-white font-bold">{totalPages}</span>
+            </span>
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                currentPage === totalPages
+                  ? 'bg-white/[0.02] text-slate-500 border border-white/[0.03] cursor-not-allowed'
+                  : 'bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/[0.1] hover:border-white/[0.15] active:scale-95'
+              }`}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
