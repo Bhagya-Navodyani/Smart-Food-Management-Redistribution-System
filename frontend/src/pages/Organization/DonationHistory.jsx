@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Package, CheckCircle, Search, X, ChevronDown, Filter } from 'lucide-react';
+import { Calendar, Package, CheckCircle, Search, X, ChevronDown, Filter, Download } from 'lucide-react';
 
 const DonationHistory = () => {
   const [historyData] = useState(() => {
@@ -116,6 +116,153 @@ const DonationHistory = () => {
     }
   };
 
+  const loadScript = (src) => {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`script[src="${src}"]`)) {
+        resolve();
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = () => resolve();
+      script.onerror = (err) => reject(err);
+      document.head.appendChild(script);
+    });
+  };
+
+  const loadImageAsBase64 = (src) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.src = src;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.onerror = (err) => resolve(null);
+    });
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js');
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('p', 'pt', 'a4');
+
+      // Corporate green branding colors
+      const primaryColor = [16, 119, 78]; 
+      const textColor = [33, 43, 54]; 
+      const secondaryTextColor = [99, 115, 129]; 
+
+      // Branding Box Background
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, 595.28, 140, 'F');
+
+      // Load logo image
+      let logoData = null;
+      try {
+        logoData = await loadImageAsBase64('/uploads/images/Fresh_Track-removebg-preview.png');
+      } catch (err) {
+        console.error('Logo failed to load', err);
+      }
+
+      if (logoData) {
+        doc.addImage(logoData, 'PNG', 40, 32, 50, 50);
+      }
+
+      // Title - with elegant Times-Bold font
+      doc.setFont('times', 'bold');
+      doc.setFontSize(24);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.text('Fresh Track', logoData ? 102 : 40, 58);
+
+      // Tagline
+      doc.setFont('times', 'italic');
+      doc.setFontSize(10);
+      doc.setTextColor(secondaryTextColor[0], secondaryTextColor[1], secondaryTextColor[2]);
+      doc.text('Smart Food Management & Redistribution System', logoData ? 102 : 40, 75);
+
+      // Report Title
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+      doc.text('DONATION HISTORY REPORT', 40, 115);
+
+      // Metadata
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(secondaryTextColor[0], secondaryTextColor[1], secondaryTextColor[2]);
+      doc.text('REPORT ID:', 380, 48);
+      doc.text('DATE:', 380, 62);
+      doc.text('ORGANIZATION:', 380, 76);
+
+      const uniqueId = 'FT-REP-' + Math.random().toString(36).substring(2, 9).toUpperCase();
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+      doc.text(uniqueId, 470, 48);
+      doc.text(new Date().toLocaleDateString(), 470, 62);
+      doc.text('Fresh Track Organization', 470, 76);
+
+      // Divider line
+      doc.setDrawColor(224, 224, 224);
+      doc.setLineWidth(1);
+      doc.line(40, 140, 555.28, 140);
+
+      // Extract ONLY completed records currently visible in table
+      const tableHeaders = [['Date', 'Donor Name', 'Food Category', 'Quantity', 'Status']];
+      const tableRows = currentItems.map(row => [
+        row.date,
+        row.donor,
+        row.category,
+        row.quantity,
+        row.status
+      ]);
+
+      // Draw autoTable
+      doc.autoTable({
+        head: tableHeaders,
+        body: tableRows,
+        startY: 160,
+        margin: { left: 40, right: 40 },
+        theme: 'striped',
+        headStyles: {
+          fillColor: primaryColor,
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 10,
+          halign: 'left'
+        },
+        bodyStyles: {
+          textColor: textColor,
+          fontSize: 9,
+          halign: 'left'
+        },
+        alternateRowStyles: {
+          fillColor: [250, 251, 252]
+        },
+        didDrawPage: (data) => {
+          const str = 'Page ' + doc.internal.getNumberOfPages();
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          doc.setTextColor(secondaryTextColor[0], secondaryTextColor[1], secondaryTextColor[2]);
+          
+          doc.text('Thank you for contributing to reducing food waste.', 40, doc.internal.pageSize.height - 30);
+          doc.text(str, doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 30);
+        }
+      });
+
+      doc.save(`Donation_History_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (err) {
+      console.error('Error generating PDF report:', err);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0A1128] bg-gradient-to-br from-[#0A1128] via-[#101B3A] to-[#0A1128] -m-6 p-6 lg:p-10 relative overflow-hidden font-sans">
       {/* Avant-Garde Blurs */}
@@ -123,13 +270,24 @@ const DonationHistory = () => {
       <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-emerald-600/10 rounded-full blur-[150px] pointer-events-none" />
 
       <div className="relative z-10 max-w-6xl mx-auto">
-        <header className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-emerald-300 tracking-tight drop-shadow-sm mb-3">
-            Donation History
-          </h1>
-          <p className="text-blue-200/60 text-lg max-w-2xl font-light tracking-wide">
-            View completed food collections and history.
-          </p>
+        <header className="mb-12 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+          <div>
+            <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-emerald-300 tracking-tight drop-shadow-sm mb-3">
+              Donation History
+            </h1>
+            <p className="text-blue-200/60 text-lg max-w-2xl font-light tracking-wide">
+              View completed food collections and history.
+            </p>
+          </div>
+
+          <button
+            id="download-report-btn"
+            onClick={handleExportPDF}
+            className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-700 text-white font-bold tracking-wide shadow-lg shadow-emerald-900/40 hover:from-green-500 hover:to-emerald-600 hover:shadow-emerald-500/30 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 border border-emerald-400/20"
+          >
+            <Download size={18} />
+            <span>Download Report</span>
+          </button>
         </header>
 
         {/* Glassmorphic Search & Advanced Filters */}
