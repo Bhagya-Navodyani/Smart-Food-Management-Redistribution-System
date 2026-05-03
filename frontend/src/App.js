@@ -10,6 +10,7 @@ import PublicLayout from './components/layouts/PublicLayout';
 import FoodFeed from './pages/Organization/FoodFeed';
 import MyRequests from './pages/Organization/MyRequests';
 import DonationHistory from './pages/Organization/DonationHistory';
+import OrganizationDashboard from './pages/Organization/OrganizationDashboard';
 
 // Auth pages
 import SignIn from './pages/Auth/SignIn';
@@ -26,7 +27,7 @@ function App() {
         <Routes>
           {/* Organization Routes - NO Navbar/Footer, only Sidebar */}
           <Route element={<OrganizationLayout />}>
-            <Route path="/organization/dashboard" element={<div className="p-6"><h1 className="text-3xl font-bold text-gray-900 mb-6">Organization Dashboard</h1><div className="bg-white rounded-lg shadow p-6"><p className="text-gray-600">Welcome to the Smart Food Management & Redistribution System Organization Portal.</p></div></div>} />
+            <Route path="/organization/dashboard" element={<OrganizationDashboard />} />
             <Route path="/organization/food-feed" element={<FoodFeed />} />
             <Route path="/organization/my-requests" element={<MyRequests />} />
             <Route path="/organization/donation-history" element={<DonationHistory />} />

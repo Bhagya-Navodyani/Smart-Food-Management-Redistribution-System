@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Package, Clock, MapPin, CheckCircle, Clock3, XCircle, 
   ChevronRight, Inbox, Truck, Trash2, Calendar,
-  LayoutList, Table, X, Phone, Building, FileText, Info
+  LayoutList, Table, X, Phone, Building, FileText, Info, Download
 } from 'lucide-react';
 
 /* ── Sample Request Data ── */
@@ -156,8 +156,155 @@ const MyRequests = () => {
     Cancelled: 'bg-red-500/20 text-red-400 border border-red-500/40 shadow-lg shadow-red-900/20'
   };
 
+  const loadScript = (src) => {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`script[src="${src}"]`)) {
+        resolve();
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = () => resolve();
+      script.onerror = (err) => reject(err);
+      document.head.appendChild(script);
+    });
+  };
+
+  const loadImageAsBase64 = (src) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.src = src;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.onerror = (err) => resolve(null);
+    });
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js');
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('p', 'pt', 'a4');
+
+      // Corporate green branding colors
+      const primaryColor = [16, 119, 78]; 
+      const textColor = [33, 43, 54]; 
+      const secondaryTextColor = [99, 115, 129]; 
+
+      // Branding Box Background
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, 595.28, 140, 'F');
+
+      // Load logo image
+      let logoData = null;
+      try {
+        logoData = await loadImageAsBase64('/uploads/images/Fresh_Track-removebg-preview.png');
+      } catch (err) {
+        console.error('Logo failed to load', err);
+      }
+
+      if (logoData) {
+        doc.addImage(logoData, 'PNG', 40, 32, 50, 50);
+      }
+
+      // Title - with elegant Times-Bold font
+      doc.setFont('times', 'bold');
+      doc.setFontSize(24);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.text('Fresh Track', logoData ? 102 : 40, 58);
+
+      // Tagline
+      doc.setFont('times', 'italic');
+      doc.setFontSize(10);
+      doc.setTextColor(secondaryTextColor[0], secondaryTextColor[1], secondaryTextColor[2]);
+      doc.text('Smart Food Management & Redistribution System', logoData ? 102 : 40, 75);
+
+      // Report Title
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+      doc.text(`MY REQUESTS REPORT - ${activeTab.toUpperCase()}`, 40, 115);
+
+      // Metadata
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(secondaryTextColor[0], secondaryTextColor[1], secondaryTextColor[2]);
+      doc.text('REPORT ID:', 380, 48);
+      doc.text('DATE:', 380, 62);
+      doc.text('ORGANIZATION:', 380, 76);
+
+      const uniqueId = 'FT-REQ-' + Math.random().toString(36).substring(2, 9).toUpperCase();
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+      doc.text(uniqueId, 470, 48);
+      doc.text(new Date().toLocaleDateString(), 470, 62);
+      doc.text('Fresh Track Organization', 470, 76);
+
+      // Divider line
+      doc.setDrawColor(224, 224, 224);
+      doc.setLineWidth(1);
+      doc.line(40, 140, 555.28, 140);
+
+      // Extract filtered / tab specific records currently visible in view
+      const tableHeaders = [['Item Name', 'Donor Name', 'Quantity', 'Date', 'Status']];
+      const tableRows = filteredRequests.map(row => [
+        row.name,
+        row.donor,
+        row.quantity,
+        row.requestDate,
+        row.status
+      ]);
+
+      // Draw autoTable
+      doc.autoTable({
+        head: tableHeaders,
+        body: tableRows,
+        startY: 160,
+        margin: { left: 40, right: 40 },
+        theme: 'striped',
+        headStyles: {
+          fillColor: primaryColor,
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 10,
+          halign: 'left'
+        },
+        bodyStyles: {
+          textColor: textColor,
+          fontSize: 9,
+          halign: 'left'
+        },
+        alternateRowStyles: {
+          fillColor: [250, 251, 252]
+        },
+        didDrawPage: (data) => {
+          const str = 'Page ' + doc.internal.getNumberOfPages();
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          doc.setTextColor(secondaryTextColor[0], secondaryTextColor[1], secondaryTextColor[2]);
+          
+          doc.text('Thank you for contributing to reducing food waste.', 40, doc.internal.pageSize.height - 30);
+          doc.text(str, doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 30);
+        }
+      });
+
+      doc.save(`My_Requests_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (err) {
+      console.error('Error generating PDF report:', err);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 -m-6 p-6 lg:p-10">
+    <div className="min-h-screen bg-[#0A1128] bg-gradient-to-br from-[#0A1128] via-[#101B3A] to-[#0A1128] -m-6 p-6 lg:p-10 relative overflow-hidden font-sans">
       {/* Decorative Blurs */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
         <div className="absolute top-20 right-20 w-[400px] h-[400px] rounded-full bg-emerald-600/5 blur-[120px]" />
@@ -181,20 +328,30 @@ const MyRequests = () => {
             </p>
           </div>
           
-          {/* Quick Stats */}
-          <div className="flex gap-3">
-            <div className="px-4 py-3 rounded-xl bg-gradient-to-b from-amber-500/10 to-transparent border border-amber-500/20 backdrop-blur-md">
-              <p className="text-xs text-amber-200/70 mb-1 font-medium">Pending</p>
-              <p className="text-2xl font-bold text-amber-400">{pendingCount}</p>
+          {/* Quick Stats & Export Button */}
+          <div className="flex items-center gap-4 flex-wrap md:flex-nowrap">
+            <div className="flex gap-3">
+              <div className="px-4 py-3 rounded-xl bg-gradient-to-b from-amber-500/10 to-transparent border border-amber-500/20 backdrop-blur-md">
+                <p className="text-xs text-amber-200/70 mb-1 font-medium">Pending</p>
+                <p className="text-2xl font-bold text-amber-400">{pendingCount}</p>
+              </div>
+              <div className="px-4 py-3 rounded-xl bg-gradient-to-b from-blue-500/10 to-transparent border border-blue-500/20 backdrop-blur-md">
+                <p className="text-xs text-blue-200/70 mb-1 font-medium">Approved</p>
+                <p className="text-2xl font-bold text-blue-400">{approvedCount}</p>
+              </div>
+              <div className="px-4 py-3 rounded-xl bg-gradient-to-b from-emerald-500/10 to-transparent border border-emerald-500/20 backdrop-blur-md">
+                <p className="text-xs text-emerald-200/70 mb-1 font-medium">Completed</p>
+                <p className="text-2xl font-bold text-emerald-400">{completedCount}</p>
+              </div>
             </div>
-            <div className="px-4 py-3 rounded-xl bg-gradient-to-b from-blue-500/10 to-transparent border border-blue-500/20 backdrop-blur-md">
-              <p className="text-xs text-blue-200/70 mb-1 font-medium">Approved</p>
-              <p className="text-2xl font-bold text-blue-400">{approvedCount}</p>
-            </div>
-            <div className="px-4 py-3 rounded-xl bg-gradient-to-b from-emerald-500/10 to-transparent border border-emerald-500/20 backdrop-blur-md">
-              <p className="text-xs text-emerald-200/70 mb-1 font-medium">Completed</p>
-              <p className="text-2xl font-bold text-emerald-400">{completedCount}</p>
-            </div>
+
+            <button
+              onClick={handleExportPDF}
+              className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-700 text-white font-bold tracking-wide shadow-lg shadow-emerald-900/40 hover:from-green-500 hover:to-emerald-600 hover:shadow-emerald-500/30 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 border border-emerald-400/20 whitespace-nowrap"
+            >
+              <Download size={18} />
+              <span>Download Report</span>
+            </button>
           </div>
         </header>
 
