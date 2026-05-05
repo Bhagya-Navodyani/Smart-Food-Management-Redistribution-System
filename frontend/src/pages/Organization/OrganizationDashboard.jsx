@@ -1,9 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Gift, ClipboardList, TrendingUp, Users, Calendar, ArrowRight, Award, MapPin, Sparkles, Plus, FileText, Search } from 'lucide-react';
+import { Gift, ClipboardList, TrendingUp, Users, Calendar, ArrowRight, Award, MapPin, Sparkles, Plus, FileText, Search, ShieldCheck, Globe } from 'lucide-react';
+import SriLankaMap from '../../components/organization/SriLankaMap';
 
 const OrganizationDashboard = () => {
   const navigate = useNavigate();
+  const [selectedDistrict, setSelectedDistrict] = useState({
+    name: 'Colombo',
+    members: 450,
+    foodSaved: '2,450 kg',
+    activeRequests: 24,
+    status: 'High Activity'
+  });
 
   const recentActivities = [
     { id: 1, date: '2026-05-03', item: 'Fresh Organic Tomatoes', quantity: '45 kg', status: 'Completed' },
@@ -124,6 +132,73 @@ const OrganizationDashboard = () => {
           </div>
         </div>
 
+        {/* Sri Lanka Regional Impact Map - Moved to top-tier under summary cards */}
+        <div className="p-8 bg-white/[0.03] backdrop-blur-xl border border-white/[0.05] rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.25)] hover:border-white/[0.08] transition-all duration-300 relative group flex flex-col md:flex-row gap-8 items-center mb-12">
+          <div className="w-full md:w-1/2 flex flex-col justify-center">
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/[0.05]">
+              <div className="p-2.5 rounded-xl bg-blue-500/20 border border-blue-500/30 text-blue-400">
+                <MapPin size={22} />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-white tracking-wide">Regional Impact Insights</h2>
+                <p className="text-blue-200/50 text-sm font-light tracking-wider mt-0.5">Interactive distribution analysis by district</p>
+              </div>
+            </div>
+
+            <div className="p-6 rounded-2xl bg-white/[0.02] border border-white/[0.05] animate-in slide-in-from-bottom-4 duration-700">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Globe className="text-emerald-400" size={20} />
+                  <h3 className="text-xl font-bold text-white tracking-tight">{selectedDistrict.name}</h3>
+                </div>
+                <span className="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-full text-xs font-bold uppercase tracking-widest border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
+                  {selectedDistrict.status}
+                </span>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+                <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.05] transition-all group/stat">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users size={16} className="text-blue-400" />
+                    <p className="text-[10px] text-blue-200/40 uppercase font-bold tracking-widest">Members</p>
+                  </div>
+                  <p className="text-2xl font-extrabold text-white group-hover:text-blue-300 transition-colors">{selectedDistrict.members}</p>
+                </div>
+                <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.05] transition-all group/stat">
+                  <div className="flex items-center gap-2 mb-2">
+                    <TrendingUp size={16} className="text-emerald-400" />
+                    <p className="text-[10px] text-blue-200/40 uppercase font-bold tracking-widest">Saved</p>
+                  </div>
+                  <p className="text-2xl font-extrabold text-white group-hover:text-emerald-300 transition-colors">{selectedDistrict.foodSaved}</p>
+                </div>
+                <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.05] transition-all group/stat">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ClipboardList size={16} className="text-orange-400" />
+                    <p className="text-[10px] text-blue-200/40 uppercase font-bold tracking-widest">Requests</p>
+                  </div>
+                  <p className="text-2xl font-extrabold text-white group-hover:text-orange-300 transition-colors">{selectedDistrict.activeRequests}</p>
+                </div>
+              </div>
+
+              <div className="mt-8">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-xs text-blue-200/50">Resource Utilization</span>
+                  <span className="text-xs font-bold text-blue-300">84%</span>
+                </div>
+                <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-blue-500 to-emerald-500 rounded-full" style={{ width: '84%' }} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="w-full md:w-1/2 flex items-center justify-center p-4 bg-white/[0.01] rounded-3xl border border-white/[0.02]">
+            <div className="w-full h-full max-w-[450px]">
+              <SriLankaMap onSelectDistrict={setSelectedDistrict} />
+            </div>
+          </div>
+        </div>
+
         {/* 'Recent Activity' Table Section */}
         <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/[0.05] rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden transition-all duration-500 hover:border-white/[0.08] mb-12">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 border-b border-white/[0.05] bg-white/[0.01]">
@@ -184,37 +259,8 @@ const OrganizationDashboard = () => {
           </div>
         </div>
 
-        {/* ── Section: Distribution by Region, Top Donors & Quick Actions ── */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {/* Distribution by Region */}
-          <div className="p-6 bg-white/[0.03] backdrop-blur-xl border border-white/[0.05] rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.25)] hover:border-white/[0.08] transition-all duration-300">
-            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/[0.05]">
-              <div className="p-2.5 rounded-xl bg-blue-500/20 border border-blue-500/30 text-blue-400">
-                <MapPin size={22} />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-white tracking-wide">Distribution by Region</h2>
-                <p className="text-blue-200/50 text-xs font-light tracking-wider mt-0.5">Where food surplus is distributed</p>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              {regionalDistribution.map((region) => (
-                <div key={region.name} className="space-y-1.5">
-                  <div className="flex justify-between items-center text-sm font-medium">
-                    <span className="text-blue-100/90">{region.name}</span>
-                    <span className="text-white font-bold">{region.percentage}%</span>
-                  </div>
-                  <div className="w-full h-2.5 bg-white/[0.05] rounded-full overflow-hidden flex">
-                    <div 
-                      className={`h-full rounded-full transition-all duration-1000 ease-out ${region.color}`}
-                      style={{ width: `${region.percentage}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* ── Section: Top Donors & Quick Actions ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
 
           {/* Top Donors List */}
           <div className="p-6 bg-white/[0.03] backdrop-blur-xl border border-white/[0.05] rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.25)] hover:border-white/[0.08] transition-all duration-300">
@@ -310,6 +356,7 @@ const OrganizationDashboard = () => {
             </div>
           </div>
         </div>
+
 
       </div>
     </div>
