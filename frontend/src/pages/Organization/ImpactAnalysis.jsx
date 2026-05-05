@@ -7,6 +7,7 @@ import {
 
 const ImpactAnalysis = () => {
   const [showCategoryInfo, setShowCategoryInfo] = useState(false);
+  const [showSummaryInfo, setShowSummaryInfo] = useState(false);
 
   const stats = [
     {
@@ -253,23 +254,6 @@ const ImpactAnalysis = () => {
           </div>
         </div>
         
-        <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/[0.05] rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] p-8 mb-12">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
-                  <Info size={18} />
-                </div>
-                <h2 className="text-xl font-bold text-white">Impact Analysis Summary</h2>
-              </div>
-            </div>
-            <p className="text-blue-100/80 leading-relaxed max-w-4xl">
-              Our advanced tracking system calculates the environmental benefits of your food redistribution efforts. 
-              The metrics shown above are derived from real-time data collected through the Fresh Track platform, 
-              accounting for greenhouse gas emission avoidance, water conservation in agriculture, and direct food 
-              security improvements.
-            </p>
-        </div>
-
         {/* Bottom Grid: Leaderboard & Timeline */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
           {/* Top Contributing Partners */}
@@ -341,6 +325,63 @@ const ImpactAnalysis = () => {
               ))}
             </div>
           </div>
+        </div>
+
+        {/* Impact Analysis Summary (Now at the bottom) */}
+        <div className="relative overflow-hidden bg-white/[0.03] backdrop-blur-2xl border border-white/[0.05] rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] p-8 mb-12">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <button 
+                  onClick={() => setShowSummaryInfo(true)}
+                  className="p-2 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors cursor-pointer"
+                >
+                  <Info size={18} />
+                </button>
+                <h2 className="text-xl font-bold text-white">Impact Analysis Summary</h2>
+              </div>
+            </div>
+            <p className="text-blue-100/80 leading-relaxed max-w-4xl">
+              Our advanced tracking system calculates the environmental benefits of your food redistribution efforts. 
+              The metrics shown above are derived from real-time data collected through the Fresh Track platform, 
+              accounting for greenhouse gas emission avoidance, water conservation in agriculture, and direct food 
+              security improvements.
+            </p>
+
+            {/* In-Card Methodology Overlay - Refined for Wide Layout */}
+            {showSummaryInfo && (
+              <div className="absolute inset-0 z-30 bg-[#0A1128]/95 backdrop-blur-2xl p-6 flex items-center animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <button 
+                  onClick={() => setShowSummaryInfo(false)}
+                  className="absolute top-4 right-4 p-2 rounded-xl hover:bg-white/5 text-slate-400 hover:text-white transition-all"
+                >
+                  <X size={18} />
+                </button>
+                
+                <div className="flex flex-row items-center gap-8 w-full max-w-5xl mx-auto">
+                  <div className="flex-shrink-0 p-4 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-lg shadow-emerald-500/5">
+                    <ShieldCheck size={36} />
+                  </div>
+                  
+                  <div className="flex-1 text-left">
+                    <h4 className="text-lg font-bold text-white mb-1">Impact Methodology</h4>
+                    <p className="text-slate-300 text-sm leading-relaxed max-w-3xl">
+                      Our metrics use global sustainability standards: 
+                      <span className="text-emerald-400 font-semibold mx-1">CO2 savings</span> (methane avoidance), 
+                      <span className="text-rose-400 font-semibold mx-1">Meals</span> (0.42kg avg), and 
+                      <span className="text-blue-400 font-semibold mx-1">Water conservation</span> (agricultural footprint).
+                      Calculations are verified against real-time collection data.
+                    </p>
+                  </div>
+
+                  <button 
+                    onClick={() => setShowSummaryInfo(false)}
+                    className="flex-shrink-0 px-6 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-bold hover:bg-white/10 transition-all active:scale-95"
+                  >
+                    Got it
+                  </button>
+                </div>
+              </div>
+            )}
         </div>
       </div>
     </div>
