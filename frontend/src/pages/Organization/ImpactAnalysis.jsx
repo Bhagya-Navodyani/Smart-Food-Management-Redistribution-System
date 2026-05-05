@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Leaf, Heart, Droplets, TrendingUp, Info, X, ShieldCheck, Globe } from 'lucide-react';
+import { Leaf, Heart, Droplets, TrendingUp, Info, X, ShieldCheck, Globe, Award, Target } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend
@@ -253,7 +253,7 @@ const ImpactAnalysis = () => {
           </div>
         </div>
         
-        <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/[0.05] rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] p-8">
+        <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/[0.05] rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] p-8 mb-12">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
@@ -268,6 +268,79 @@ const ImpactAnalysis = () => {
               accounting for greenhouse gas emission avoidance, water conservation in agriculture, and direct food 
               security improvements.
             </p>
+        </div>
+
+        {/* Bottom Grid: Leaderboard & Timeline */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+          {/* Top Contributing Partners */}
+          <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] rounded-3xl p-8 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                <Award size={22} />
+              </div>
+              <h3 className="text-xl font-bold text-white">Top Contributing Partners</h3>
+            </div>
+            
+            <div className="space-y-4">
+              {[
+                { name: 'Green Valley Farms', kg: '2,450 kg', rank: 1, color: 'text-amber-400' },
+                { name: 'Sunrise Bakery', kg: '1,820 kg', rank: 2, color: 'text-slate-300' },
+                { name: 'City Market Stall #12', kg: '1,400 kg', rank: 3, color: 'text-amber-700' },
+                { name: 'Grand Palace Hotel', kg: '950 kg', rank: 4, color: 'text-blue-400' },
+                { name: 'Lanka Rice Mills', kg: '820 kg', rank: 5, color: 'text-blue-400' },
+              ].map((partner, i) => (
+                <div key={i} className="flex items-center justify-between p-4 rounded-2xl bg-white/[0.02] border border-white/[0.05] hover:bg-white/[0.05] transition-all group">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm ${i < 3 ? partner.color : 'text-slate-500'}`}>
+                      {i === 0 ? <Award size={20} /> : `#${partner.rank}`}
+                    </div>
+                    <div>
+                      <h4 className="text-white font-semibold group-hover:text-blue-300 transition-colors">{partner.name}</h4>
+                      <p className="text-blue-200/40 text-xs uppercase tracking-widest font-bold">Platinum Donor</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-emerald-400 font-bold block">{partner.kg}</span>
+                    <span className="text-[10px] text-slate-500 uppercase tracking-tighter">Total Contributed</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Milestones Timeline */}
+          <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/[0.08] rounded-3xl p-8 shadow-[0_8px_32px_0_rgba(0,0,0,0.3)]">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <Target size={22} />
+              </div>
+              <h3 className="text-xl font-bold text-white">Milestones Timeline</h3>
+            </div>
+            
+            <div className="relative space-y-8 before:absolute before:inset-0 before:ml-5 before:-translate-x-px before:h-full before:w-0.5 before:bg-gradient-to-b before:from-emerald-500/50 before:via-blue-500/30 before:to-transparent">
+              {[
+                { title: '10 Tons Saved', date: 'Jan 2026', desc: 'Major milestone in food recovery effort.', icon: Globe, color: 'bg-emerald-500' },
+                { title: '50 Partners Joined', date: 'March 2026', desc: 'Growing ecosystem of sustainable donors.', icon: ShieldCheck, color: 'bg-blue-500' },
+                { title: '100k Meals Provided', date: 'May 2026', desc: 'Significant impact on local food security.', icon: Heart, color: 'bg-rose-500' },
+                { title: 'Regional Expansion', date: 'Upcoming', desc: 'Launching in Southern and Western provinces.', icon: TrendingUp, color: 'bg-amber-500', isFuture: true },
+              ].map((milestone, i) => (
+                <div key={i} className="relative flex items-start gap-6 group">
+                  <div className={`mt-1 flex-shrink-0 w-10 h-10 rounded-full ${milestone.isFuture ? 'bg-slate-800' : milestone.color} flex items-center justify-center shadow-lg shadow-black/20 z-10 transition-transform group-hover:scale-110`}>
+                    <milestone.icon size={18} className="text-white" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h4 className={`font-bold ${milestone.isFuture ? 'text-slate-400' : 'text-white'}`}>{milestone.title}</h4>
+                      <span className="text-[10px] text-blue-200/30 bg-white/5 px-2 py-0.5 rounded-full font-bold">{milestone.date}</span>
+                    </div>
+                    <p className="text-blue-200/50 text-sm font-light leading-relaxed">
+                      {milestone.desc}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </div>
