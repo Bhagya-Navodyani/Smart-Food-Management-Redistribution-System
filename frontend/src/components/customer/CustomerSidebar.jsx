@@ -5,63 +5,66 @@ import {
   ShoppingBasket,
   Package,
   Heart,
-  Calendar,
   TrendingUp,
   User,
   Settings,
-  Menu,
+  ListChecks,
+  AlertTriangle,
+  HandHeart,
+  Zap,
   X,
   LogOut,
-  AlertTriangle
+  ChevronDown
 } from 'lucide-react';
 
 const CustomerSidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [expandedGroup, setExpandedGroup] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const navigationLinks = [
+  const navigationGroups = [
     {
       name: 'Dashboard',
       path: '/customer/dashboard',
       icon: LayoutDashboard,
+      group: null
     },
     {
-      name: 'Browse Food',
-      path: '/customer/browse-food',
+      groupName: 'Food Management',
+      icon: ListChecks,
+      items: [
+        { name: 'My Food Items', path: '/customer/food-list' },
+        { name: 'Track Expiry', path: '/customer/expiry-tracking' }
+      ]
+    },
+    {
+      groupName: 'Actions & Impact',
+      icon: Zap,
+      items: [
+        { name: 'Action Panel', path: '/customer/actions' },
+        { name: 'Donations', path: '/customer/donations' },
+        { name: 'Analytics', path: '/customer/impact' }
+      ]
+    },
+    {
+      groupName: 'Shopping',
       icon: ShoppingBasket,
+      items: [
+        { name: 'Marketplace', path: '/customer/marketplace' },
+        { name: 'My Orders', path: '/customer/orders' },
+        { name: 'Saved Items', path: '/customer/saved' }
+      ]
     },
     {
-      name: 'My Orders',
-      path: '/customer/orders',
-      icon: Package,
-    },
-    {
-      name: 'Saved Items',
-      path: '/customer/saved',
-      icon: Heart,
-    },
-    {
-      name: 'Schedule Pickup',
-      path: '/customer/schedule',
-      icon: Calendar,
-    },
-    {
-      name: 'Impact',
-      path: '/customer/impact',
-      icon: TrendingUp,
-    },
-    {
-      name: 'Profile',
-      path: '/customer/profile',
+      groupName: 'Account',
       icon: User,
-    },
-    {
-      name: 'Settings',
-      path: '/customer/settings',
-      icon: Settings,
-    },
+      items: [
+        { name: 'Profile', path: '/customer/profile' },
+        { name: 'Settings', path: '/customer/settings' }
+      ]
+    }
   ];
 
   const handleLogout = () => {
@@ -98,26 +101,75 @@ const CustomerSidebar = () => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-          {navigationLinks.map((link) => {
-            const Icon = link.icon;
-            const isActive = location.pathname === link.path;
-            
+        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
+          {navigationGroups.map((item, index) => {
+            // Single item (Dashboard)
+            if (!item.groupName) {
+              const Icon = item.icon;
+              const isActive = location.pathname === item.path;
+              return (
+                <button
+                  key={item.path}
+                  onClick={() => navigate(item.path)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                    isActive
+                      ? 'bg-green-50 text-green-600 border-l-4 border-green-600'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="font-medium">{item.name}</span>
+                </button>
+              );
+            }
+
+            // Group items
+            const GroupIcon = item.icon;
+            const isGroupExpanded = expandedGroup === index;
+            const isGroupActive = item.items.some((subItem) => location.pathname === subItem.path);
+
             return (
-              <button
-                key={link.path}
-                onClick={() => navigate(link.path)}
-                className={`
-                  w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
-                  ${isActive
-                    ? 'bg-green-50 text-green-600 border-l-4 border-green-600'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }
-                `}
-              >
-                <Icon className="w-5 h-5" />
-                <span className="font-medium">{link.name}</span>
-              </button>
+              <div key={item.groupName}>
+                <button
+                  onClick={() => setExpandedGroup(isGroupExpanded ? null : index)}
+                  className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
+                    isGroupActive
+                      ? 'bg-green-50 text-green-600'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <GroupIcon className="w-5 h-5" />
+                    <span className="font-medium">{item.groupName}</span>
+                  </div>
+                  <ChevronDown
+                    className={`w-4 h-4 transition-transform duration-200 ${
+                      isGroupExpanded ? 'rotate-180' : ''
+                    }`}
+                  />
+                </button>
+
+                {isGroupExpanded && (
+                  <div className="ml-2 mt-1 space-y-1 border-l border-gray-200 pl-3">
+                    {item.items.map((subItem) => {
+                      const isActive = location.pathname === subItem.path;
+                      return (
+                        <button
+                          key={subItem.path}
+                          onClick={() => navigate(subItem.path)}
+                          className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 text-sm ${
+                            isActive
+                              ? 'text-green-600 font-medium bg-green-50'
+                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                          }`}
+                        >
+                          <span>{subItem.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>
