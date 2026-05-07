@@ -133,12 +133,12 @@ const DonationHistory = () => {
 
   const getCategoryBadge = (category) => {
     switch (category) {
-      case 'Vegetable Scraps': return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
-      case 'Spoiled Fruits': return 'bg-rose-500/20 text-rose-300 border-rose-500/30';
-      case 'Bakery Items': return 'bg-fuchsia-500/20 text-fuchsia-300 border-fuchsia-500/30';
-      case 'Cooked Leftovers': return 'bg-amber-500/20 text-amber-300 border-amber-500/30';
-      case 'Grains & Rice': return 'bg-sky-500/20 text-sky-300 border-sky-500/30';
-      default: return 'bg-slate-500/20 text-slate-300 border-slate-500/30';
+      case 'Vegetable Scraps': return 'bg-emerald-50 text-emerald-600 border-emerald-100';
+      case 'Spoiled Fruits': return 'bg-rose-50 text-rose-600 border-rose-100';
+      case 'Bakery Items': return 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100';
+      case 'Cooked Leftovers': return 'bg-amber-50 text-amber-600 border-amber-100';
+      case 'Grains & Rice': return 'bg-sky-50 text-sky-600 border-sky-100';
+      default: return 'bg-gray-50 text-gray-600 border-gray-100';
     }
   };
 
@@ -290,34 +290,33 @@ const DonationHistory = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A1128] bg-gradient-to-br from-[#0A1128] via-[#101B3A] to-[#0A1128] -m-6 p-6 lg:p-10 relative overflow-hidden font-sans">
-      {/* Avant-Garde Blurs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-600/20 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-emerald-600/10 rounded-full blur-[150px] pointer-events-none" />
+    <div className="min-h-screen bg-gray-50 p-6 lg:p-10 relative overflow-hidden font-sans">
+      {/* Decorative Blurs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-emerald-100 rounded-full blur-[120px] pointer-events-none opacity-50" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-blue-100 rounded-full blur-[150px] pointer-events-none opacity-50" />
 
       <div className="relative z-10 max-w-6xl mx-auto">
         <header className="mb-12 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
           <div>
-            <h1 className="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-emerald-300 tracking-tight drop-shadow-sm mb-3">
+            <h1 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-3">
               Donation History
             </h1>
-            <p className="text-blue-200/60 text-lg max-w-2xl font-light tracking-wide">
-              View completed food collections and history.
+            <p className="text-gray-500 text-lg max-w-2xl font-medium tracking-wide">
+              View and manage your completed food redistribution records.
             </p>
           </div>
 
           <button
-            id="download-report-btn"
             onClick={handleExportPDF}
-            className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-700 text-white font-bold tracking-wide shadow-lg shadow-emerald-900/40 hover:from-green-500 hover:to-emerald-600 hover:shadow-emerald-500/30 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 border border-emerald-400/20"
+            className="flex items-center gap-2 px-8 py-4 rounded-2xl bg-gray-900 text-white font-bold hover:bg-gray-800 transition-all shadow-xl shadow-gray-200 active:scale-95"
           >
-            <Download size={18} />
+            <Download size={20} />
             <span>Download Report</span>
           </button>
         </header>
 
-        {/* Donation Progress Calendar */}
-        <div className="mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
+        {/* Calendar Section */}
+        <div className="mb-12">
           <DonationCalendar 
             donations={allRequests} 
             onDayClick={(dayDonations, dateKey) => {
@@ -327,186 +326,80 @@ const DonationHistory = () => {
           />
         </div>
 
-        {/* Glassmorphic Search & Advanced Filters */}
-        <div className="flex flex-col gap-4 mb-8 p-5 bg-white/[0.03] backdrop-blur-xl border border-white/20 rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]">
-          {/* Row 1: Search and Main Selects */}
-          <div className="flex flex-col lg:flex-row gap-3">
-            {/* Search */}
+        {/* Filters Section */}
+        <div className="bg-white border border-gray-200 rounded-3xl p-6 mb-8 shadow-sm">
+          <div className="flex flex-col lg:flex-row gap-4">
             <div className="relative flex-1">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-300/50" />
+              <Search size={20} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
-                id="donor-search"
                 type="text"
-                placeholder="Search by Donor, Category, or Date..."
+                placeholder="Search history..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-11 pr-10 py-3 rounded-xl bg-white/[0.04] border border-white/20 backdrop-blur-md text-white placeholder-blue-200/40 focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/40 transition-all duration-300 text-sm"
+                className="w-full pl-12 pr-12 py-4 rounded-2xl bg-gray-50 border border-gray-200 text-gray-900 focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all outline-none font-medium"
               />
               {search && (
                 <button
                   onClick={() => setSearch('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-300/40 hover:text-white transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-200 rounded-full text-gray-400 transition-colors"
                 >
                   <X size={16} />
                 </button>
               )}
             </div>
-
-            {/* Category Dropdown */}
-            <div className="relative min-w-[200px]">
-              <Filter size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-300/50 pointer-events-none" />
-              <select
-                id="category-filter"
+            
+            <div className="flex gap-4">
+              <select 
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="w-full pl-11 pr-10 py-3 rounded-xl appearance-none cursor-pointer bg-white/[0.04] border border-white/20 backdrop-blur-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all duration-300 text-sm select-none"
+                className="px-6 py-4 rounded-2xl bg-gray-50 border border-gray-200 text-gray-700 font-bold outline-none cursor-pointer hover:bg-white transition-colors"
               >
-                {categories.map((cat) => (
-                  <option key={cat} value={cat} className="bg-[#101B3A] text-white">
-                    {cat}
-                  </option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
                 ))}
               </select>
-              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-300/50 pointer-events-none" />
-            </div>
-
-            {/* Weight Dropdown */}
-            <div className="relative min-w-[180px]">
-              <Package size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-300/50 pointer-events-none" />
-              <select
-                id="weight-filter"
-                value={weightFilter}
-                onChange={(e) => setWeightFilter(e.target.value)}
-                className="w-full pl-11 pr-10 py-3 rounded-xl appearance-none cursor-pointer bg-white/[0.04] border border-white/20 backdrop-blur-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all duration-300 text-sm select-none"
-              >
-                {['All Weights', '< 25 kg', '25 - 50 kg', '51 - 100 kg', '> 100 kg'].map((w) => (
-                  <option key={w} value={w} className="bg-[#101B3A] text-white">
-                    {w}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-300/50 pointer-events-none" />
-            </div>
-
-            {/* Sorting Dropdown */}
-            <div className="relative min-w-[180px]">
-              <Calendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-300/50 pointer-events-none" />
-              <select
-                id="sort-order"
-                value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value)}
-                className="w-full pl-11 pr-10 py-3 rounded-xl appearance-none cursor-pointer bg-white/[0.04] border border-white/20 backdrop-blur-md text-white focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition-all duration-300 text-sm select-none"
-              >
-                {['Date (Newest First)', 'Date (Oldest First)', 'Weight (High to Low)', 'Weight (Low to High)'].map((s) => (
-                  <option key={s} value={s} className="bg-[#101B3A] text-white">
-                    {s}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-300/50 pointer-events-none" />
             </div>
           </div>
-
-          {/* Quick Filter Tags */}
-          <div className="flex flex-wrap items-center gap-2 mt-1 px-1">
-            <span className="text-[10px] text-blue-300/40 uppercase tracking-wider font-bold mr-1">Categories:</span>
-            {categories.slice(1).map((tag) => (
-              <button
-                key={tag}
-                onClick={() => setCategoryFilter(categoryFilter === tag ? 'All Categories' : tag)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 ${
-                  categoryFilter === tag
-                    ? 'bg-blue-500/20 border-blue-400/40 text-blue-300 shadow-sm shadow-blue-900/20'
-                    : 'bg-white/[0.03] border-white/[0.08] text-blue-200/50 hover:bg-white/[0.08] hover:text-blue-200'
-                }`}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-
-          {/* Active Filter Pills */}
-          {(categoryFilter !== 'All Categories' || weightFilter !== 'All Weights' || search) && (
-            <div className="flex flex-wrap items-center gap-2 mt-1 px-1 border-t border-white/[0.05] pt-3">
-              <span className="text-[10px] text-blue-300/40 uppercase tracking-wider font-bold mr-1">Active:</span>
-              {search && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.05] border border-white/[0.1] text-xs text-blue-200">
-                  "{search}"
-                  <button onClick={() => setSearch('')} className="hover:text-white transition"><X size={12} /></button>
-                </span>
-              )}
-              {categoryFilter !== 'All Categories' && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/15 border border-blue-500/30 text-xs text-blue-300">
-                  {categoryFilter}
-                  <button onClick={() => setCategoryFilter('All Categories')} className="hover:text-white transition"><X size={12} /></button>
-                </span>
-              )}
-              {weightFilter !== 'All Weights' && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-xs text-emerald-300">
-                  {weightFilter}
-                  <button onClick={() => setWeightFilter('All Weights')} className="hover:text-white transition"><X size={12} /></button>
-                </span>
-              )}
-              <button
-                onClick={() => { setSearch(''); setCategoryFilter('All Categories'); setWeightFilter('All Weights'); }}
-                className="text-xs text-blue-300/40 hover:text-red-400 underline transition ml-1"
-              >
-                Clear all
-              </button>
-            </div>
-          )}
         </div>
 
-        {/* Results count */}
-        <div className="flex items-center justify-between mb-4 px-1">
-          <p className="text-sm text-blue-200/50">
-            Showing <span className="text-white font-semibold">{currentItems.length}</span> of{' '}
-            <span className="text-white font-semibold">{sortedHistory.length}</span> completed donations
-          </p>
-        </div>
-
-        {/* Glassmorphism Table Container */}
-        <div className="bg-white/[0.03] backdrop-blur-2xl border border-white/[0.05] rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] overflow-hidden transition-all duration-500 hover:border-white/[0.08]">
+        {/* Table Section */}
+        <div className="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden mb-8">
           <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left">
               <thead>
-                <tr className="border-b border-white/[0.05] bg-white/[0.01]">
-                  <th className="p-5 text-xs font-semibold text-blue-200/50 uppercase tracking-widest">Date</th>
-                  <th className="p-5 text-xs font-semibold text-blue-200/50 uppercase tracking-widest">Donor Name</th>
-                  <th className="p-5 text-xs font-semibold text-blue-200/50 uppercase tracking-widest">Food Category</th>
-                  <th className="p-5 text-xs font-semibold text-blue-200/50 uppercase tracking-widest text-right">Quantity</th>
-                  <th className="p-5 text-xs font-semibold text-blue-200/50 uppercase tracking-widest">Status</th>
+                <tr className="bg-gray-50 border-b border-gray-100">
+                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Donor</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Category</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Quantity</th>
+                  <th className="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-white/[0.03]">
+              <tbody className="divide-y divide-gray-50">
                 {currentItems.map((row) => (
-                  <tr 
-                    key={row.id} 
-                    className="hover:bg-white/[0.02] transition-colors duration-300 group"
-                  >
-                    <td className="p-5 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <Calendar size={14} className="text-blue-400/50 group-hover:text-blue-400 transition-colors" />
-                        <span className="text-blue-100/80 font-medium text-sm">{row.date}</span>
+                  <tr key={row.id} className="hover:bg-gray-50 transition-colors group">
+                    <td className="px-6 py-5">
+                      <span className="text-gray-500 font-bold text-sm">{row.date}</span>
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600 font-black border border-emerald-100">
+                          {row.donor[0]}
+                        </div>
+                        <span className="text-gray-900 font-black text-sm">{row.donor}</span>
                       </div>
                     </td>
-                    <td className="p-5 text-sm font-semibold text-white/90 group-hover:text-white transition-colors">
-                      {row.donor}
-                    </td>
-                    <td className="p-5">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider border backdrop-blur-md ${getCategoryBadge(row.category)}`}>
+                    <td className="px-6 py-5 text-center">
+                      <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest border border-blue-100">
                         {row.category}
                       </span>
                     </td>
-                    <td className="p-5 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <Package size={14} className="text-emerald-400/50" />
-                        <span className="text-blue-100 font-bold">{row.quantity}</span>
-                      </div>
+                    <td className="px-6 py-5 text-right">
+                      <span className="text-gray-900 font-black">{row.quantity}</span>
                     </td>
-                    <td className="p-5">
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 backdrop-blur-md">
-                        <CheckCircle size={12} className="text-emerald-400" />
+                    <td className="px-6 py-5 text-center">
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest border border-emerald-100">
+                        <CheckCircle size={12} />
                         {row.status}
                       </span>
                     </td>
@@ -517,31 +410,23 @@ const DonationHistory = () => {
           </div>
         </div>
 
-        {/* Pagination Controls */}
+        {/* Pagination */}
         {totalPages > 1 && (
-          <div className="flex justify-center items-center gap-4 mt-8">
+          <div className="flex justify-center items-center gap-6 mb-12">
             <button
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                currentPage === 1
-                  ? 'bg-white/[0.02] text-slate-500 border border-white/[0.03] cursor-not-allowed'
-                  : 'bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/[0.1] hover:border-white/[0.15] active:scale-95'
-              }`}
+              className="px-6 py-2 rounded-xl border border-gray-200 text-gray-600 font-bold hover:bg-white disabled:opacity-50 transition-all"
             >
               Previous
             </button>
-            <span className="text-blue-200/50 text-sm font-medium">
-              Page <span className="text-white font-bold">{currentPage}</span> of <span className="text-white font-bold">{totalPages}</span>
+            <span className="text-gray-400 font-black text-xs uppercase tracking-widest">
+              Page <span className="text-gray-900">{currentPage}</span> of {totalPages}
             </span>
             <button
-              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
-                currentPage === totalPages
-                  ? 'bg-white/[0.02] text-slate-500 border border-white/[0.03] cursor-not-allowed'
-                  : 'bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/[0.1] hover:border-white/[0.15] active:scale-95'
-              }`}
+              className="px-6 py-2 rounded-xl border border-gray-200 text-gray-600 font-bold hover:bg-white disabled:opacity-50 transition-all"
             >
               Next
             </button>
@@ -549,106 +434,52 @@ const DonationHistory = () => {
         )}
       </div>
 
-      {/* Day Details Modal */}
+      {/* Modal Section */}
       {selectedDayDonations && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-[#0A1128]/80 backdrop-blur-md"
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
             onClick={() => setSelectedDayDonations(null)}
           />
-          
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="relative w-full max-w-2xl bg-white/[0.05] border border-white/20 backdrop-blur-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
-          >
-            {/* Header */}
-            <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+          <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+            <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Calendar className="text-emerald-400" />
-                  Activities on {selectedDateLabel}
-                </h3>
-                <p className="text-slate-400 text-sm">{selectedDayDonations.length} donation records found</p>
+                <h3 className="text-xl font-black text-gray-900">Activities on {selectedDateLabel}</h3>
+                <p className="text-gray-500 text-sm font-medium">{selectedDayDonations.length} records found</p>
               </div>
               <button 
                 onClick={() => setSelectedDayDonations(null)}
-                className="p-2 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-colors"
+                className="text-gray-400 hover:text-gray-900 transition-colors"
               >
                 <X size={24} />
               </button>
             </div>
-
-            {/* Scrollable Content */}
-            <div className="p-6 overflow-y-auto space-y-4 custom-scrollbar">
-              {selectedDayDonations.map((donation, idx) => (
-                <div 
-                  key={donation.id || idx}
-                  className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 hover:bg-white/[0.06] transition-all group"
-                >
-                  <div className="flex flex-col md:flex-row justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border ${
-                          donation.status === 'Completed' ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400' :
-                          donation.status === 'Approved' ? 'bg-blue-500/20 border-blue-500/30 text-blue-400' :
-                          donation.status === 'Pending' ? 'bg-amber-500/20 border-amber-500/30 text-amber-400' :
-                          donation.status === 'Cancelled' ? 'bg-rose-500/20 border-rose-500/30 text-rose-400' :
-                          'bg-violet-500/20 border-violet-500/30 text-violet-400'
-                        }`}>
-                          {donation.status}
-                        </span>
-                        <span className="text-xs text-slate-500 flex items-center gap-1">
-                          <Clock size={12} /> {donation.pickupTime || 'N/A'}
-                        </span>
-                      </div>
-                      <h4 className="text-lg font-bold text-white mb-1 group-hover:text-emerald-400 transition-colors">
-                        {donation.name || donation.category}
-                      </h4>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4 mt-3">
-                        <div className="flex items-center gap-2 text-xs text-slate-400">
-                          <Building size={14} className="text-slate-500" />
-                          <span className="truncate">{donation.donor}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-xs text-slate-400">
-                          <Package size={14} className="text-slate-500" />
-                          <span>{donation.quantity}</span>
-                        </div>
-                        {donation.address && (
-                          <div className="flex items-center gap-2 text-xs text-slate-400 sm:col-span-2">
-                            <MapPin size={14} className="text-slate-500 flex-shrink-0" />
-                            <span className="truncate">{donation.address}</span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-end">
-                      <a 
-                        href={`/organization/my-requests`}
-                        className="flex items-center gap-2 text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors"
-                      >
-                        View in Requests <ArrowRight size={14} />
-                      </a>
-                    </div>
+            <div className="p-8 max-h-[60vh] overflow-y-auto space-y-4">
+              {selectedDayDonations.map((item, idx) => (
+                <div key={idx} className="p-5 rounded-2xl bg-gray-50 border border-gray-100 hover:border-emerald-200 transition-all">
+                  <div className="flex justify-between items-start mb-3">
+                    <span className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest">
+                      {item.status}
+                    </span>
+                    <span className="text-xs font-bold text-gray-400">{item.pickupTime || item.date}</span>
+                  </div>
+                  <h4 className="text-lg font-black text-gray-900 mb-2">{item.name || item.category}</h4>
+                  <div className="flex gap-4 text-xs font-bold text-gray-500">
+                    <div className="flex items-center gap-1"><Building size={14}/> {item.donor}</div>
+                    <div className="flex items-center gap-1"><Package size={14}/> {item.quantity}</div>
                   </div>
                 </div>
               ))}
             </div>
-
-            {/* Footer */}
-            <div className="p-4 border-t border-white/10 bg-white/[0.02] flex justify-end">
+            <div className="px-8 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
               <button 
                 onClick={() => setSelectedDayDonations(null)}
-                className="px-6 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition-all"
+                className="px-8 py-3 rounded-xl bg-gray-900 text-white font-black hover:bg-gray-800 transition-all"
               >
                 Close
               </button>
             </div>
-          </motion.div>
+          </div>
         </div>
       )}
     </div>
