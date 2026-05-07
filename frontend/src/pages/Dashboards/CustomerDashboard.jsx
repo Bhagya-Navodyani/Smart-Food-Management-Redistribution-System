@@ -144,6 +144,7 @@ export default function CustomerDashboard() {
         <Link to="/customer/food-list" className="rounded-lg border-2 border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-700 hover:bg-blue-100">📦 Food List</Link>
         <Link to="/customer/expiry-tracking" className="rounded-lg border-2 border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-700 hover:bg-amber-100">⏰ Expiry Tracking</Link>
         <Link to="/customer/actions" className="rounded-lg border-2 border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 hover:bg-emerald-100">⚡ Take Action</Link>
+        <Link to="/customer/create-listing" className="rounded-lg border-2 border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 hover:bg-rose-100">🎁 Donate / Sell</Link>
         <Link to="/customer/impact" className="rounded-lg border-2 border-cyan-200 bg-cyan-50 px-4 py-3 text-sm font-semibold text-cyan-700 hover:bg-cyan-100">📊 Analytics</Link>
       </motion.section>
     </div>
