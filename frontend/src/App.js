@@ -34,6 +34,7 @@ import SchedulePickup from './pages/Customer/SchedulePickup';
 import Impact from './pages/Customer/Impact';
 import Profile from './pages/Customer/Profile';
 import Settings from './pages/Customer/Settings';
+import CreateListing from './pages/Customer/CreateListing';
 
 function App() {
   return (
@@ -57,6 +58,7 @@ function App() {
             <Route path="/customer/expiry-tracking" element={<ExpiryTracking />} />
             <Route path="/customer/actions" element={<ActionPanel />} />
             <Route path="/customer/donations" element={<DonationPage />} />
+            <Route path="/customer/create-listing" element={<CreateListing />} />
             <Route path="/customer/marketplace" element={<BrowseFood />} />
             <Route path="/customer/orders" element={<MyOrders />} />
             <Route path="/customer/saved" element={<SavedItems />} />
