@@ -44,7 +44,7 @@ const CustomerSidebar = () => {
       icon: Zap,
       items: [
         { name: 'Action Panel', path: '/customer/actions' },
-        { name: 'Donations', path: '/customer/donations' },
+        { name: 'Donate / Sell', path: '/customer/create-listing' },
         { name: 'Analytics', path: '/customer/impact' }
       ]
     },
