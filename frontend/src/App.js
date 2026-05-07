@@ -27,7 +27,6 @@ import BrowseFood from './pages/Customer/BrowseFood';
 import FoodList from './pages/Customer/FoodList';
 import ExpiryTracking from './pages/Customer/ExpiryTracking';
 import ActionPanel from './pages/Customer/ActionPanel';
-import DonationPage from './pages/Customer/DonationPage';
 import MyOrders from './pages/Customer/MyOrders';
 import SavedItems from './pages/Customer/SavedItems';
 import SchedulePickup from './pages/Customer/SchedulePickup';
@@ -57,7 +56,6 @@ function App() {
             <Route path="/customer/food-list" element={<FoodList />} />
             <Route path="/customer/expiry-tracking" element={<ExpiryTracking />} />
             <Route path="/customer/actions" element={<ActionPanel />} />
-            <Route path="/customer/donations" element={<DonationPage />} />
             <Route path="/customer/create-listing" element={<CreateListing />} />
             <Route path="/customer/marketplace" element={<BrowseFood />} />
             <Route path="/customer/orders" element={<MyOrders />} />
