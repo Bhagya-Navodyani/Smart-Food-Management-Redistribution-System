@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Gift, ClipboardList, TrendingUp, Users, Calendar, ArrowRight, Award, MapPin, Sparkles, Plus, FileText, Search, ShieldCheck, Globe } from 'lucide-react';
+import { 
+  Gift, ClipboardList, TrendingUp, Users, Calendar, 
+  ArrowRight, Award, MapPin, Sparkles, Plus, 
+  FileText, Search, ShieldCheck, Globe, ChevronRight
+} from 'lucide-react';
 import SriLankaMap from '../../components/organization/SriLankaMap';
 
 const OrganizationDashboard = () => {
@@ -21,13 +25,6 @@ const OrganizationDashboard = () => {
     { id: 5, date: '2026-04-25', item: 'Fresh Apples & Bananas', quantity: '55 kg', status: 'Completed' }
   ];
 
-  const regionalDistribution = [
-    { name: 'Colombo', percentage: 40, color: 'bg-emerald-500' },
-    { name: 'Kandy', percentage: 25, color: 'bg-blue-500' },
-    { name: 'Galle', percentage: 20, color: 'bg-orange-500' },
-    { name: 'Gampaha', percentage: 15, color: 'bg-fuchsia-500' }
-  ];
-
   const topDonors = [
     { name: 'Grand Palace Hotel', category: 'Hotel / Restaurant', donations: '850 kg' },
     { name: 'Keells Super', category: 'Supermarket', donations: '620 kg' },
@@ -37,237 +34,223 @@ const OrganizationDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 lg:p-10 relative overflow-hidden font-sans">
-      {/* Decorative Light Elements */}
-      <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-100 rounded-full blur-[120px] pointer-events-none opacity-50" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[600px] h-[600px] bg-emerald-100 rounded-full blur-[150px] pointer-events-none opacity-50" />
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-50 rounded-full blur-[120px] -z-10 opacity-50" />
+      <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-50 rounded-full blur-[120px] -z-10 opacity-50" />
 
       <div className="relative z-10 max-w-7xl mx-auto">
-        <header className="mb-12">
+        <header className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div>
-            <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 tracking-tight leading-tight pb-3 px-1">
+            <h1 className="text-3xl font-black text-gray-900 tracking-tight mb-2">
               Organization Dashboard
             </h1>
-            <p className="text-gray-600 text-lg max-w-2xl font-light tracking-wide px-1">
-              Welcome to the Smart Food Management & Redistribution System Organization Portal.
-            </p>
+            <p className="text-gray-500 font-medium">Welcome back to the Fresh Track management portal.</p>
+          </div>
+          <div className="flex gap-3">
+            <button 
+              onClick={() => navigate('/organization/food-feed')}
+              className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 active:scale-95"
+            >
+              <Plus size={18} />
+              <span>Browse Feed</span>
+            </button>
           </div>
         </header>
 
-        {/* 4 Premium Summary Cards with modern layout and subtle shadows */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-          {/* Card 1: Green theme */}
-          <div className="p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group flex flex-col justify-between min-h-[180px]">
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl group-hover:scale-105 transition-all border border-emerald-100">
-                <Gift size={24} />
-              </div>
-              <div className="opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all text-emerald-600">
-                <Gift size={48} />
-              </div>
-            </div>
-            <div>
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 select-none">Total Food Donations</h3>
-              <div className="flex items-baseline gap-2">
-                <p className="text-3xl font-extrabold text-gray-900">128</p>
-                <span className="text-xs text-emerald-600 font-bold bg-emerald-50 border border-emerald-100 px-1.5 py-0.5 rounded">↑ +12%</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2: Blue theme */}
-          <div className="p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group flex flex-col justify-between min-h-[180px]">
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-3 bg-blue-50 text-blue-600 rounded-xl group-hover:scale-105 transition-all border border-blue-100">
-                <ClipboardList size={24} />
-              </div>
-              <div className="opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all text-blue-600">
-                <ClipboardList size={48} />
-              </div>
-            </div>
-            <div>
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 select-none">Active Requests</h3>
-              <div className="flex items-baseline gap-2">
-                <p className="text-3xl font-extrabold text-gray-900">12</p>
-                <span className="text-xs text-blue-600 font-bold bg-blue-50 border border-blue-100 px-1.5 py-0.5 rounded">5 pending</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3: Orange theme */}
-          <div className="p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group flex flex-col justify-between min-h-[180px]">
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-3 bg-orange-50 text-orange-600 rounded-xl group-hover:scale-105 transition-all border border-orange-100">
-                <TrendingUp size={24} />
-              </div>
-              <div className="opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all text-orange-600">
-                <TrendingUp size={48} />
-              </div>
-            </div>
-            <div>
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 select-none">Impact (kg Saved)</h3>
-              <div className="flex items-baseline gap-2">
-                <p className="text-3xl font-extrabold text-gray-900">1,450 kg</p>
-                <span className="text-xs text-orange-600 font-bold bg-orange-50 border border-orange-100 px-1.5 py-0.5 rounded">Goal: 2k</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 4: Purple theme */}
-          <div className="p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 relative overflow-hidden group flex flex-col justify-between min-h-[180px]">
-            <div className="flex items-start justify-between mb-4">
-              <div className="p-3 bg-purple-50 text-purple-600 rounded-xl group-hover:scale-105 transition-all border border-purple-100">
-                <Users size={24} />
-              </div>
-              <div className="opacity-5 group-hover:opacity-10 group-hover:scale-110 transition-all text-purple-600">
-                <Users size={48} />
-              </div>
-            </div>
-            <div>
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 select-none">Partner Organizations</h3>
-              <div className="flex items-baseline gap-2">
-                <p className="text-3xl font-extrabold text-gray-900">8</p>
-                <span className="text-xs text-purple-600 font-bold bg-purple-50 border border-purple-100 px-1.5 py-0.5 rounded">4 regions</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Sri Lanka Regional Impact Map */}
-        <div className="p-8 bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 relative group flex flex-col md:flex-row gap-8 items-center mb-12">
-          <div className="w-full md:w-1/2 flex flex-col justify-center">
-            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
-              <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600 border border-blue-100">
-                <MapPin size={22} />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 tracking-wide">Regional Impact Insights</h2>
-                <p className="text-gray-500 text-sm font-light tracking-wider mt-0.5">Interactive distribution analysis by district</p>
-              </div>
-            </div>
-
-            <div className="p-6 rounded-2xl bg-gray-50 border border-gray-100 animate-in slide-in-from-bottom-4 duration-700">
+        {/* 4 Summary Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+          {[
+            { label: 'Total Donations', value: '128', trend: '↑ +12%', icon: Gift, color: 'emerald' },
+            { label: 'Active Requests', value: '12', trend: '5 pending', icon: ClipboardList, color: 'blue' },
+            { label: 'Impact (kg Saved)', value: '1,450', trend: 'Goal: 2k', icon: TrendingUp, color: 'amber' },
+            { label: 'Partner Orgs', value: '8', trend: '4 regions', icon: Users, color: 'purple' }
+          ].map((stat, idx) => (
+            <div key={idx} className="p-6 bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-md transition-all group">
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Globe className="text-emerald-600" size={20} />
-                  <h3 className="text-xl font-bold text-gray-900 tracking-tight">{selectedDistrict.name}</h3>
+                <div className={`p-3 rounded-2xl bg-${stat.color}-50 text-${stat.color}-600 group-hover:scale-110 transition-transform`}>
+                  <stat.icon size={24} />
                 </div>
-                <span className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-full text-xs font-bold uppercase tracking-widest border border-emerald-100 shadow-sm">
-                  {selectedDistrict.status}
+                <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-lg bg-${stat.color}-50 text-${stat.color}-600 border border-${stat.color}-100`}>
+                  {stat.trend}
                 </span>
               </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
-                <div className="p-4 rounded-2xl bg-white border border-gray-100 hover:border-blue-200 transition-all group/stat">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Users size={16} className="text-blue-500" />
-                    <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Members</p>
+              <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">{stat.label}</h3>
+              <p className="text-3xl font-black text-gray-900">{stat.value}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Sri Lanka Map Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
+          <div className="lg:col-span-2 p-8 bg-white border border-gray-200 rounded-[2.5rem] shadow-sm relative overflow-hidden group">
+            <div className="flex flex-col md:flex-row gap-10 items-center">
+              <div className="w-full md:w-1/2 flex flex-col justify-center">
+                <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                  <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600">
+                    <MapPin size={22} />
                   </div>
-                  <p className="text-2xl font-extrabold text-gray-900 group-hover:text-blue-600 transition-colors">{selectedDistrict.members}</p>
+                  <div>
+                    <h2 className="text-2xl font-black text-gray-900 tracking-tight">Regional Impact</h2>
+                    <p className="text-gray-400 text-xs font-bold uppercase tracking-widest mt-0.5">District Insights</p>
+                  </div>
                 </div>
-                <div className="p-4 rounded-2xl bg-white border border-gray-100 hover:border-emerald-200 transition-all group/stat">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp size={16} className="text-emerald-500" />
-                    <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Saved</p>
+
+                <div className="p-6 rounded-[2rem] bg-gray-50 border border-gray-100 mb-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-2">
+                      <Globe className="text-emerald-600" size={20} />
+                      <h3 className="text-xl font-black text-gray-900">{selectedDistrict.name}</h3>
+                    </div>
+                    <span className="px-3 py-1 bg-emerald-600 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-100">
+                      {selectedDistrict.status}
+                    </span>
                   </div>
-                  <p className="text-2xl font-extrabold text-gray-900 group-hover:text-emerald-600 transition-colors">{selectedDistrict.foodSaved}</p>
+                  
+                  <div className="space-y-4">
+                    {[
+                      { icon: Users, label: 'Members', value: selectedDistrict.members, color: 'blue' },
+                      { icon: TrendingUp, label: 'Food Saved', value: selectedDistrict.foodSaved, color: 'emerald' },
+                      { icon: ClipboardList, label: 'Requests', value: selectedDistrict.activeRequests, color: 'amber' }
+                    ].map((item, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-white rounded-xl border border-gray-100">
+                        <div className="flex items-center gap-3">
+                          <item.icon size={16} className={`text-${item.color}-500`} />
+                          <span className="text-xs font-bold text-gray-500">{item.label}</span>
+                        </div>
+                        <span className="text-sm font-black text-gray-900">{item.value}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="p-4 rounded-2xl bg-white border border-gray-100 hover:border-orange-200 transition-all group/stat">
-                  <div className="flex items-center gap-2 mb-2">
-                    <ClipboardList size={16} className="text-orange-500" />
-                    <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">Requests</p>
+
+                <div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Resource Utilization</span>
+                    <span className="text-xs font-black text-emerald-600">84%</span>
                   </div>
-                  <p className="text-2xl font-extrabold text-gray-900 group-hover:text-orange-600 transition-colors">{selectedDistrict.activeRequests}</p>
+                  <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-500 rounded-full" style={{ width: '84%' }} />
+                  </div>
                 </div>
               </div>
 
-              <div className="mt-8">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs text-gray-500">Resource Utilization</span>
-                  <span className="text-xs font-bold text-emerald-600">84%</span>
-                </div>
-                <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full" style={{ width: '84%' }} />
+              <div className="w-full md:w-1/2 flex items-center justify-center p-4 bg-gray-50 rounded-[2rem] border border-gray-100">
+                <div className="w-full h-full max-w-[400px]">
+                  <SriLankaMap onSelectDistrict={setSelectedDistrict} />
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="w-full md:w-1/2 flex items-center justify-center p-4 bg-gray-50 rounded-3xl border border-gray-100">
-            <div className="w-full h-full max-w-[450px]">
-              <SriLankaMap onSelectDistrict={setSelectedDistrict} />
+          {/* Quick Actions */}
+          <div className="flex flex-col gap-6">
+            <div className="p-8 bg-white border border-gray-200 rounded-[2.5rem] shadow-sm flex flex-col h-full">
+              <div className="flex items-center gap-3 mb-8 pb-4 border-b border-gray-100">
+                <div className="p-2.5 rounded-xl bg-purple-50 text-purple-600">
+                  <Sparkles size={22} />
+                </div>
+                <div>
+                  <h2 className="text-xl font-black text-gray-900 tracking-tight">Quick Actions</h2>
+                  <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mt-0.5">Shortcuts</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                {[
+                  { icon: FileText, label: 'Monthly Report', path: '/organization/donation-history', color: 'gray' },
+                  { icon: ClipboardList, label: 'Manage Requests', path: '/organization/my-requests', color: 'gray' },
+                  { icon: ShieldCheck, label: 'Audit Trail', path: '/organization/impact-analytics', color: 'gray' }
+                ].map((action, i) => (
+                  <button 
+                    key={i}
+                    onClick={() => navigate(action.path)}
+                    className="w-full flex items-center justify-between p-4 rounded-2xl border border-gray-100 hover:border-emerald-200 hover:bg-emerald-50 transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-gray-50 text-gray-500 group-hover:bg-white group-hover:text-emerald-600 transition-colors">
+                        <action.icon size={18} />
+                      </div>
+                      <span className="text-sm font-bold text-gray-700 group-hover:text-emerald-700">{action.label}</span>
+                    </div>
+                    <ChevronRight size={18} className="text-gray-300 group-hover:text-emerald-600 translate-x-0 group-hover:translate-x-1 transition-all" />
+                  </button>
+                ))}
+              </div>
+
+              <div className="mt-auto pt-8">
+                <div className="p-6 rounded-3xl bg-gray-900 text-white relative overflow-hidden group cursor-pointer" onClick={() => navigate('/organization/food-feed')}>
+                  <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <TrendingUp size={80} />
+                  </div>
+                  <h4 className="text-lg font-black mb-1">Increase Impact</h4>
+                  <p className="text-xs text-gray-400 font-medium mb-4">You have 12 active requests. Browse more food to save.</p>
+                  <div className="inline-flex items-center gap-2 text-emerald-400 text-xs font-black uppercase tracking-widest">
+                    Explore Now <ArrowRight size={14} />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Recent Activity Table */}
-        <div className="bg-white border border-gray-200 rounded-3xl shadow-sm overflow-hidden mb-12">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 border-b border-gray-100 bg-gray-50/50">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 tracking-wide">Recent Activity</h2>
-              <p className="text-gray-500 text-xs font-light tracking-wider mt-0.5 uppercase">Latest food rescue mission updates</p>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 bg-white border border-gray-200 rounded-[2.5rem] shadow-sm overflow-hidden">
+            <div className="flex items-center justify-between p-8 border-b border-gray-100">
+              <div>
+                <h2 className="text-xl font-black text-gray-900 tracking-tight">Recent Activity</h2>
+                <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mt-0.5">Latest claimed items</p>
+              </div>
+              <button 
+                onClick={() => navigate('/organization/my-requests')}
+                className="text-xs font-black text-emerald-600 hover:text-emerald-700 flex items-center gap-1 uppercase tracking-widest"
+              >
+                View All <ChevronRight size={14} />
+              </button>
             </div>
-            <button 
-              onClick={() => navigate('/organization/my-requests')}
-              className="flex items-center gap-2 text-xs font-bold text-emerald-600 hover:text-emerald-700 transition-colors"
-            >
-              <span>View all activity</span>
-              <ArrowRight size={14} />
-            </button>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <tbody className="divide-y divide-gray-50">
+                  {recentActivities.map((row) => (
+                    <tr key={row.id} className="group hover:bg-gray-50 transition-colors">
+                      <td className="p-6">
+                        <div className="flex items-center gap-4">
+                          <div className={`p-3 rounded-xl ${row.status === 'Completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                            <ClipboardList size={20} />
+                          </div>
+                          <div>
+                            <p className="text-sm font-black text-gray-900">{row.item}</p>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{row.date}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-6 text-right">
+                        <span className="text-sm font-black text-gray-900">{row.quantity}</span>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Quantity</p>
+                      </td>
+                      <td className="p-6 text-right">
+                        <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                          row.status === 'Completed' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'
+                        }`}>
+                          {row.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
 
-          <div className="overflow-x-auto custom-scrollbar">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-gray-50/50 border-b border-gray-100">
-                  <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Date</th>
-                  <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Food Item</th>
-                  <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-widest text-right">Quantity</th>
-                  <th className="p-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {recentActivities.map((row) => (
-                  <tr key={row.id} className="group hover:bg-gray-50 transition-colors duration-300">
-                    <td className="p-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        <Calendar size={14} className="text-emerald-500/60" />
-                        <span className="text-gray-700 font-medium text-sm">{row.date}</span>
-                      </div>
-                    </td>
-                    <td className="p-4 text-sm font-bold text-gray-900">
-                      {row.item}
-                    </td>
-                    <td className="p-4 text-right">
-                      <span className="text-gray-900 font-black">{row.quantity}</span>
-                    </td>
-                    <td className="p-4">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider border ${
-                        row.status === 'Completed' 
-                          ? 'border-emerald-100 bg-emerald-50 text-emerald-600' 
-                          : 'border-amber-100 bg-amber-50 text-amber-600'
-                      }`}>
-                        {row.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* ── Section: Top Donors & Quick Actions ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-
-          {/* Top Donors List */}
-          <div className="p-6 bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300">
-            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
-              <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100">
+          {/* Top Donors */}
+          <div className="p-8 bg-white border border-gray-200 rounded-[2.5rem] shadow-sm">
+            <div className="flex items-center gap-3 mb-8 pb-4 border-b border-gray-100">
+              <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600">
                 <Award size={22} />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-gray-900 tracking-wide">Top Donors</h2>
-                <p className="text-gray-500 text-xs font-light tracking-wider mt-0.5 uppercase">Key food rescue partners</p>
+                <h2 className="text-xl font-black text-gray-900 tracking-tight">Top Donors</h2>
+                <p className="text-gray-400 text-[10px] font-black uppercase tracking-widest mt-0.5">Key Partners</p>
               </div>
             </div>
 
@@ -275,86 +258,25 @@ const OrganizationDashboard = () => {
               {topDonors.map((donor, index) => (
                 <div 
                   key={donor.name}
-                  className="flex items-center justify-between p-3.5 rounded-2xl bg-gray-50 border border-gray-100 hover:bg-white hover:border-emerald-200 hover:shadow-sm transition-all duration-300"
+                  className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 border border-transparent hover:border-gray-200 transition-all"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 flex items-center justify-center rounded-xl bg-emerald-100 border border-emerald-200 font-bold text-emerald-600 text-sm">
+                    <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-white border border-gray-100 font-black text-emerald-600 text-xs shadow-sm">
                       {index + 1}
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-gray-900 leading-tight">{donor.name}</h4>
-                      <p className="text-[11px] text-gray-500 mt-0.5">{donor.category}</p>
+                      <h4 className="text-sm font-black text-gray-900 leading-tight">{donor.name}</h4>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{donor.category}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-emerald-600">{donor.donations}</p>
-                    <p className="text-[10px] text-gray-400 mt-0.5 uppercase tracking-wider">Saved</p>
+                    <p className="text-sm font-black text-emerald-600">{donor.donations}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
-
-          {/* Quick Actions Card */}
-          <div className="p-6 bg-white border border-gray-200 rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between min-h-[300px]">
-            <div>
-              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
-                <div className="p-2.5 rounded-xl bg-purple-50 text-purple-600 border border-purple-100">
-                  <Sparkles size={22} />
-                </div>
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900 tracking-wide">Quick Actions</h2>
-                  <p className="text-gray-500 text-xs font-light tracking-wider mt-0.5 uppercase">Management shortcuts</p>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col gap-3 mb-6">
-                <button 
-                  onClick={() => navigate('/organization/food-feed')}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600 shadow-lg shadow-emerald-200 transition-all active:scale-[0.98] text-sm"
-                >
-                  <Plus size={16} />
-                  <span>Browse Food Feed</span>
-                </button>
-                <button 
-                  onClick={() => navigate('/organization/donation-history')}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 font-bold transition-all text-sm active:scale-[0.98]"
-                >
-                  <FileText size={16} />
-                  <span>Generate Monthly Report</span>
-                </button>
-                <button 
-                  onClick={() => navigate('/organization/settings')}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-700 font-bold transition-all text-sm active:scale-[0.98]"
-                >
-                  <Users size={16} />
-                  <span>Find Volunteers</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Monthly Impact Goal Progress Bar */}
-            <div className="border-t border-gray-100 pt-4">
-              <div className="flex justify-between items-center text-xs font-bold mb-1.5">
-                <span className="text-gray-500 uppercase tracking-widest text-[10px]">Monthly Impact Goal</span>
-                <span className="text-emerald-600 font-black">72%</span>
-              </div>
-              <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden flex relative">
-                <div 
-                  className="h-full rounded-full bg-emerald-500 transition-all duration-1000 ease-out shadow-[0_0_10px_rgba(16,185,129,0.3)]"
-                  style={{ width: '72%' }}
-                />
-              </div>
-              <p className="text-[11px] text-gray-400 mt-2 flex justify-between font-medium">
-                <span>Saved: <strong className="text-gray-900">1,450 kg</strong></span>
-                <span>Goal: <strong className="text-gray-900">2,000 kg</strong></span>
-              </p>
-            </div>
-          </div>
         </div>
-
-
       </div>
     </div>
   );

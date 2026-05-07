@@ -2,194 +2,220 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ChevronLeft, ChevronRight, Calendar as CalendarIcon, 
-  CheckCircle, Clock, AlertCircle, XCircle, Info 
+  CheckCircle, Clock, AlertCircle, XCircle, Info, Package
 } from 'lucide-react';
 
-const DonationCalendar = ({ donations, onDayClick }) => {
+const DonationCalendar = ({ requests = [] }) => {
   const [currentDate, setCurrentDate] = useState(new Date());
+  const [selectedDayDonations, setSelectedDayDonations] = useState(null);
 
   const daysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
-  const firstDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
+  const startDayOfMonth = (year, month) => new Date(year, month, 1).getDay();
 
   const prevMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
   };
 
   const nextMonth = () => {
-    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1));
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'Completed': return 'bg-emerald-500 shadow-emerald-200';
+      case 'Approved': return 'bg-blue-500 shadow-blue-200';
+      case 'Pending': return 'bg-amber-500 shadow-amber-200';
+      case 'Awaiting Confirmation': return 'bg-purple-500 shadow-purple-200';
+      case 'Cancelled':
+      case 'Rejected': return 'bg-red-500 shadow-red-200';
+      default: return 'bg-gray-200';
+    }
   };
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
-  const monthName = currentDate.toLocaleString('default', { month: 'long' });
+  const days = [];
+  const totalDays = daysInMonth(year, month);
+  const startDay = startDayOfMonth(year, month);
 
-  const normalizeDate = (dateStr) => {
-    if (!dateStr) return null;
-    const lower = dateStr.toLowerCase();
-    const now = new Date();
-    if (lower.includes('today')) return now;
-    if (lower.includes('yesterday')) {
-      const d = new Date();
-      d.setDate(d.getDate() - 1);
-      return d;
-    }
-    const parsed = new Date(dateStr);
-    return isNaN(parsed.getTime()) ? null : parsed;
-  };
-
-  const donationsByDate = donations.reduce((acc, donation) => {
-    const d = normalizeDate(donation.date || donation.requestDate);
-    if (d) {
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(donation);
+  // Group requests by date
+  const requestsByDate = requests.reduce((acc, req) => {
+    const date = new Date(req.date); // Use 'date' instead of 'requestDate'
+    if (!isNaN(date)) {
+      const dateString = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+      if (!acc[dateString]) acc[dateString] = [];
+      acc[dateString].push(req);
     }
     return acc;
   }, {});
 
-  const getStatusStyles = (status) => {
-    switch (status) {
-      case 'Completed': return 'from-emerald-500 to-emerald-600 shadow-emerald-200 text-white border-emerald-400';
-      case 'Approved': return 'from-blue-500 to-blue-600 shadow-blue-200 text-white border-blue-400';
-      case 'Pending': return 'from-amber-500 to-amber-600 shadow-amber-200 text-white border-amber-400';
-      case 'Awaiting Confirmation': return 'from-violet-500 to-violet-600 shadow-violet-200 text-white border-violet-400';
-      case 'Cancelled':
-      case 'Rejected': return 'from-rose-500 to-rose-600 shadow-rose-200 text-white border-rose-400';
-      default: return 'from-gray-400 to-gray-500 shadow-gray-200 text-white border-gray-300';
-    }
-  };
-
-  const getPriorityStatus = (dayDonations) => {
-    if (dayDonations.some(d => d.status === 'Completed')) return 'Completed';
-    if (dayDonations.some(d => d.status === 'Approved')) return 'Approved';
-    if (dayDonations.some(d => d.status === 'Pending')) return 'Pending';
-    if (dayDonations.some(d => d.status === 'Awaiting Confirmation')) return 'Awaiting Confirmation';
-    if (dayDonations.some(d => d.status === 'Cancelled' || d.status === 'Rejected')) return 'Cancelled';
-    return null;
-  };
-
-  const days = [];
-  const totalDays = daysInMonth(year, month);
-  const startDay = firstDayOfMonth(year, month);
-
   for (let i = 0; i < startDay; i++) {
-    days.push(<div key={`empty-${i}`} className="h-10 md:h-12" />);
+    days.push(<div key={`empty-${i}`} className="h-12 md:h-16" />);
   }
 
-  for (let day = 1; day <= totalDays; day++) {
-    const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const dayDonations = donationsByDate[dateKey] || [];
-    const priorityStatus = getPriorityStatus(dayDonations);
-    const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
+  for (let d = 1; d <= totalDays; d++) {
+    const dateKey = `${year}-${month}-${d}`;
+    const dayRequests = requestsByDate[dateKey] || [];
+    const isToday = new Date().toDateString() === new Date(year, month, d).toDateString();
 
     days.push(
-      <motion.button
-        key={day}
-        whileHover={{ scale: 1.05, y: -2 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => dayDonations.length > 0 && onDayClick(dayDonations, dateKey)}
-        className={`
-          relative h-10 md:h-12 rounded-xl flex flex-col items-center justify-center transition-all duration-300 border
-          ${dayDonations.length > 0 ? 'cursor-pointer' : 'cursor-default'}
-          ${priorityStatus 
-            ? `bg-gradient-to-br ${getStatusStyles(priorityStatus)} shadow-md` 
-            : 'bg-white border-gray-100 text-gray-400 hover:bg-gray-50 hover:border-gray-200'}
-          ${isToday && !priorityStatus ? 'ring-2 ring-emerald-500/30 border-emerald-500 bg-emerald-50/50 text-emerald-700' : ''}
-        `}
+      <div 
+        key={d}
+        className="h-12 md:h-16 relative flex flex-col items-center justify-center group cursor-pointer"
+        onClick={() => dayRequests.length > 0 && setSelectedDayDonations(dayRequests)}
       >
-        <span className={`text-xs md:text-sm font-black tracking-tight ${priorityStatus ? 'text-white' : ''}`}>
-          {day}
-        </span>
-        {dayDonations.length > 1 && (
-          <div className="absolute top-1 right-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-black/10 text-[8px] font-black text-white">
-            {dayDonations.length}
+        <div className={`
+          z-10 w-8 h-8 flex items-center justify-center text-xs font-black rounded-xl transition-all duration-300
+          ${isToday ? 'bg-gray-900 text-white' : 'text-gray-900 group-hover:bg-gray-100'}
+        `}>
+          {d}
+        </div>
+        
+        {dayRequests.length > 0 && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <motion.div 
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className={`w-12 h-12 rounded-2xl opacity-30 ${getStatusColor(dayRequests[0].status)}`}
+            />
+            <div className="absolute bottom-1.5 flex gap-1">
+              {dayRequests.slice(0, 3).map((req, idx) => (
+                <div key={idx} className={`w-2.5 h-2.5 rounded-sm ${getStatusColor(req.status)} shadow-sm`} />
+              ))}
+            </div>
           </div>
         )}
-        {isToday && (
-          <div className={`absolute bottom-1 w-4 h-0.5 rounded-full ${priorityStatus ? 'bg-white/60' : 'bg-emerald-500'}`} />
-        )}
-      </motion.button>
+      </div>
     );
   }
 
-  const legendItems = [
-    { label: 'Completed', color: 'bg-emerald-500', icon: CheckCircle },
-    { label: 'Approved', color: 'bg-blue-500', icon: Clock },
-    { label: 'Pending', color: 'bg-amber-500', icon: AlertCircle },
-    { label: 'Awaiting', color: 'bg-violet-500', icon: Clock },
-    { label: 'Cancelled', color: 'bg-rose-500', icon: XCircle },
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
   ];
 
   return (
-    <div className="group relative bg-white border border-gray-200 rounded-3xl p-5 md:p-6 shadow-sm transition-all duration-500 hover:shadow-md">
-      <div className="relative z-10">
-        <header className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4">
-          <div className="flex items-center gap-4">
-            <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-100">
-              <CalendarIcon className="text-emerald-500 w-5 h-5" />
-            </div>
-            <div>
-              <h2 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">
-                Donation Progress
-              </h2>
-              <p className="text-gray-500 text-xs font-medium tracking-wide uppercase">Collection Insights</p>
-            </div>
+    <div className="bg-white border border-gray-100 rounded-3xl shadow-sm overflow-hidden p-6">
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl">
+            <CalendarIcon size={20} />
           </div>
-
-          <div className="flex items-center gap-2 bg-gray-50 p-1 rounded-2xl border border-gray-100">
-            <button 
-              onClick={prevMonth} 
-              className="p-2 hover:bg-white hover:shadow-sm rounded-xl transition-all active:scale-90 text-gray-400 hover:text-gray-600"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <div className="px-4 min-w-[120px] text-center">
-              <span className="text-gray-900 font-black uppercase tracking-widest text-[10px] md:text-xs">
-                {monthName} {year}
-              </span>
-            </div>
-            <button 
-              onClick={nextMonth} 
-              className="p-2 hover:bg-white hover:shadow-sm rounded-xl transition-all active:scale-90 text-gray-400 hover:text-gray-600"
-            >
-              <ChevronRight size={18} />
-            </button>
+          <div>
+            <h3 className="text-lg font-black text-gray-900">{monthNames[month]} {year}</h3>
+            <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Activity Overview</p>
           </div>
-        </header>
-
-        {/* Legend */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-6 p-1">
-          {legendItems.map((item) => (
-            <div 
-              key={item.label} 
-              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-50 border border-gray-100 hover:bg-white hover:shadow-sm transition-all"
-            >
-              <div className={`w-2 h-2 rounded-full ${item.color}`} />
-              <span className="text-[10px] text-gray-600 font-bold tracking-tight uppercase">{item.label}</span>
-            </div>
-          ))}
         </div>
-
-        <div className="grid grid-cols-7 gap-2">
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <div key={day} className="text-center text-[10px] font-black text-gray-400 uppercase tracking-widest pb-3">
-              {day}
-            </div>
-          ))}
-          {days}
+        <div className="flex gap-2">
+          <button onClick={prevMonth} className="p-2 hover:bg-gray-50 rounded-xl transition-colors text-gray-400 hover:text-gray-900">
+            <ChevronLeft size={20} />
+          </button>
+          <button onClick={nextMonth} className="p-2 hover:bg-gray-50 rounded-xl transition-colors text-gray-400 hover:text-gray-900">
+            <ChevronRight size={20} />
+          </button>
         </div>
       </div>
 
-      {/* Info bar */}
-      <div className="mt-6 flex items-center justify-between px-1 pt-4 border-t border-gray-50">
-        <div className="flex items-center gap-2 text-[10px] text-gray-400 font-medium">
-          <Info size={12} className="text-emerald-500/60" />
-          Click highlighted days for detailed records
-        </div>
-        <div className="h-1 w-20 bg-gray-100 rounded-full overflow-hidden">
-          <div className="h-full w-1/3 bg-emerald-500/20" />
-        </div>
+      <div className="grid grid-cols-7 mb-4">
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+          <div key={day} className="text-center text-[10px] font-black uppercase tracking-widest text-gray-500 py-2">
+            {day}
+          </div>
+        ))}
       </div>
+
+      <div className="grid grid-cols-7 gap-px relative">
+        {days}
+      </div>
+
+      {/* Legend */}
+      <div className="mt-8 pt-6 border-t border-gray-50 flex flex-wrap gap-4 justify-center">
+        {[
+          { label: 'Completed', color: 'bg-emerald-500' },
+          { label: 'Approved', color: 'bg-blue-500' },
+          { label: 'Pending', color: 'bg-amber-500' },
+          { label: 'Cancelled', color: 'bg-red-500' }
+        ].map(item => (
+          <div key={item.label} className="flex items-center gap-2">
+            <div className={`w-4 h-4 rounded-sm ${item.color} shadow-sm`} />
+            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{item.label}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Day Details Modal */}
+      <AnimatePresence>
+        {selectedDayDonations && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedDayDonations(null)}
+              className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden"
+            >
+              <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-200">
+                    <CalendarIcon className="text-white" size={20} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-black text-gray-900">Day Activity</h3>
+                    <p className="text-[10px] uppercase tracking-widest font-bold text-gray-400">
+                      {new Date(selectedDayDonations[0].date).toLocaleDateString(undefined, { dateStyle: 'full' })}
+                    </p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setSelectedDayDonations(null)}
+                  className="p-2 hover:bg-white rounded-xl transition-colors text-gray-400 hover:text-gray-900"
+                >
+                  <XCircle size={24} />
+                </button>
+              </div>
+
+              <div className="p-6 max-h-[400px] overflow-y-auto space-y-4">
+                {selectedDayDonations.map((req, idx) => (
+                  <div key={idx} className="p-4 rounded-2xl border border-gray-100 hover:border-emerald-200 transition-colors group">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h4 className="font-bold text-gray-900 group-hover:text-emerald-600 transition-colors">{req.item}</h4>
+                        <p className="text-xs text-gray-500">{req.id}</p>
+                      </div>
+                      <div className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter ${getStatusColor(req.status)} text-white shadow-lg`}>
+                        {req.status}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
+                        <Clock size={14} className="text-gray-400" /> {req.time}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-gray-500 font-medium">
+                        <Package size={14} className="text-gray-400" /> {req.quantity}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="p-6 border-t border-gray-100 bg-gray-50/50">
+                <button 
+                  onClick={() => setSelectedDayDonations(null)}
+                  className="w-full py-4 bg-gray-900 text-white font-black rounded-2xl hover:bg-gray-800 transition-all shadow-xl active:scale-95"
+                >
+                  Close View
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
