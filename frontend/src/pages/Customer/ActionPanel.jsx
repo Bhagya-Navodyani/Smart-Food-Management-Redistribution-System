@@ -11,13 +11,19 @@ const actions = [
   { name: 'Waste', icon: Trash2, tone: 'from-rose-500 to-red-500', chip: 'bg-rose-50 text-rose-700 border-rose-200', desc: 'Mark as waste when it is no longer safe.' }
 ];
 
+const CATEGORY_IMAGE_BASE =
+  (typeof import.meta !== 'undefined' &&
+    import.meta.env &&
+    import.meta.env.VITE_CATEGORY_IMAGE_BASE_URL) ||
+  '/images/categories';
+
 const imageByCategory = {
-  Vegetables: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=1200&q=80',
-  Fruits: 'https://images.unsplash.com/photo-1619566636858-adf3ef46400b?auto=format&fit=crop&w=1200&q=80',
-  Dairy: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=1200&q=80',
-  'Cooked Food': 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1200&q=80',
-  Bakery: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=1200&q=80',
-  default: 'https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=1200&q=80'
+  Vegetables: `${CATEGORY_IMAGE_BASE}/vegetables.jpg`,
+  Fruits: `${CATEGORY_IMAGE_BASE}/fruits.jpg`,
+  Dairy: `${CATEGORY_IMAGE_BASE}/dairy.jpg`,
+  'Cooked Food': `${CATEGORY_IMAGE_BASE}/cooked-food.jpg`,
+  Bakery: `${CATEGORY_IMAGE_BASE}/bakery.jpg`,
+  default: `${CATEGORY_IMAGE_BASE}/default.jpg`
 };
 
 function getItemImage(item) {
