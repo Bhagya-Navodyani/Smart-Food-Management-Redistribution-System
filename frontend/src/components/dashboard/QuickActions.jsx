@@ -29,11 +29,11 @@ const QuickActions = () => {
     {
       id: 3,
       icon: Gift,
-      label: 'Donate',
+      label: 'Donate / Sell',
       color: 'from-rose-600 to-rose-500',
       textColor: 'text-rose-600',
       bgColor: 'bg-rose-50',
-      path: '/customer/donations'
+      path: '/customer/create-listing'
     },
     {
       id: 4,
