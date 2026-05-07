@@ -66,7 +66,7 @@ const DonationCalendar = ({ requests = [] }) => {
       >
         <div className={`
           z-10 w-8 h-8 flex items-center justify-center text-xs font-black rounded-xl transition-all duration-300
-          ${isToday ? 'bg-gray-900 text-white' : 'text-gray-500 group-hover:text-gray-900 group-hover:bg-gray-100'}
+          ${isToday ? 'bg-gray-900 text-white' : 'text-gray-900 group-hover:bg-gray-100'}
         `}>
           {d}
         </div>
@@ -76,11 +76,11 @@ const DonationCalendar = ({ requests = [] }) => {
             <motion.div 
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className={`w-10 h-10 rounded-2xl opacity-20 ${getStatusColor(dayRequests[0].status)}`}
+              className={`w-12 h-12 rounded-2xl opacity-30 ${getStatusColor(dayRequests[0].status)}`}
             />
-            <div className="absolute bottom-2 flex gap-0.5">
+            <div className="absolute bottom-1.5 flex gap-1">
               {dayRequests.slice(0, 3).map((req, idx) => (
-                <div key={idx} className={`w-1.5 h-1.5 rounded-full ${getStatusColor(req.status)}`} />
+                <div key={idx} className={`w-2.5 h-2.5 rounded-sm ${getStatusColor(req.status)} shadow-sm`} />
               ))}
             </div>
           </div>
@@ -118,7 +118,7 @@ const DonationCalendar = ({ requests = [] }) => {
 
       <div className="grid grid-cols-7 mb-4">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-          <div key={day} className="text-center text-[10px] font-black uppercase tracking-widest text-gray-300 py-2">
+          <div key={day} className="text-center text-[10px] font-black uppercase tracking-widest text-gray-500 py-2">
             {day}
           </div>
         ))}
@@ -137,7 +137,7 @@ const DonationCalendar = ({ requests = [] }) => {
           { label: 'Cancelled', color: 'bg-red-500' }
         ].map(item => (
           <div key={item.label} className="flex items-center gap-2">
-            <div className={`w-2 h-2 rounded-full ${item.color}`} />
+            <div className={`w-4 h-4 rounded-sm ${item.color} shadow-sm`} />
             <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tight">{item.label}</span>
           </div>
         ))}
