@@ -50,26 +50,26 @@ const DISTANCES = ['Any Distance', '< 5 km', '< 10 km', '< 20 km'];
 
 /* ── Category badge colour map ── */
 const categoryStyle = {
-  'Cooked Leftovers':    'bg-amber-50 text-amber-600 border-amber-100',
-  'Raw / Uncooked':      'bg-orange-50 text-orange-600 border-orange-100',
-  'Spoiled Fruits':      'bg-rose-50 text-rose-600 border-rose-100',
-  'Spoiled Vegetables':  'bg-lime-50 text-lime-600 border-lime-100',
-  'Vegetable Scraps':    'bg-emerald-50 text-emerald-600 border-emerald-100',
+  'Cooked Leftovers': 'bg-amber-50 text-amber-600 border-amber-100',
+  'Raw / Uncooked': 'bg-orange-50 text-orange-600 border-orange-100',
+  'Spoiled Fruits': 'bg-rose-50 text-rose-600 border-rose-100',
+  'Spoiled Vegetables': 'bg-lime-50 text-lime-600 border-lime-100',
+  'Vegetable Scraps': 'bg-emerald-50 text-emerald-600 border-emerald-100',
   'Short Eats & Snacks': 'bg-yellow-50 text-yellow-600 border-yellow-100',
-  'Bakery Items':        'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100',
-  'Grains & Rice':       'bg-sky-50 text-sky-600 border-sky-100',
-  'Mixed Waste':         'bg-gray-50 text-gray-600 border-gray-100',
+  'Bakery Items': 'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100',
+  'Grains & Rice': 'bg-sky-50 text-sky-600 border-sky-100',
+  'Mixed Waste': 'bg-gray-50 text-gray-600 border-gray-100',
 };
 
 /* ── Source badge colour map ── */
 const sourceStyle = {
-  Home:              'bg-teal-50 text-teal-600 border-teal-100',
-  Hotel:             'bg-indigo-50 text-indigo-600 border-indigo-100',
-  Restaurant:        'bg-purple-50 text-purple-600 border-purple-100',
-  Bakery:            'bg-pink-50 text-pink-600 border-pink-100',
-  Supermarket:       'bg-blue-50 text-blue-600 border-blue-100',
-  'Market Stall':    'bg-orange-50 text-orange-600 border-orange-100',
-  'Cafe / Juice Bar':'bg-cyan-50 text-cyan-600 border-cyan-100',
+  Home: 'bg-teal-50 text-teal-600 border-teal-100',
+  Hotel: 'bg-indigo-50 text-indigo-600 border-indigo-100',
+  Restaurant: 'bg-purple-50 text-purple-600 border-purple-100',
+  Bakery: 'bg-pink-50 text-pink-600 border-pink-100',
+  Supermarket: 'bg-blue-50 text-blue-600 border-blue-100',
+  'Market Stall': 'bg-orange-50 text-orange-600 border-orange-100',
+  'Cafe / Juice Bar': 'bg-cyan-50 text-cyan-600 border-cyan-100',
 };
 
 /* ── Component ── */
@@ -126,7 +126,7 @@ const FoodFeed = () => {
     let matchDist = true;
     if (activeDistance !== 'Any Distance') {
       const km = parseInt(item.distance);
-      if (activeDistance === '< 5 km')  matchDist = km < 5;
+      if (activeDistance === '< 5 km') matchDist = km < 5;
       if (activeDistance === '< 10 km') matchDist = km < 10;
       if (activeDistance === '< 20 km') matchDist = km < 20;
     }
@@ -508,11 +508,11 @@ const FoodFeed = () => {
       {/* ── Pickup Request Modal ── */}
       {isModalOpen && selectedItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div 
+          <div
             className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
             onClick={() => !pickupConfirmed && setIsModalOpen(false)}
           />
-          
+
           <div className="relative w-full max-w-md bg-white border border-gray-200 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-300">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white">
@@ -520,7 +520,7 @@ const FoodFeed = () => {
                 {pickupConfirmed ? 'Pickup Confirmed!' : 'Confirm Request'}
               </h3>
               {!pickupConfirmed && (
-                <button 
+                <button
                   onClick={() => setIsModalOpen(false)}
                   className="text-gray-400 hover:text-gray-900 transition-colors"
                 >
