@@ -69,20 +69,20 @@ const Sidebar = () => {
       {/* Mobile Toggle Button */}
       <button
         onClick={() => setIsCollapsed(!isCollapsed)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-slate-800 text-white rounded-md hover:bg-slate-700 transition-colors"
+        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white text-gray-900 border border-gray-200 rounded-lg shadow-lg hover:bg-gray-50 transition-colors"
       >
         {isCollapsed ? <Menu size={24} /> : <X size={24} />}
       </button>
 
       {/* Sidebar */}
       <div className={`
-        fixed lg:static inset-y-0 left-0 z-40 w-64 bg-slate-900 text-white transition-transform duration-300 ease-in-out
+        fixed lg:static inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-200 text-gray-900 transition-transform duration-300 ease-in-out
         ${isCollapsed ? '-translate-x-full' : 'translate-x-0'}
         lg:translate-x-0
       `}>
         <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="px-3 py-3 border-b border-slate-700">
+          <div className="px-3 py-3 border-b border-gray-100">
             <div className="flex items-center gap-1">
               <img
                 src="/uploads/images/Fresh_Track-removebg-preview.png"
@@ -111,8 +111,8 @@ const Sidebar = () => {
                   className={({ isActive }) => `
                     flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200
                     ${isActive
-                      ? 'bg-green-600 text-white shadow-lg'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200'
+                      : 'text-gray-500 hover:bg-emerald-50 hover:text-emerald-600'
                     }
                   `}
                   onClick={() => {
@@ -129,10 +129,10 @@ const Sidebar = () => {
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t border-slate-700">
+          <div className="p-4 border-t border-gray-100">
             <button
               onClick={handleLogoutClick}
-              className="flex items-center space-x-3 w-full px-4 py-3 text-slate-300 hover:bg-red-600 hover:text-white rounded-lg transition-all duration-200"
+              className="flex items-center space-x-3 w-full px-4 py-3 text-gray-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-all duration-200"
             >
               <LogOut size={20} />
               <span className="font-medium">Logout</span>
@@ -224,4 +224,3 @@ const Sidebar = () => {
 };
 
 export default Sidebar;
-
