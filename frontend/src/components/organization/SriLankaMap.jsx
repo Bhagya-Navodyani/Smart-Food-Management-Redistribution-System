@@ -58,8 +58,8 @@ const SriLankaMap = ({ onSelectDistrict }) => {
     <div className="relative w-full h-full flex items-center justify-center bg-transparent">
       <svg
         viewBox="0 0 800 1000"
-        className="w-full h-full max-h-[500px] drop-shadow-2xl"
-        style={{ filter: 'drop-shadow(0 0 20px rgba(59, 130, 246, 0.1))' }}
+        className="w-full h-full max-h-[500px]"
+        style={{ filter: 'drop-shadow(0 10px 30px rgba(0, 0, 0, 0.05))' }}
       >
         <g>
           {districtPaths.map((district) => {
@@ -76,10 +76,10 @@ const SriLankaMap = ({ onSelectDistrict }) => {
                 className={`
                   transition-all duration-300 cursor-pointer stroke-[1.5]
                   ${isSelected
-                    ? 'fill-emerald-500/40 stroke-emerald-400 scale-[1.01]'
+                    ? 'fill-emerald-500/20 stroke-emerald-500 stroke-[2] z-20 scale-[1.02]'
                     : isHovered
-                      ? 'fill-blue-500/30 stroke-blue-400 scale-[1.005]'
-                      : 'fill-white/[0.03] stroke-white/[0.15] hover:fill-white/[0.08]'
+                      ? 'fill-blue-500/10 stroke-blue-400 stroke-[1.5] z-10'
+                      : 'fill-slate-50/50 stroke-slate-800 hover:fill-blue-50 hover:stroke-blue-600'
                   }
                 `}
                 style={{
@@ -96,7 +96,7 @@ const SriLankaMap = ({ onSelectDistrict }) => {
 
       {/* Floating Indicator for Hovered District */}
       {hoveredDistrict && !selectedDistrict && (
-        <div className="absolute top-0 right-0 p-3 bg-blue-500/20 backdrop-blur-md border border-blue-500/30 rounded-xl text-blue-200 text-xs font-bold animate-in fade-in zoom-in duration-200 pointer-events-none">
+        <div className="absolute top-0 right-0 p-3 bg-white/90 backdrop-blur-md border border-blue-100 shadow-xl rounded-xl text-blue-700 text-xs font-bold animate-in fade-in zoom-in duration-200 pointer-events-none z-50">
           {hoveredDistrict}
         </div>
       )}
