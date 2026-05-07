@@ -1,17 +1,40 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, Package, CheckCircle, Search, X, ChevronDown, Filter, Download } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Calendar, Package, CheckCircle, Search, X, ChevronDown, Filter, Download, Clock, MapPin, Building, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import DonationCalendar from '../../components/dashboard/DonationCalendar';
 
 const DonationHistory = () => {
-  const [historyData] = useState(() => {
+  const [allRequests, setAllRequests] = useState(() => {
     const saved = localStorage.getItem('myRequestsData');
-    const myCompletedRequests = saved ? JSON.parse(saved).filter(r => r.status === 'Completed').map(r => ({
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // Keep data in sync with localStorage changes
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const saved = localStorage.getItem('myRequestsData');
+      if (saved) setAllRequests(JSON.parse(saved));
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    // Also poll occasionally or on focus for same-tab updates
+    const interval = setInterval(handleStorageChange, 2000);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
+
+  const historyData = useMemo(() => {
+    const myCompletedRequests = allRequests.filter(r => r.status === 'Completed').map(r => ({
       id: r.id,
       date: r.requestDate || 'Today',
       donor: r.donor || 'N/A',
       category: r.category || 'N/A',
       quantity: r.quantity || '0kg',
       status: 'Completed'
-    })) : [];
+    }));
 
     const dummyData = [
       { id: 'd1', date: '2026-05-01', donor: 'Green Valley Farms', category: 'Vegetable Scraps', quantity: '45kg', status: 'Completed' },
@@ -22,7 +45,10 @@ const DonationHistory = () => {
     ];
 
     return [...myCompletedRequests, ...dummyData];
-  });
+  }, [allRequests]);
+
+  const [selectedDayDonations, setSelectedDayDonations] = useState(null);
+  const [selectedDateLabel, setSelectedDateLabel] = useState('');
 
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('All Categories');
@@ -31,7 +57,7 @@ const DonationHistory = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const categories = ['All Categories', ...Array.from(new Set(historyData.map(item => item.category)))];
+  const categories = useMemo(() => ['All Categories', ...Array.from(new Set(historyData.map(item => item.category)))], [historyData]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -290,6 +316,17 @@ const DonationHistory = () => {
           </button>
         </header>
 
+        {/* Donation Progress Calendar */}
+        <div className="mb-12 animate-in fade-in slide-in-from-top-4 duration-700">
+          <DonationCalendar 
+            donations={allRequests} 
+            onDayClick={(dayDonations, dateKey) => {
+              setSelectedDayDonations(dayDonations);
+              setSelectedDateLabel(dateKey);
+            }} 
+          />
+        </div>
+
         {/* Glassmorphic Search & Advanced Filters */}
         <div className="flex flex-col gap-4 mb-8 p-5 bg-white/[0.03] backdrop-blur-xl border border-white/20 rounded-2xl shadow-[0_8px_32px_0_rgba(0,0,0,0.25)]">
           {/* Row 1: Search and Main Selects */}
@@ -511,6 +548,109 @@ const DonationHistory = () => {
           </div>
         )}
       </div>
+
+      {/* Day Details Modal */}
+      {selectedDayDonations && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-[#0A1128]/80 backdrop-blur-md"
+            onClick={() => setSelectedDayDonations(null)}
+          />
+          
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="relative w-full max-w-2xl bg-white/[0.05] border border-white/20 backdrop-blur-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+          >
+            {/* Header */}
+            <div className="p-6 border-b border-white/10 flex items-center justify-between bg-white/[0.02]">
+              <div>
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Calendar className="text-emerald-400" />
+                  Activities on {selectedDateLabel}
+                </h3>
+                <p className="text-slate-400 text-sm">{selectedDayDonations.length} donation records found</p>
+              </div>
+              <button 
+                onClick={() => setSelectedDayDonations(null)}
+                className="p-2 hover:bg-white/10 rounded-full text-slate-400 hover:text-white transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            {/* Scrollable Content */}
+            <div className="p-6 overflow-y-auto space-y-4 custom-scrollbar">
+              {selectedDayDonations.map((donation, idx) => (
+                <div 
+                  key={donation.id || idx}
+                  className="bg-white/[0.03] border border-white/10 rounded-2xl p-5 hover:bg-white/[0.06] transition-all group"
+                >
+                  <div className="flex flex-col md:flex-row justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider border ${
+                          donation.status === 'Completed' ? 'bg-emerald-500/20 border-emerald-500/30 text-emerald-400' :
+                          donation.status === 'Approved' ? 'bg-blue-500/20 border-blue-500/30 text-blue-400' :
+                          donation.status === 'Pending' ? 'bg-amber-500/20 border-amber-500/30 text-amber-400' :
+                          donation.status === 'Cancelled' ? 'bg-rose-500/20 border-rose-500/30 text-rose-400' :
+                          'bg-violet-500/20 border-violet-500/30 text-violet-400'
+                        }`}>
+                          {donation.status}
+                        </span>
+                        <span className="text-xs text-slate-500 flex items-center gap-1">
+                          <Clock size={12} /> {donation.pickupTime || 'N/A'}
+                        </span>
+                      </div>
+                      <h4 className="text-lg font-bold text-white mb-1 group-hover:text-emerald-400 transition-colors">
+                        {donation.name || donation.category}
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4 mt-3">
+                        <div className="flex items-center gap-2 text-xs text-slate-400">
+                          <Building size={14} className="text-slate-500" />
+                          <span className="truncate">{donation.donor}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-xs text-slate-400">
+                          <Package size={14} className="text-slate-500" />
+                          <span>{donation.quantity}</span>
+                        </div>
+                        {donation.address && (
+                          <div className="flex items-center gap-2 text-xs text-slate-400 sm:col-span-2">
+                            <MapPin size={14} className="text-slate-500 flex-shrink-0" />
+                            <span className="truncate">{donation.address}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-end">
+                      <a 
+                        href={`/organization/my-requests`}
+                        className="flex items-center gap-2 text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors"
+                      >
+                        View in Requests <ArrowRight size={14} />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Footer */}
+            <div className="p-4 border-t border-white/10 bg-white/[0.02] flex justify-end">
+              <button 
+                onClick={() => setSelectedDayDonations(null)}
+                className="px-6 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition-all"
+              >
+                Close
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 };
