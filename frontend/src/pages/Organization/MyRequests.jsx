@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Package, Clock, MapPin, CheckCircle, Clock3, XCircle, 
   ChevronRight, Inbox, Truck, Trash2, Calendar,
-  LayoutList, Table, X, Phone, Building, FileText, Info
+  LayoutList, Table, X, Phone, Building, FileText, Info, Download
 } from 'lucide-react';
 
 /* ── Sample Request Data ── */
@@ -55,12 +55,12 @@ const sampleRequests = [
 ];
 
 const statusStyles = {
-  Pending: { bg: 'bg-amber-50', border: 'border-amber-100', text: 'text-amber-600', icon: Clock3 },
-  Approved: { bg: 'bg-blue-50', border: 'border-blue-100', text: 'text-blue-600', icon: Truck },
-  'Awaiting Confirmation': { bg: 'bg-indigo-50', border: 'border-indigo-100', text: 'text-indigo-600', icon: Clock },
-  Completed: { bg: 'bg-emerald-50', border: 'border-emerald-100', text: 'text-emerald-600', icon: CheckCircle },
-  Rejected: { bg: 'bg-red-50', border: 'border-red-100', text: 'text-red-600', icon: XCircle },
-  Cancelled: { bg: 'bg-red-50', border: 'border-red-100', text: 'text-red-600', icon: XCircle }
+  Pending: { bg: 'bg-amber-500/10', border: 'border-amber-500/20', text: 'text-amber-400', icon: Clock3 },
+  Approved: { bg: 'bg-blue-500/10', border: 'border-blue-500/20', text: 'text-blue-400', icon: Truck },
+  'Awaiting Confirmation': { bg: 'bg-violet-500/10', border: 'border-violet-500/20', text: 'text-violet-400', icon: Clock },
+  Completed: { bg: 'bg-emerald-500/10', border: 'border-emerald-500/20', text: 'text-emerald-400', icon: CheckCircle },
+  Rejected: { bg: 'bg-red-500/10', border: 'border-red-500/20', text: 'text-red-400', icon: XCircle },
+  Cancelled: { bg: 'bg-red-500/10', border: 'border-red-500/20', text: 'text-red-400', icon: XCircle }
 };
 
 const MyRequests = () => {
@@ -76,6 +76,7 @@ const MyRequests = () => {
       const parsedQueue = JSON.parse(queue);
       if (parsedQueue.length > 0) {
         setRequests(prev => {
+          // Avoid duplicates if strict mode double-fires
           const existingIds = new Set(prev.map(r => r.id));
           const trulyNew = parsedQueue.filter(r => !existingIds.has(r.id));
           return [...trulyNew, ...prev];
@@ -89,26 +90,33 @@ const MyRequests = () => {
   useEffect(() => {
     localStorage.setItem('myRequestsData', JSON.stringify(requests));
   }, [requests]);
-
   const [activeTab, setActiveTab] = useState('All');
   const [viewFormat, setViewFormat] = useState('list'); // 'list' or 'table'
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [showConfirmCollect, setShowConfirmCollect] = useState(false);
   const [reqToDelete, setReqToDelete] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, viewFormat]);
 
   const handleDeleteConfirm = () => {
     if (!reqToDelete) return;
     
+    // Mark as Cancelled in MyRequests instead of deleting it
     setRequests(prev => prev.map(r => 
       r.id === reqToDelete.id ? { ...r, status: 'Cancelled' } : r
     ));
 
+    // Send to restored queue for Food Feed
     const queue = JSON.parse(localStorage.getItem('restoredRequestsQueue') || '[]');
     queue.push({
       id: reqToDelete.id,
       name: reqToDelete.name,
       category: reqToDelete.category,
-      source: reqToDelete.donorType || 'Home',
+      source: reqToDelete.donorType || 'Home', // Fallback
       quantity: reqToDelete.quantity,
       collectBefore: reqToDelete.pickupTime,
       distance: reqToDelete.location,
@@ -129,58 +137,237 @@ const MyRequests = () => {
     return req.status === activeTab;
   });
 
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredRequests.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredRequests.length / itemsPerPage);
+
   // Calculate stats
   const pendingCount = requests.filter(r => r.status === 'Pending').length;
   const approvedCount = requests.filter(r => r.status === 'Approved').length;
   const completedCount = requests.filter(r => r.status === 'Completed').length;
 
   const tabColors = {
-    All: 'bg-gray-900 text-white shadow-lg',
-    Pending: 'bg-amber-50 text-amber-600 border border-amber-200',
-    Approved: 'bg-blue-50 text-blue-600 border border-blue-200',
-    Awaiting: 'bg-indigo-50 text-indigo-600 border border-indigo-200',
-    Completed: 'bg-emerald-50 text-emerald-600 border border-emerald-200',
-    Cancelled: 'bg-red-50 text-red-600 border border-red-200'
+    All: 'bg-slate-600 text-white shadow-lg shadow-black/20',
+    Pending: 'bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow-lg shadow-amber-900/20',
+    Approved: 'bg-blue-500/20 text-blue-400 border border-blue-500/40 shadow-lg shadow-blue-900/20',
+    Awaiting: 'bg-violet-500/20 text-violet-400 border border-violet-500/40 shadow-lg shadow-violet-900/20',
+    Completed: 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-lg shadow-emerald-900/20',
+    Cancelled: 'bg-red-500/20 text-red-400 border border-red-500/40 shadow-lg shadow-red-900/20'
+  };
+
+  const loadScript = (src) => {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`script[src="${src}"]`)) {
+        resolve();
+        return;
+      }
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = () => resolve();
+      script.onerror = (err) => reject(err);
+      document.head.appendChild(script);
+    });
+  };
+
+  const loadImageAsBase64 = (src) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.src = src;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      };
+      img.onerror = (err) => resolve(null);
+    });
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js');
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('p', 'pt', 'a4');
+
+      // Corporate green branding colors
+      const primaryColor = [16, 119, 78]; 
+      const textColor = [33, 43, 54]; 
+      const secondaryTextColor = [99, 115, 129]; 
+
+      // Branding Box Background
+      doc.setFillColor(255, 255, 255);
+      doc.rect(0, 0, 595.28, 140, 'F');
+
+      // Load logo image
+      let logoData = null;
+      try {
+        logoData = await loadImageAsBase64('/uploads/images/Fresh_Track-removebg-preview.png');
+      } catch (err) {
+        console.error('Logo failed to load', err);
+      }
+
+      if (logoData) {
+        doc.addImage(logoData, 'PNG', 40, 32, 50, 50);
+      }
+
+      // Title - with elegant Times-Bold font
+      doc.setFont('times', 'bold');
+      doc.setFontSize(24);
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+      doc.text('Fresh Track', logoData ? 102 : 40, 58);
+
+      // Tagline
+      doc.setFont('times', 'italic');
+      doc.setFontSize(10);
+      doc.setTextColor(secondaryTextColor[0], secondaryTextColor[1], secondaryTextColor[2]);
+      doc.text('Smart Food Management & Redistribution System', logoData ? 102 : 40, 75);
+
+      // Report Title
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(14);
+      doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+      doc.text(`MY REQUESTS REPORT - ${activeTab.toUpperCase()}`, 40, 115);
+
+      // Metadata
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(secondaryTextColor[0], secondaryTextColor[1], secondaryTextColor[2]);
+      doc.text('REPORT ID:', 380, 48);
+      doc.text('DATE:', 380, 62);
+      doc.text('ORGANIZATION:', 380, 76);
+
+      const uniqueId = 'FT-REQ-' + Math.random().toString(36).substring(2, 9).toUpperCase();
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(textColor[0], textColor[1], textColor[2]);
+      doc.text(uniqueId, 470, 48);
+      doc.text(new Date().toLocaleDateString(), 470, 62);
+      doc.text('Fresh Track Organization', 470, 76);
+
+      // Divider line
+      doc.setDrawColor(224, 224, 224);
+      doc.setLineWidth(1);
+      doc.line(40, 140, 555.28, 140);
+
+      // Extract filtered / tab specific records currently visible in view
+      const tableHeaders = [['Item Name', 'Donor Name', 'Quantity', 'Date', 'Status']];
+      const tableRows = filteredRequests.map(row => [
+        row.name,
+        row.donor,
+        row.quantity,
+        row.requestDate,
+        row.status
+      ]);
+
+      // Draw autoTable
+      doc.autoTable({
+        head: tableHeaders,
+        body: tableRows,
+        startY: 160,
+        margin: { left: 40, right: 40 },
+        theme: 'striped',
+        headStyles: {
+          fillColor: primaryColor,
+          textColor: [255, 255, 255],
+          fontStyle: 'bold',
+          fontSize: 10,
+          halign: 'left'
+        },
+        bodyStyles: {
+          textColor: textColor,
+          fontSize: 9,
+          halign: 'left'
+        },
+        alternateRowStyles: {
+          fillColor: [250, 251, 252]
+        },
+        didDrawPage: (data) => {
+          const str = 'Page ' + doc.internal.getNumberOfPages();
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(8);
+          doc.setTextColor(secondaryTextColor[0], secondaryTextColor[1], secondaryTextColor[2]);
+          
+          doc.text('Thank you for contributing to reducing food waste.', 40, doc.internal.pageSize.height - 30);
+          doc.text(str, doc.internal.pageSize.width - 80, doc.internal.pageSize.height - 30);
+        }
+      });
+
+      doc.save(`My_Requests_Report_${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (err) {
+      console.error('Error generating PDF report:', err);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 lg:p-10 font-sans">
-      <div className="max-w-6xl mx-auto">
-        <header className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="min-h-screen bg-[#0A1128] bg-gradient-to-br from-[#0A1128] via-[#101B3A] to-[#0A1128] -m-6 p-6 lg:p-10 relative overflow-hidden font-sans">
+      {/* Decorative Blurs */}
+      <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
+        <div className="absolute top-20 right-20 w-[400px] h-[400px] rounded-full bg-emerald-600/5 blur-[120px]" />
+        <div className="absolute bottom-20 left-20 w-[400px] h-[400px] rounded-full bg-blue-600/10 blur-[120px]" />
+      </div>
+
+      <div className="relative z-10 max-w-5xl mx-auto">
+        {/* Header */}
+        <header className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">My Requests</h1>
-            <p className="text-gray-500">Track and manage your pickup requests.</p>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700 shadow-xl">
+                <Package size={26} className="text-emerald-400" />
+              </div>
+              <h1 className="text-3xl lg:text-4xl font-extrabold text-white tracking-tight drop-shadow-md">
+                My Requests
+              </h1>
+            </div>
+            <p className="text-slate-400 text-base max-w-2xl ml-[52px]">
+              Track the status of your pickup requests and view your collection history.
+            </p>
           </div>
           
-          {/* Quick Stats */}
-          <div className="flex gap-4">
-            <div className="px-5 py-3 rounded-2xl bg-white border border-gray-100 shadow-sm min-w-[120px]">
-              <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">Pending</p>
-              <p className="text-2xl font-black text-amber-600">{pendingCount}</p>
+          {/* Quick Stats & Export Button */}
+          <div className="flex items-center gap-4 flex-wrap md:flex-nowrap">
+            <div className="flex gap-3">
+              <div className="px-4 py-3 rounded-xl bg-gradient-to-b from-amber-500/10 to-transparent border border-amber-500/20 backdrop-blur-md">
+                <p className="text-xs text-amber-200/70 mb-1 font-medium">Pending</p>
+                <p className="text-2xl font-bold text-amber-400">{pendingCount}</p>
+              </div>
+              <div className="px-4 py-3 rounded-xl bg-gradient-to-b from-blue-500/10 to-transparent border border-blue-500/20 backdrop-blur-md">
+                <p className="text-xs text-blue-200/70 mb-1 font-medium">Approved</p>
+                <p className="text-2xl font-bold text-blue-400">{approvedCount}</p>
+              </div>
+              <div className="px-4 py-3 rounded-xl bg-gradient-to-b from-emerald-500/10 to-transparent border border-emerald-500/20 backdrop-blur-md">
+                <p className="text-xs text-emerald-200/70 mb-1 font-medium">Completed</p>
+                <p className="text-2xl font-bold text-emerald-400">{completedCount}</p>
+              </div>
             </div>
-            <div className="px-5 py-3 rounded-2xl bg-white border border-gray-100 shadow-sm min-w-[120px]">
-              <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">Approved</p>
-              <p className="text-2xl font-black text-blue-600">{approvedCount}</p>
-            </div>
-            <div className="px-5 py-3 rounded-2xl bg-white border border-gray-100 shadow-sm min-w-[120px]">
-              <p className="text-[10px] uppercase tracking-widest text-gray-400 font-bold mb-1">Completed</p>
-              <p className="text-2xl font-black text-emerald-600">{completedCount}</p>
-            </div>
+
+            <button
+              onClick={handleExportPDF}
+              className="flex items-center gap-2 px-6 py-3.5 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-700 text-white font-bold tracking-wide shadow-lg shadow-emerald-900/40 hover:from-green-500 hover:to-emerald-600 hover:shadow-emerald-500/30 hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 border border-emerald-400/20 whitespace-nowrap"
+            >
+              <Download size={18} />
+              <span>Download Report</span>
+            </button>
           </div>
         </header>
 
         {/* Tabs & Controls */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-          <div className="flex flex-wrap bg-white p-1.5 rounded-2xl border border-gray-200 shadow-sm">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex p-1.5 rounded-2xl bg-slate-800/60 border border-slate-700/50 w-fit backdrop-blur-xl shadow-inner overflow-x-auto max-w-full">
             {['All', 'Pending', 'Approved', 'Awaiting', 'Completed', 'Cancelled'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-5 py-2 rounded-xl text-sm font-bold transition-all duration-300 ${
-                  activeTab === tab 
-                  ? tabColors[tab] 
-                  : 'text-gray-500 hover:bg-gray-50'
-                }`}
+                className={`
+                  px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex-shrink-0
+                  ${activeTab === tab 
+                    ? tabColors[tab]
+                    : 'text-slate-400 hover:text-white hover:bg-white/[0.04] border border-transparent'}
+                `}
               >
                 {tab}
               </button>
@@ -188,82 +375,111 @@ const MyRequests = () => {
           </div>
 
           {/* View Toggle */}
-          <div className="flex bg-white p-1 rounded-2xl border border-gray-200 shadow-sm self-end md:self-auto">
+          <div className="flex bg-slate-800/50 border border-slate-700/50 p-1 rounded-xl backdrop-blur-sm">
             <button 
               onClick={() => setViewFormat('list')}
-              className={`p-2.5 rounded-xl transition-all duration-300 ${viewFormat === 'list' ? 'bg-gray-100 text-gray-900' : 'text-gray-400 hover:bg-gray-50'}`}
+              className={`p-2 rounded-lg transition-colors ${viewFormat === 'list' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
               title="List View"
             >
-              <LayoutList size={20} />
+              <LayoutList size={18} />
             </button>
             <button 
               onClick={() => setViewFormat('table')}
-              className={`p-2.5 rounded-xl transition-all duration-300 ${viewFormat === 'table' ? 'bg-gray-100 text-gray-900' : 'text-gray-400 hover:bg-gray-50'}`}
+              className={`p-2 rounded-lg transition-colors ${viewFormat === 'table' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400 hover:text-slate-200'}`}
               title="Table View"
             >
-              <Table size={20} />
+              <Table size={18} />
             </button>
           </div>
         </div>
 
         {/* ────────────── Requests List ────────────── */}
         {filteredRequests.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center bg-white border border-gray-200 rounded-3xl shadow-sm">
-            <div className="w-20 h-20 rounded-full bg-gray-50 flex items-center justify-center mb-6">
-              <Inbox size={40} className="text-gray-300" />
+          /* Empty State UI */
+          <div className="flex flex-col items-center justify-center py-24 px-4 text-center rounded-3xl bg-white/[0.02] border border-white/[0.05] border-dashed backdrop-blur-sm">
+            <div className="w-24 h-24 rounded-full bg-slate-800/80 border border-slate-700 flex items-center justify-center mb-6 shadow-xl">
+              <Inbox size={40} className="text-slate-500" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No Requests Found</h3>
-            <p className="text-gray-500">You don't have any {activeTab.toLowerCase()} requests at the moment.</p>
+            <h3 className="text-2xl font-bold text-white mb-3">No Requests Found</h3>
+            <p className="text-slate-400 max-w-md mx-auto mb-8 leading-relaxed">
+              {activeTab === 'All' 
+                ? "You haven't made any pickup requests yet. Head over to the Food Feed to find available surplus food in your area."
+                : `You don't have any ${activeTab.toLowerCase()} requests at the moment.`}
+            </p>
+            {activeTab !== 'All' ? (
+              <button
+                onClick={() => setActiveTab('All')}
+                className="px-6 py-2.5 rounded-xl bg-slate-800 text-white font-medium hover:bg-slate-700 transition-colors border border-slate-700"
+              >
+                View All Requests
+              </button>
+            ) : (
+              <a 
+                href="/organization/food-feed"
+                className="px-6 py-3 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-500 transition-colors shadow-lg shadow-emerald-900/30"
+              >
+                Browse Food Feed
+              </a>
+            )}
           </div>
         ) : viewFormat === 'table' ? (
-          /* Table View */
-          <div className="bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-sm">
+          /* ────────────── Table View ────────────── */
+          <div className="bg-white/[0.04] border border-white/[0.08] backdrop-blur-xl rounded-2xl overflow-hidden shadow-xl animate-in fade-in duration-500">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-gray-50 border-b border-gray-100 text-[10px] uppercase tracking-wider text-gray-400">
-                    <th className="p-6 font-bold">Item Name</th>
-                    <th className="p-6 font-bold">Donor</th>
-                    <th className="p-6 font-bold">Details</th>
-                    <th className="p-6 font-bold">Status</th>
-                    <th className="p-6 font-bold text-right">Action</th>
+                  <tr className="bg-slate-800/50 border-b border-white/[0.08] text-xs uppercase tracking-wider text-slate-400">
+                    <th className="p-4 font-semibold whitespace-nowrap rounded-tl-2xl">Item Name</th>
+                    <th className="p-4 font-semibold whitespace-nowrap">Donor</th>
+                    <th className="p-4 font-semibold whitespace-nowrap">Quantity / Distance</th>
+                    <th className="p-4 font-semibold whitespace-nowrap">Status</th>
+                    <th className="p-4 font-semibold text-right whitespace-nowrap rounded-tr-2xl">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {filteredRequests.map((req) => {
-                    const status = statusStyles[req.status] || statusStyles.Pending;
-                    const StatusIcon = status.icon;
+                <tbody className="divide-y divide-white/[0.05]">
+                  {currentItems.map((req, idx) => {
+                    const StatusIcon = statusStyles[req.status].icon;
                     return (
-                      <tr key={req.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="p-6">
-                          <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-xl overflow-hidden bg-gray-100 border border-gray-200 flex-shrink-0">
+                      <tr 
+                        key={req.id} 
+                        className="hover:bg-white/[0.02] transition-colors animate-in slide-in-from-bottom-2 fade-in duration-300 fill-mode-both"
+                        style={{ animationDelay: `${idx * 50}ms` }}
+                      >
+                        <td className="p-4">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 border border-slate-700 bg-slate-800">
                               <img src={req.image} alt={req.name} className="w-full h-full object-cover" />
                             </div>
                             <div>
-                              <p className="font-bold text-gray-900">{req.name}</p>
-                              <p className="text-xs text-gray-500">{req.category}</p>
+                              <p className="font-bold text-white text-sm">{req.name}</p>
+                              <p className="text-xs text-slate-400">{req.category}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="p-6 text-sm font-bold text-gray-700">{req.donor}</td>
-                        <td className="p-6">
-                          <div className="flex flex-col gap-1 text-xs text-gray-500 font-medium">
-                            <span className="flex items-center gap-1.5"><Package size={14} /> {req.quantity}</span>
-                            <span className="flex items-center gap-1.5"><MapPin size={14} /> {req.location}</span>
+                        <td className="p-4 text-sm text-slate-300 font-medium">
+                          {req.donor}
+                          <p className="text-xs text-slate-500 font-normal mt-0.5">{req.requestDate}</p>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex flex-col gap-1.5 text-xs text-slate-400">
+                            <span className="flex items-center gap-1.5"><Package size={12} className="text-emerald-500/70" /> {req.quantity}</span>
+                            <span className="flex items-center gap-1.5"><MapPin size={12} className="text-blue-500/70" /> {req.location}</span>
                           </div>
                         </td>
-                        <td className="p-6">
-                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase ${status.bg} ${status.text} border ${status.border}`}>
+                        <td className="p-4">
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${statusStyles[req.status].bg} ${statusStyles[req.status].border} ${statusStyles[req.status].text}`}>
                             <StatusIcon size={12} /> {req.status}
                           </span>
+                          <p className="text-[10px] text-slate-500 mt-1.5">
+                            {req.status === 'Completed' ? 'Collected:' : 'Collect By:'} <span className="font-semibold text-slate-400">{req.pickupTime.replace('Before ', '')}</span>
+                          </p>
                         </td>
-                        <td className="p-6 text-right">
+                        <td className="p-4 text-right">
                           <button 
                             onClick={() => { setSelectedRequest(req); setShowConfirmCollect(false); }}
-                            className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 text-xs font-bold hover:bg-gray-200 transition-colors"
+                            className="px-3 py-1.5 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-emerald-400 hover:text-emerald-300 text-xs font-semibold transition-colors border border-white/[0.1]"
                           >
-                            View
+                            View Details
                           </button>
                         </td>
                       </tr>
@@ -274,169 +490,248 @@ const MyRequests = () => {
             </div>
           </div>
         ) : (
-          /* List View */
-          <div className="grid grid-cols-1 gap-4">
-            {filteredRequests.map((req) => {
-              const status = statusStyles[req.status] || statusStyles.Pending;
-              const StatusIcon = status.icon;
+          /* ────────────── List View ────────────── */
+          <div className="flex flex-col gap-4">
+            {currentItems.map((req, idx) => {
+              const StatusIcon = statusStyles[req.status].icon;
               return (
-                <div key={req.id} className="group bg-white p-2 rounded-3xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-300">
-                  <div className="flex flex-col md:flex-row gap-5 p-5 md:p-6">
-                    {/* Food Image */}
-                    <div className="w-full md:w-48 h-36 rounded-2xl overflow-hidden flex-shrink-0 border border-gray-100">
-                      <img src={req.image} alt={req.name} className="w-full h-full object-cover" />
+                <div 
+                  key={req.id}
+                  className="
+                    group flex flex-col md:flex-row gap-5 p-4 rounded-2xl
+                    bg-white/[0.04] border border-white/[0.08]
+                    backdrop-blur-xl hover:bg-white/[0.06] hover:border-white/[0.15]
+                    transition-all duration-300
+                    animate-in slide-in-from-bottom-4 fade-in duration-500 fill-mode-both
+                  "
+                  style={{ animationDelay: `${idx * 100}ms` }}
+                >
+                  {/* Image */}
+                  <div className="relative w-full md:w-48 h-48 md:h-36 rounded-xl overflow-hidden flex-shrink-0 bg-slate-800">
+                    <img src={req.image} alt={req.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:hidden" />
+                    {/* Status Badge (Mobile) */}
+                    <div className="absolute top-2 left-2 md:hidden">
+                      <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider backdrop-blur-md border ${statusStyles[req.status].bg} ${statusStyles[req.status].border} ${statusStyles[req.status].text}`}>
+                        <StatusIcon size={12} /> {req.status}
+                      </span>
                     </div>
+                  </div>
 
-                    {/* Content */}
-                    <div className="flex-1 flex flex-col justify-center pr-4">
-                      <div className="mb-1">
-                        <h3 className="text-lg font-bold text-gray-900 group-hover:text-emerald-600 transition-colors">{req.name}</h3>
-                        <p className="text-emerald-600 font-bold text-xs uppercase tracking-wide">{req.category}</p>
+                  {/* Content */}
+                  <div className="flex-1 flex flex-col justify-center pr-4">
+                    <div className="mb-1">
+                      <h3 className="text-lg font-bold text-white group-hover:text-emerald-400 transition-colors">{req.name}</h3>
+                    </div>
+                    
+                    <p className="text-sm text-slate-400 mb-4">
+                      Donor: <span className="text-slate-300 font-medium">{req.donor}</span>
+                    </p>
+
+                    <div className="flex flex-wrap gap-4 mt-auto">
+                      <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                        <Package size={14} className="text-slate-500" />
+                        <span className="text-slate-300">{req.quantity}</span>
                       </div>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-xs text-gray-500 font-medium">
-                        <span className="flex items-center gap-1.5"><Package size={14} className="text-gray-400" /> {req.quantity}</span>
-                        <span className="flex items-center gap-1.5"><Building size={14} className="text-gray-400" /> {req.donor}</span>
-                        <span className="flex items-center gap-1.5"><MapPin size={14} className="text-gray-400" /> {req.location}</span>
+                      <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                        <MapPin size={14} className="text-slate-500" />
+                        <span className="text-slate-300">{req.location}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                        <Calendar size={14} className="text-slate-500" />
+                        <span className="text-slate-300">{req.requestDate}</span>
                       </div>
                     </div>
+                  </div>
 
-                    {/* Actions/Info Right Side */}
-                    <div className="flex flex-col justify-between items-center md:pl-6 md:border-l border-gray-100 min-w-[220px] mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0">
-                      <div className="w-full flex flex-col items-center">
-                        <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider mb-3 ${status.bg} ${status.text} border ${status.border} w-full justify-center`}>
-                          <StatusIcon size={14} /> {req.status}
-                        </span>
-                        
-                        <div className="flex flex-col items-center text-center">
-                          <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mb-0.5">
-                            {req.status === 'Completed' ? 'Collected At' : 'Collect By'}
-                          </p>
-                          <p className="text-sm font-black text-gray-800 flex items-center gap-1.5">
-                            <Clock3 size={14} className="text-gray-400" /> 
-                            {req.pickupTime.replace('Before ', '').replace('Completed at ', '')}
-                          </p>
+                  {/* Actions/Info Right Side */}
+                  {/* Actions/Info Right Side */}
+                  <div className="flex flex-col justify-between items-center md:pl-6 md:border-l border-white/[0.08] w-full md:w-[220px] flex-shrink-0 mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0">
+                    <div className="w-full flex flex-col items-center gap-3 mb-4 md:mb-0">
+                      {/* Status Badge (Desktop) */}
+                      <span className={`hidden md:flex justify-center items-center gap-1.5 px-2 py-1.5 rounded-md text-[10px] font-bold uppercase tracking-wider border w-full ${statusStyles[req.status].bg} ${statusStyles[req.status].border} ${statusStyles[req.status].text}`}>
+                        <StatusIcon size={14} className="flex-shrink-0" /> 
+                        <span className="truncate">{req.status}</span>
+                      </span>
+                      
+                      <div className="text-center w-full">
+                        <p className="text-[11px] text-slate-500 uppercase tracking-widest font-semibold mb-1">
+                          {req.status === 'Completed' ? 'Collected At' : 'Collect By'}
+                        </p>
+                        <div className="flex items-center justify-center gap-1.5 text-sm font-semibold text-white">
+                          <Clock size={16} className="text-emerald-500 flex-shrink-0" />
+                          <span className="truncate">{req.pickupTime}</span>
                         </div>
                       </div>
-
-                      <button 
-                        onClick={() => { setSelectedRequest(req); setShowConfirmCollect(false); }}
-                        className="w-full mt-4 py-2.5 rounded-xl bg-gray-900 text-white text-xs font-black uppercase tracking-widest hover:bg-gray-800 transition-all flex items-center justify-center gap-2"
-                      >
-                        View Details <ChevronRight size={14} />
-                      </button>
                     </div>
+
+                    <button 
+                      onClick={() => { setSelectedRequest(req); setShowConfirmCollect(false); }}
+                      className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-white/[0.05] hover:bg-white/[0.1] text-white text-sm font-medium transition-colors border border-white/[0.1]"
+                    >
+                      View Details
+                      <ChevronRight size={16} className="text-slate-400 group-hover:translate-x-0.5 transition-transform flex-shrink-0" />
+                    </button>
                   </div>
                 </div>
               );
             })}
           </div>
         )}
+
+        {/* Pagination Controls */}
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-4 mt-8">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${currentPage === 1 ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/[0.1]'}`}
+            >
+              Previous
+            </button>
+            <span className="text-slate-400 text-sm font-medium">
+              Page <span className="text-white">{currentPage}</span> of <span className="text-white">{totalPages}</span>
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all ${currentPage === totalPages ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/[0.1]'}`}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Details Modal */}
+      {/* ────────────── View Details Modal ────────────── */}
       {selectedRequest && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div 
-            className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"
             onClick={() => { setSelectedRequest(null); setShowConfirmCollect(false); }}
           />
-          <div className="relative w-full max-w-2xl bg-white border border-gray-200 rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+          
+          <div className="relative w-full max-w-2xl bg-slate-800 border border-slate-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-300">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Info size={20} className="text-emerald-600" />
-                <h3 className="text-lg font-bold text-gray-900">Request Details</h3>
+            <div className="px-6 py-4 border-b border-slate-700 flex items-center justify-between bg-slate-800/80 sticky top-0 z-10">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                  <FileText size={20} className="text-emerald-400" />
+                </div>
+                <h3 className="text-lg font-bold text-white">
+                  Request Details
+                </h3>
               </div>
-              <button onClick={() => { setSelectedRequest(null); setShowConfirmCollect(false); }} className="text-gray-400 hover:text-gray-600">
+              <button 
+                onClick={() => { setSelectedRequest(null); setShowConfirmCollect(false); }}
+                className="text-slate-400 hover:text-white transition-colors p-1"
+              >
                 <X size={24} />
               </button>
             </div>
 
+            {/* Modal Body */}
             <div className="p-6">
-              {/* Summary Area */}
+              {/* Top Section - Status & Basics */}
               <div className="flex flex-col md:flex-row gap-6 mb-8">
-                <div className="w-full md:w-48 h-36 rounded-2xl overflow-hidden flex-shrink-0 border border-gray-100">
+                <div className="w-full md:w-48 h-40 rounded-xl overflow-hidden flex-shrink-0 border border-slate-700 bg-slate-800">
                   <img src={selectedRequest.image} alt={selectedRequest.name} className="w-full h-full object-cover" />
                 </div>
                 <div className="flex-1 flex flex-col justify-center">
                   <div className="flex items-center gap-2 mb-2">
-                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${statusStyles[selectedRequest.status]?.bg} ${statusStyles[selectedRequest.status]?.text} border ${statusStyles[selectedRequest.status]?.border}`}>
+                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border ${statusStyles[selectedRequest.status].bg} ${statusStyles[selectedRequest.status].border} ${statusStyles[selectedRequest.status].text}`}>
+                      {React.createElement(statusStyles[selectedRequest.status].icon, { size: 12 })}
                       {selectedRequest.status}
                     </span>
-                    <span className="text-[11px] text-gray-400 font-bold">{selectedRequest.requestDate}</span>
+                    <span className="text-xs text-slate-400 flex items-center gap-1">
+                      <Clock size={12} /> {selectedRequest.requestDate}
+                    </span>
                   </div>
-                  <h2 className="text-2xl font-black text-gray-900 mb-1">{selectedRequest.name}</h2>
-                  <p className="text-emerald-600 font-bold text-sm mb-4">{selectedRequest.category}</p>
+                  <h2 className="text-2xl font-bold text-white mb-1">{selectedRequest.name}</h2>
+                  <p className="text-emerald-400 font-medium text-sm mb-4">{selectedRequest.category}</p>
                   
                   <div className="flex gap-4">
-                    <div>
-                      <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-0.5">Quantity</p>
-                      <p className="font-bold text-gray-700 flex items-center gap-1.5"><Package size={14} className="text-gray-400" /> {selectedRequest.quantity}</p>
+                    <div className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-4 py-2 flex-1">
+                      <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mb-1">Quantity</p>
+                      <p className="font-bold text-white flex items-center gap-2"><Package size={14} className="text-emerald-500"/> {selectedRequest.quantity}</p>
                     </div>
-                    <div>
-                      <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest mb-0.5">Time Limit</p>
-                      <p className="font-bold text-gray-700 flex items-center gap-1.5"><Clock3 size={14} className="text-gray-400" /> {selectedRequest.pickupTime}</p>
+                    <div className="bg-white/[0.04] border border-white/[0.08] rounded-lg px-4 py-2 flex-1">
+                      <p className="text-[10px] text-slate-500 uppercase tracking-wider font-semibold mb-1">{selectedRequest.status === 'Completed' ? 'Collected At' : 'Collect By'}</p>
+                      <p className="font-bold text-white flex items-center gap-2"><Clock3 size={14} className="text-emerald-500"/> {selectedRequest.pickupTime.replace('Before ', '').replace('Completed at ', '')}</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Donor & Location Cards */}
+              {/* Grid Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4">
-                  <div className="flex items-center gap-2 mb-3 text-blue-600">
-                    <Building size={16} />
-                    <h4 className="font-bold text-sm">Donor Information</h4>
+                {/* Donor Details Card */}
+                <div className="bg-slate-900/50 border border-slate-700/50 rounded-2xl p-5">
+                  <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-700/50">
+                    <Building size={18} className="text-blue-400" />
+                    <h4 className="font-bold text-white">Donor Information</h4>
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Name</p>
-                      <p className="text-sm font-bold text-gray-700">{selectedRequest.donor}</p>
+                      <p className="text-xs text-slate-500 mb-0.5">Donor Name</p>
+                      <p className="text-sm font-semibold text-slate-200">{selectedRequest.donor}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Phone</p>
+                      <p className="text-xs text-slate-500 mb-0.5">Donor Type</p>
+                      <p className="text-sm font-medium text-slate-300">{selectedRequest.donorType}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-500 mb-0.5">Contact Number</p>
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-black text-emerald-600">{selectedRequest.contact}</p>
-                        <Phone size={14} className="text-emerald-600" />
+                        <p className="text-sm font-semibold text-emerald-400">{selectedRequest.contact}</p>
+                        <button className="p-1.5 rounded-md bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors" title="Call Donor">
+                          <Phone size={14} />
+                        </button>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-gray-50 border border-gray-100 rounded-2xl p-4">
-                  <div className="flex items-center gap-2 mb-3 text-rose-500">
-                    <MapPin size={16} />
-                    <h4 className="font-bold text-sm">Pickup Location</h4>
+                {/* Location Details Card */}
+                <div className="bg-slate-900/50 border border-slate-700/50 rounded-2xl p-5">
+                  <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-700/50">
+                    <MapPin size={18} className="text-rose-400" />
+                    <h4 className="font-bold text-white">Pickup Location</h4>
                   </div>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <div>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Distance</p>
-                      <p className="text-sm font-bold text-gray-700">{selectedRequest.location}</p>
+                      <p className="text-xs text-slate-500 mb-0.5">Distance</p>
+                      <p className="text-sm font-semibold text-slate-200">{selectedRequest.location}</p>
                     </div>
                     <div>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Address</p>
-                      <p className="text-sm font-medium text-gray-600 leading-tight">{selectedRequest.address}</p>
+                      <p className="text-xs text-slate-500 mb-0.5">Exact Address</p>
+                      <p className="text-sm font-medium text-slate-300 leading-relaxed">{selectedRequest.address}</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Action Footer */}
-              <div className="mt-8 pt-6 border-t border-gray-100 flex flex-wrap justify-end gap-3">
+              {/* Action Footer inside Modal */}
+              <div className="mt-6 pt-6 border-t border-slate-700 flex flex-wrap justify-end gap-3">
                 {showConfirmCollect ? (
-                  <div className="w-full flex items-center justify-between bg-amber-50 border border-amber-200 p-4 rounded-2xl animate-in slide-in-from-bottom-2 duration-300">
-                    <p className="text-amber-800 text-sm font-bold">Have you physically collected this item?</p>
+                  <div className="w-full flex items-center justify-between bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl animate-in fade-in zoom-in-95">
+                    <p className="text-amber-400 text-sm font-medium">Are you sure you have physically collected this item?</p>
                     <div className="flex gap-2">
-                      <button onClick={() => setShowConfirmCollect(false)} className="px-4 py-2 rounded-xl bg-white border border-amber-200 text-gray-700 text-sm font-bold hover:bg-gray-50">Cancel</button>
+                      <button 
+                        onClick={() => setShowConfirmCollect(false)}
+                        className="px-4 py-2 rounded-lg bg-slate-700 text-white text-sm font-medium hover:bg-slate-600 transition-colors"
+                      >
+                        Cancel
+                      </button>
                       <button 
                         onClick={() => {
                           setRequests(prev => prev.map(r => r.id === selectedRequest.id ? { ...r, status: 'Awaiting Confirmation', pickupTime: 'Waiting for donor confirmation' } : r));
                           setShowConfirmCollect(false);
                           setSelectedRequest(null);
                         }}
-                        className="px-4 py-2 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700"
+                        className="px-4 py-2 rounded-lg bg-emerald-600 text-white text-sm font-semibold hover:bg-emerald-500 transition-colors"
                       >
-                        Confirm
+                        Confirm Collection
                       </button>
                     </div>
                   </div>
@@ -445,24 +740,29 @@ const MyRequests = () => {
                     {selectedRequest.status === 'Pending' && (
                       <button 
                         onClick={() => { setReqToDelete(selectedRequest); setSelectedRequest(null); }}
-                        className="px-6 py-3 rounded-xl bg-red-50 text-red-600 font-bold hover:bg-red-100 flex items-center gap-2 mr-auto"
+                        className="px-6 py-2.5 rounded-xl bg-red-500/10 text-red-400 font-medium hover:bg-red-500/20 transition-colors flex items-center gap-2 border border-red-500/20 mr-auto"
                       >
                         <Trash2 size={16} /> Cancel Request
                       </button>
                     )}
                     <button 
                       onClick={() => { setSelectedRequest(null); setShowConfirmCollect(false); }}
-                      className="px-6 py-3 rounded-xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200"
+                      className="px-6 py-2.5 rounded-xl bg-slate-800 border border-slate-600 text-white font-medium hover:bg-slate-700 transition-colors"
                     >
                       Close
                     </button>
                     {selectedRequest.status === 'Approved' && (
-                      <button 
-                        onClick={() => setShowConfirmCollect(true)}
-                        className="px-6 py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 flex items-center gap-2"
-                      >
-                        <CheckCircle size={16} /> Mark as Collected
-                      </button>
+                      <>
+                        <button className="px-6 py-2.5 rounded-xl bg-slate-700 text-white font-medium hover:bg-slate-600 transition-colors flex items-center gap-2">
+                          <MapPin size={16} className="text-emerald-400" /> Get Directions
+                        </button>
+                        <button 
+                          onClick={() => setShowConfirmCollect(true)}
+                          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold hover:from-emerald-500 hover:to-emerald-400 transition-all shadow-lg shadow-emerald-900/20 flex items-center gap-2"
+                        >
+                          <CheckCircle size={16} /> Mark as Collected
+                        </button>
+                      </>
                     )}
                   </>
                 )}
@@ -472,19 +772,38 @@ const MyRequests = () => {
         </div>
       )}
 
-      {/* Cancel Confirmation Modal */}
+      {/* ────────────── Cancel Confirmation Modal ────────────── */}
       {reqToDelete && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm" onClick={() => setReqToDelete(null)} />
-          <div className="relative w-full max-w-sm bg-white border border-gray-200 rounded-3xl shadow-2xl p-8 flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-300">
-            <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mb-6">
-              <Trash2 size={36} className="text-red-500" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Cancel Request?</h3>
-            <p className="text-gray-500 text-sm mb-8">This item will be returned to the feed for others to claim.</p>
-            <div className="flex gap-3 w-full">
-              <button onClick={() => setReqToDelete(null)} className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200">No, Keep</button>
-              <button onClick={handleDeleteConfirm} className="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700">Yes, Cancel</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div 
+            className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"
+            onClick={() => setReqToDelete(null)}
+          />
+          
+          <div className="relative w-full max-w-sm bg-slate-800 border border-slate-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-300">
+            <div className="p-6 flex flex-col items-center text-center">
+              <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4 border border-red-500/20">
+                <Trash2 size={32} className="text-red-400" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-2">Cancel Request?</h3>
+              <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+                Are you sure you want to cancel the pickup request for <span className="text-white font-semibold">{reqToDelete.name}</span>? This item will be returned to the Food Feed for others to claim.
+              </p>
+              
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={() => setReqToDelete(null)}
+                  className="flex-1 px-4 py-3 rounded-xl bg-slate-700 text-white font-semibold hover:bg-slate-600 transition-colors"
+                >
+                  Keep Request
+                </button>
+                <button
+                  onClick={handleDeleteConfirm}
+                  className="flex-1 px-4 py-3 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-500 transition-colors shadow-lg shadow-red-900/20"
+                >
+                  Yes, Cancel
+                </button>
+              </div>
             </div>
           </div>
         </div>

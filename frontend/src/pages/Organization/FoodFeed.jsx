@@ -50,26 +50,26 @@ const DISTANCES = ['Any Distance', '< 5 km', '< 10 km', '< 20 km'];
 
 /* ── Category badge colour map ── */
 const categoryStyle = {
-  'Cooked Leftovers':    'bg-amber-50 text-amber-600 border-amber-100',
-  'Raw / Uncooked':      'bg-orange-50 text-orange-600 border-orange-100',
-  'Spoiled Fruits':      'bg-rose-50 text-rose-600 border-rose-100',
-  'Spoiled Vegetables':  'bg-lime-50 text-lime-600 border-lime-100',
-  'Vegetable Scraps':    'bg-emerald-50 text-emerald-600 border-emerald-100',
-  'Short Eats & Snacks': 'bg-yellow-50 text-yellow-600 border-yellow-100',
-  'Bakery Items':        'bg-fuchsia-50 text-fuchsia-600 border-fuchsia-100',
-  'Grains & Rice':       'bg-sky-50 text-sky-600 border-sky-100',
-  'Mixed Waste':         'bg-gray-50 text-gray-600 border-gray-100',
+  'Cooked Leftovers':    'bg-slate-900/80 text-amber-400 border-amber-500/30',
+  'Raw / Uncooked':      'bg-slate-900/80 text-orange-400 border-orange-500/30',
+  'Spoiled Fruits':      'bg-slate-900/80 text-rose-400 border-rose-500/30',
+  'Spoiled Vegetables':  'bg-slate-900/80 text-lime-400 border-lime-500/30',
+  'Vegetable Scraps':    'bg-slate-900/80 text-emerald-400 border-emerald-500/30',
+  'Short Eats & Snacks': 'bg-slate-900/80 text-yellow-400 border-yellow-500/30',
+  'Bakery Items':        'bg-slate-900/80 text-fuchsia-400 border-fuchsia-500/30',
+  'Grains & Rice':       'bg-slate-900/80 text-sky-400 border-sky-500/30',
+  'Mixed Waste':         'bg-slate-900/80 text-slate-300 border-slate-500/30',
 };
 
 /* ── Source badge colour map ── */
 const sourceStyle = {
-  Home:              'bg-teal-50 text-teal-600 border-teal-100',
-  Hotel:             'bg-indigo-50 text-indigo-600 border-indigo-100',
-  Restaurant:        'bg-purple-50 text-purple-600 border-purple-100',
-  Bakery:            'bg-pink-50 text-pink-600 border-pink-100',
-  Supermarket:       'bg-blue-50 text-blue-600 border-blue-100',
-  'Market Stall':    'bg-orange-50 text-orange-600 border-orange-100',
-  'Cafe / Juice Bar':'bg-cyan-50 text-cyan-600 border-cyan-100',
+  Home:              'bg-slate-900/80 text-teal-400 border-teal-500/30',
+  Hotel:             'bg-slate-900/80 text-indigo-400 border-indigo-500/30',
+  Restaurant:        'bg-slate-900/80 text-purple-400 border-purple-500/30',
+  Bakery:            'bg-slate-900/80 text-pink-400 border-pink-500/30',
+  Supermarket:       'bg-slate-900/80 text-blue-400 border-blue-500/30',
+  'Market Stall':    'bg-slate-900/80 text-orange-400 border-orange-500/30',
+  'Cafe / Juice Bar':'bg-slate-900/80 text-cyan-400 border-cyan-500/30',
 };
 
 /* ── Component ── */
@@ -139,25 +139,25 @@ const FoodFeed = () => {
   const totalPages = Math.ceil(filtered.length / itemsPerPage);
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 lg:p-10 relative overflow-hidden font-sans">
-      {/* ── Decorative Light Elements ── */}
+    <div className="min-h-screen bg-[#0A1128] bg-gradient-to-br from-[#0A1128] via-[#101B3A] to-[#0A1128] -m-6 p-6 lg:p-10 relative overflow-hidden font-sans">
+      {/* ── Decorative Blurs ── */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden z-0">
-        <div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-emerald-50 blur-[120px]" />
-        <div className="absolute bottom-0 -left-32 w-[400px] h-[400px] rounded-full bg-cyan-50 blur-[100px]" />
+        <div className="absolute -top-40 -right-40 w-[500px] h-[500px] rounded-full bg-emerald-600/10 blur-[120px]" />
+        <div className="absolute bottom-0 -left-32 w-[400px] h-[400px] rounded-full bg-cyan-600/10 blur-[100px]" />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto">
         {/* ────────────── Header ────────────── */}
         <header className="mb-10">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-100">
-              <Leaf size={26} className="text-emerald-500" />
+            <div className="p-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/20">
+              <Leaf size={26} className="text-emerald-400" />
             </div>
-            <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
+            <h1 className="text-3xl lg:text-4xl font-extrabold text-white tracking-tight">
               Available Animal Feed Surplus
             </h1>
           </div>
-          <p className="text-gray-500 text-base lg:text-lg max-w-2xl ml-[52px]">
+          <p className="text-slate-400 text-base lg:text-lg max-w-2xl ml-[52px]">
             Browse surplus food items from local restaurants, markets & vendors — request a
             pickup and help reduce waste while feeding animals in need.
           </p>
@@ -173,12 +173,12 @@ const FoodFeed = () => {
                 key={s.label}
                 className={`
                   flex items-center gap-3 px-5 py-2.5 rounded-xl
-                  bg-white border border-gray-200
-                  shadow-sm
+                  bg-white/[0.04] border border-white/[0.06]
+                  backdrop-blur-md
                 `}
               >
-                <span className={`text-${s.color}-600 text-xl font-black`}>{s.value}</span>
-                <span className="text-gray-400 text-xs font-bold uppercase tracking-widest">{s.label}</span>
+                <span className={`text-${s.color}-400 text-xl font-bold`}>{s.value}</span>
+                <span className="text-slate-400 text-sm">{s.label}</span>
               </div>
             ))}
           </div>
@@ -190,13 +190,13 @@ const FoodFeed = () => {
           <div
             className="
               flex flex-col lg:flex-row gap-3 p-4 rounded-2xl
-              bg-white border border-gray-200
-              shadow-sm
+              bg-white/[0.05] border border-white/[0.08]
+              backdrop-blur-xl shadow-2xl shadow-black/20
             "
           >
             {/* Search */}
             <div className="relative flex-1">
-              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+              <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 id="food-feed-search"
                 type="text"
@@ -205,16 +205,16 @@ const FoodFeed = () => {
                 onChange={(e) => setSearch(e.target.value)}
                 className="
                   w-full pl-11 pr-4 py-3 rounded-xl
-                  bg-gray-50 border border-gray-200
-                  text-gray-900 placeholder-gray-400
-                  focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500
+                  bg-white/[0.06] border border-white/[0.1]
+                  text-white placeholder-slate-500
+                  focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/40
                   transition-all duration-300
                 "
               />
               {search && (
                 <button
                   onClick={() => setSearch('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-900 transition"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition"
                 >
                   <X size={16} />
                 </button>
@@ -223,80 +223,80 @@ const FoodFeed = () => {
 
             {/* Waste Type Dropdown */}
             <div className="relative min-w-[200px]">
-              <Package size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <Package size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <select
                 id="food-feed-category"
                 value={activeCategory}
                 onChange={(e) => setActiveCategory(e.target.value)}
                 className="
                   w-full pl-10 pr-10 py-3 rounded-xl appearance-none cursor-pointer
-                  bg-gray-50 border border-gray-200 text-gray-700 font-medium
-                  focus:outline-none focus:ring-2 focus:ring-emerald-500/20
+                  bg-white/[0.06] border border-white/[0.1] text-white
+                  focus:outline-none focus:ring-2 focus:ring-emerald-500/40
                   transition-all duration-300
                 "
               >
                 {WASTE_TYPES.map((c) => (
-                  <option key={c} value={c} className="bg-white text-gray-900">{c}</option>
+                  <option key={c} value={c} className="bg-slate-800 text-white">{c}</option>
                 ))}
               </select>
-              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             </div>
 
             {/* Source Type Dropdown */}
             <div className="relative min-w-[180px]">
-              <Store size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <Store size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <select
                 id="food-feed-source"
                 value={activeSource}
                 onChange={(e) => setActiveSource(e.target.value)}
                 className="
                   w-full pl-10 pr-10 py-3 rounded-xl appearance-none cursor-pointer
-                  bg-gray-50 border border-gray-200 text-gray-700 font-medium
-                  focus:outline-none focus:ring-2 focus:ring-emerald-500/20
+                  bg-white/[0.06] border border-white/[0.1] text-white
+                  focus:outline-none focus:ring-2 focus:ring-emerald-500/40
                   transition-all duration-300
                 "
               >
                 {SOURCE_TYPES.map((s) => (
-                  <option key={s} value={s} className="bg-white text-gray-900">{s}</option>
+                  <option key={s} value={s} className="bg-slate-800 text-white">{s}</option>
                 ))}
               </select>
-              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             </div>
 
             {/* Distance Dropdown */}
             <div className="relative min-w-[160px]">
-              <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <MapPin size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
               <select
                 id="food-feed-distance"
                 value={activeDistance}
                 onChange={(e) => setActiveDistance(e.target.value)}
                 className="
                   w-full pl-10 pr-10 py-3 rounded-xl appearance-none cursor-pointer
-                  bg-gray-50 border border-gray-200 text-gray-700 font-medium
-                  focus:outline-none focus:ring-2 focus:ring-emerald-500/20
+                  bg-white/[0.06] border border-white/[0.1] text-white
+                  focus:outline-none focus:ring-2 focus:ring-emerald-500/40
                   transition-all duration-300
                 "
               >
                 {DISTANCES.map((d) => (
-                  <option key={d} value={d} className="bg-white text-gray-900">{d}</option>
+                  <option key={d} value={d} className="bg-slate-800 text-white">{d}</option>
                 ))}
               </select>
-              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
             </div>
           </div>
 
           {/* ── Row 2: Quick-filter tag buttons ── */}
           <div className="flex flex-wrap items-center gap-2 mt-3 px-1">
-            <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mr-1">Quick:</span>
+            <span className="text-[11px] text-slate-500 uppercase tracking-widest font-semibold mr-1">Quick:</span>
             {['Cooked Leftovers', 'Spoiled Fruits', 'Bakery Items', 'Vegetable Scraps', 'Short Eats & Snacks', 'Raw / Uncooked'].map((tag) => (
               <button
                 key={tag}
                 onClick={() => setActiveCategory(activeCategory === tag ? 'All Types' : tag)}
                 className={`
-                  px-3 py-1.5 rounded-full text-xs font-bold border transition-all duration-200
+                  px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200
                   ${activeCategory === tag
-                    ? 'bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-100'
-                    : 'bg-white border-gray-200 text-gray-500 hover:border-emerald-200 hover:bg-emerald-50'}
+                    ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-300 shadow-sm shadow-emerald-900/20'
+                    : 'bg-white/[0.04] border-white/[0.08] text-slate-400 hover:bg-white/[0.08] hover:text-slate-200'}
                 `}
               >
                 {tag}
@@ -307,22 +307,34 @@ const FoodFeed = () => {
           {/* ── Active Filter Pills ── */}
           {(activeCategory !== 'All Types' || activeSource !== 'All Sources' || activeDistance !== 'Any Distance' || search) && (
             <div className="flex flex-wrap items-center gap-2 mt-3 px-1">
-              <span className="text-[10px] text-gray-400 uppercase tracking-widest font-bold mr-1">Active:</span>
+              <span className="text-[11px] text-slate-500 uppercase tracking-widest font-semibold mr-1">Active:</span>
               {search && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-xs text-emerald-600 font-medium">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.06] border border-white/[0.1] text-xs text-slate-300">
                   "{search}"
-                  <button onClick={() => setSearch('')} className="hover:text-emerald-800 transition"><X size={12} /></button>
+                  <button onClick={() => setSearch('')} className="hover:text-white transition"><X size={12} /></button>
                 </span>
               )}
               {activeCategory !== 'All Types' && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-xs text-blue-600 font-medium">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-300">
                   {activeCategory}
-                  <button onClick={() => setActiveCategory('All Types')} className="hover:text-blue-800 transition"><X size={12} /></button>
+                  <button onClick={() => setActiveCategory('All Types')} className="hover:text-white transition"><X size={12} /></button>
+                </span>
+              )}
+              {activeSource !== 'All Sources' && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-xs text-indigo-300">
+                  {activeSource}
+                  <button onClick={() => setActiveSource('All Sources')} className="hover:text-white transition"><X size={12} /></button>
+                </span>
+              )}
+              {activeDistance !== 'Any Distance' && (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-xs text-cyan-300">
+                  {activeDistance}
+                  <button onClick={() => setActiveDistance('Any Distance')} className="hover:text-white transition"><X size={12} /></button>
                 </span>
               )}
               <button
                 onClick={() => { setSearch(''); setActiveCategory('All Types'); setActiveSource('All Sources'); setActiveDistance('Any Distance'); }}
-                className="text-xs text-gray-400 hover:text-red-500 underline transition font-bold ml-2"
+                className="text-xs text-slate-500 hover:text-red-400 underline transition"
               >
                 Clear all
               </button>
@@ -332,20 +344,20 @@ const FoodFeed = () => {
 
         {/* ── Results count ── */}
         <div className="flex items-center justify-between mb-6">
-          <p className="text-sm text-gray-500 font-medium">
-            Showing <span className="text-gray-900 font-bold">{filtered.length}</span> of{' '}
-            <span className="text-gray-900 font-bold">{feedItems.length}</span> items
+          <p className="text-sm text-slate-400">
+            Showing <span className="text-white font-semibold">{filtered.length}</span> of{' '}
+            <span className="text-white font-semibold">{feedItems.length}</span> items
           </p>
         </div>
 
         {/* ────────────── Feed Cards Grid ────────────── */}
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center bg-white border border-gray-200 rounded-3xl shadow-sm">
-            <div className="p-5 rounded-full bg-gray-50 border border-gray-100 mb-6">
-              <Search size={40} className="text-gray-300" />
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="p-5 rounded-full bg-white/[0.04] border border-white/[0.08] mb-6">
+              <Search size={40} className="text-slate-600" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No items found</h3>
-            <p className="text-gray-500 max-w-sm font-medium">
+            <h3 className="text-xl font-semibold text-slate-300 mb-2">No items found</h3>
+            <p className="text-slate-500 max-w-sm">
               Try adjusting your search or filter criteria to discover available surplus.
             </p>
           </div>
@@ -356,8 +368,9 @@ const FoodFeed = () => {
                 key={item.id}
                 className="
                   group relative rounded-2xl overflow-hidden
-                  bg-white border border-gray-200
-                  shadow-sm hover:shadow-xl hover:border-emerald-200
+                  bg-white/[0.05] border border-white/[0.08]
+                  backdrop-blur-xl
+                  hover:border-emerald-500/30 hover:shadow-2xl hover:shadow-emerald-900/20
                   transition-all duration-500 ease-out
                   hover:-translate-y-1
                   flex flex-col h-full
@@ -372,33 +385,44 @@ const FoodFeed = () => {
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                   />
                   {/* Gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-gray-900/40 via-transparent to-gray-900/60" />
+                  <div className="absolute inset-0 bg-gradient-to-b from-slate-900/80 via-slate-900/10 to-slate-900/90" />
 
                   {/* Top Badges */}
                   <div className="absolute top-3 left-3 flex flex-col gap-1.5 items-start">
                     {/* Category Badge */}
                     <span
                       className={`
-                        px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider
+                        px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider
                         border backdrop-blur-md shadow-sm
-                        ${categoryStyle[item.category] || 'bg-white/90 text-gray-600 border-gray-200'}
+                        ${categoryStyle[item.category] || 'bg-slate-500/20 text-slate-300 border-slate-400/30'}
                       `}
                     >
                       {item.category}
                     </span>
+                    {/* Source Badge */}
+                    <span
+                      className={`
+                        flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wide
+                        border backdrop-blur-md
+                        ${sourceStyle[item.source] || 'bg-slate-500/20 text-slate-300 border-slate-400/30'}
+                      `}
+                    >
+                      <Store size={10} />
+                      {item.source}
+                    </span>
                   </div>
 
                   {/* Posted time */}
-                  <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md text-[10px] text-gray-900 font-black shadow-sm">
+                  <span className="absolute top-3 right-3 px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md text-[10px] text-slate-200 font-medium">
                     {item.posted}
                   </span>
 
                   {/* Donor name at bottom of image */}
                   <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-emerald-500 border border-emerald-400 flex items-center justify-center flex-shrink-0">
-                      <span className="text-[10px] font-bold text-white">{item.donor.charAt(0)}</span>
+                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
+                      <span className="text-[10px] font-bold text-emerald-400">{item.donor.charAt(0)}</span>
                     </div>
-                    <p className="text-xs text-white truncate font-bold drop-shadow-md">
+                    <p className="text-xs text-slate-200 truncate font-medium">
                       {item.donor}
                     </p>
                   </div>
@@ -406,54 +430,57 @@ const FoodFeed = () => {
 
                 {/* Body */}
                 <div className="p-5 flex flex-col flex-1">
-                  <h3 className="text-lg font-black text-gray-900 mb-4 leading-snug group-hover:text-emerald-600 transition-colors duration-300">
+                  <h3 className="text-lg font-bold text-white mb-3 leading-snug group-hover:text-emerald-300 transition-colors duration-300">
                     {item.name}
                   </h3>
 
                   {/* Meta grid */}
-                  <div className="grid grid-cols-2 gap-3 mb-6">
-                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-xl border border-gray-100">
-                      <div className="p-1.5 rounded-lg bg-blue-50">
-                        <Package size={14} className="text-blue-600" />
+                  <div className="grid grid-cols-2 gap-3 mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 rounded-lg bg-cyan-500/10">
+                        <Package size={14} className="text-cyan-400" />
                       </div>
                       <div>
-                        <p className="text-[9px] text-gray-400 uppercase font-black tracking-widest">Qty</p>
-                        <p className="text-xs text-gray-900 font-bold">{item.quantity}</p>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider">Qty</p>
+                        <p className="text-sm text-white font-semibold">{item.quantity}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-xl border border-gray-100">
-                      <div className="p-1.5 rounded-lg bg-amber-50">
-                        <Clock size={14} className="text-amber-600" />
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 rounded-lg bg-amber-500/10">
+                        <Clock size={14} className="text-amber-400" />
                       </div>
                       <div>
-                        <p className="text-[9px] text-gray-400 uppercase font-black tracking-widest">Collect</p>
-                        <p className="text-xs text-gray-900 font-bold">{item.collectBefore.replace('Before ', '')}</p>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider">Collect</p>
+                        <p className="text-sm text-white font-semibold">{item.collectBefore.replace('Before ', '')}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 p-2 bg-gray-50 rounded-xl border border-gray-100">
-                      <div className="p-1.5 rounded-lg bg-indigo-50">
-                        <MapPin size={14} className="text-indigo-600" />
+                    <div className="flex items-center gap-2">
+                      <div className="p-1.5 rounded-lg bg-violet-500/10">
+                        <MapPin size={14} className="text-violet-400" />
                       </div>
                       <div>
-                        <p className="text-[9px] text-gray-400 uppercase font-black tracking-widest">Dist</p>
-                        <p className="text-xs text-gray-900 font-bold">{item.distance}</p>
+                        <p className="text-[10px] text-slate-500 uppercase tracking-wider">Distance</p>
+                        <p className="text-sm text-white font-semibold">{item.distance}</p>
                       </div>
                     </div>
 
                     {item.safe && (
-                      <div className="flex items-center gap-2 p-2 bg-emerald-50 rounded-xl border border-emerald-100">
-                        <div className="p-1.5 rounded-lg bg-emerald-100">
-                          <ShieldCheck size={14} className="text-emerald-600" />
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-lg bg-emerald-500/10">
+                          <ShieldCheck size={14} className="text-emerald-400" />
                         </div>
                         <div>
-                          <p className="text-[9px] text-emerald-600/60 uppercase font-black tracking-widest">Safe</p>
-                          <p className="text-[10px] text-emerald-700 font-black">Certified</p>
+                          <p className="text-[10px] text-slate-500 uppercase tracking-wider">Safety</p>
+                          <p className="text-sm text-emerald-400 font-semibold">Safe for Animals</p>
                         </div>
                       </div>
                     )}
                   </div>
+
+                  {/* Divider */}
+                  <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mb-4 mt-auto" />
 
                   {/* CTA */}
                   <button
@@ -465,11 +492,13 @@ const FoodFeed = () => {
                     }}
                     className="
                       w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl
-                      bg-gray-900 text-white font-bold text-sm
-                      shadow-lg shadow-gray-200
-                      hover:bg-emerald-600 hover:shadow-emerald-100
+                      bg-gradient-to-r from-emerald-600 to-emerald-500
+                      text-white font-semibold text-sm
+                      shadow-lg shadow-emerald-900/30
+                      hover:from-emerald-500 hover:to-emerald-400
+                      hover:shadow-emerald-500/30
                       active:scale-[0.97]
-                      transition-all duration-300 mt-auto
+                      transition-all duration-300
                     "
                   >
                     <Truck size={16} />
@@ -487,17 +516,17 @@ const FoodFeed = () => {
             <button
               onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${currentPage === 1 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900 border border-gray-200 hover:bg-gray-50'}`}
+              className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${currentPage === 1 ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/[0.1]'}`}
             >
               Previous
             </button>
-            <span className="text-gray-500 text-sm font-bold">
-              Page <span className="text-gray-900">{currentPage}</span> of <span className="text-gray-900">{totalPages}</span>
+            <span className="text-slate-400 text-sm font-medium">
+              Page <span className="text-white">{currentPage}</span> of <span className="text-white">{totalPages}</span>
             </span>
             <button
               onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className={`px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${currentPage === totalPages ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-white text-gray-900 border border-gray-200 hover:bg-gray-50'}`}
+              className={`px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${currentPage === totalPages ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-white/[0.05] hover:bg-white/[0.1] text-white border border-white/[0.1]'}`}
             >
               Next
             </button>
@@ -509,20 +538,20 @@ const FoodFeed = () => {
       {isModalOpen && selectedItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div 
-            className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"
             onClick={() => !pickupConfirmed && setIsModalOpen(false)}
           />
           
-          <div className="relative w-full max-w-md bg-white border border-gray-200 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-300">
+          <div className="relative w-full max-w-md bg-slate-800 border border-slate-700 rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-300">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-white">
-              <h3 className="text-lg font-black text-gray-900">
-                {pickupConfirmed ? 'Pickup Confirmed!' : 'Confirm Request'}
+            <div className="px-6 py-4 border-b border-slate-700 flex items-center justify-between bg-slate-800/50">
+              <h3 className="text-lg font-bold text-white">
+                {pickupConfirmed ? 'Pickup Confirmed!' : 'Confirm Pickup Request'}
               </h3>
               {!pickupConfirmed && (
                 <button 
                   onClick={() => setIsModalOpen(false)}
-                  className="text-gray-400 hover:text-gray-900 transition-colors"
+                  className="text-slate-400 hover:text-white transition-colors"
                 >
                   <X size={20} />
                 </button>
@@ -530,15 +559,15 @@ const FoodFeed = () => {
             </div>
 
             {/* Modal Body */}
-            <div className="p-8 text-center">
+            <div className="p-6">
               {pickupConfirmed ? (
-                <div className="flex flex-col items-center justify-center">
-                  <div className="w-20 h-20 rounded-full bg-emerald-50 flex items-center justify-center mb-6 border border-emerald-100">
-                    <CheckCircle size={40} className="text-emerald-500" />
+                <div className="flex flex-col items-center justify-center text-center py-6">
+                  <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mb-4">
+                    <CheckCircle size={32} className="text-emerald-400" />
                   </div>
-                  <h4 className="text-2xl font-black text-gray-900 mb-2">Success!</h4>
-                  <p className="text-gray-500 text-sm mb-8 font-medium">
-                    {selectedItem.donor} has been notified.
+                  <h4 className="text-xl font-bold text-white mb-2">Request Sent Successfully!</h4>
+                  <p className="text-slate-400 text-sm mb-6">
+                    The donor ({selectedItem.donor}) has been notified. Please collect the items {selectedItem.collectBefore.toLowerCase()}.
                   </p>
                   <button
                     onClick={() => {
@@ -548,31 +577,33 @@ const FoodFeed = () => {
                         navigate('/organization/my-requests');
                       }, 150);
                     }}
-                    className="w-full px-4 py-4 rounded-xl bg-gray-900 text-white font-bold hover:bg-gray-800 transition-all shadow-xl shadow-gray-200"
+                    className="w-full px-4 py-3 rounded-xl bg-slate-700 text-white font-semibold hover:bg-slate-600 transition-colors"
                   >
-                    Go to My Collections
+                    Go to My Requests
                   </button>
                 </div>
               ) : (
                 <>
-                  <div className="flex flex-col items-center mb-8">
-                    <div className="w-24 h-24 rounded-2xl overflow-hidden mb-4 border border-gray-100 shadow-sm">
+                  <div className="flex gap-4 mb-6">
+                    <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 border border-slate-600">
                       <img src={selectedItem.image} alt={selectedItem.name} className="w-full h-full object-cover" />
                     </div>
-                    <h4 className="text-xl font-black text-gray-900 leading-tight mb-1">{selectedItem.name}</h4>
-                    <p className="text-gray-500 text-sm mb-4">From: <span className="text-emerald-600 font-bold">{selectedItem.donor}</span></p>
-                    <div className="flex gap-2">
-                      <span className="px-3 py-1 rounded-full bg-gray-50 text-gray-600 text-xs font-bold border border-gray-100">{selectedItem.quantity}</span>
-                      <span className="px-3 py-1 rounded-full bg-gray-50 text-gray-600 text-xs font-bold border border-gray-100">{selectedItem.distance}</span>
+                    <div>
+                      <h4 className="text-white font-bold text-lg leading-tight mb-1">{selectedItem.name}</h4>
+                      <p className="text-slate-400 text-sm mb-2">From: <span className="text-slate-300 font-medium">{selectedItem.donor}</span></p>
+                      <div className="flex gap-2">
+                        <span className="px-2 py-1 rounded-md bg-emerald-500/10 text-emerald-400 text-xs font-semibold">{selectedItem.quantity}</span>
+                        <span className="px-2 py-1 rounded-md bg-slate-700 text-slate-300 text-xs">{selectedItem.distance}</span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 mb-8 flex gap-3 items-start text-left">
-                    <AlertTriangle size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                  <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-6 flex gap-3 items-start">
+                    <AlertTriangle size={20} className="text-amber-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h5 className="text-amber-700 font-bold text-sm mb-1">Commitment Required</h5>
-                      <p className="text-amber-600 text-xs leading-relaxed font-medium">
-                        Please collect before {selectedItem.collectBefore.toLowerCase()}.
+                      <h5 className="text-amber-400 font-semibold text-sm mb-1">Important Requirement</h5>
+                      <p className="text-amber-200/70 text-xs leading-relaxed">
+                        You must be able to collect this item {selectedItem.collectBefore.toLowerCase()}. Failure to pick up requested items may result in a temporary suspension of your account.
                       </p>
                     </div>
                   </div>
@@ -580,7 +611,7 @@ const FoodFeed = () => {
                   <div className="flex gap-3">
                     <button
                       onClick={() => setIsModalOpen(false)}
-                      className="flex-1 px-4 py-4 rounded-xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 transition-colors"
+                      className="flex-1 px-4 py-3 rounded-xl bg-slate-700 text-white font-semibold hover:bg-slate-600 transition-colors"
                     >
                       Cancel
                     </button>
@@ -607,9 +638,9 @@ const FoodFeed = () => {
                         setFeedItems(prev => prev.filter(item => item.id !== selectedItem.id));
                         setPickupConfirmed(true);
                       }}
-                      className="flex-1 px-4 py-4 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200"
+                      className="flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold hover:from-emerald-500 hover:to-emerald-400 transition-all shadow-lg shadow-emerald-900/20"
                     >
-                      Confirm
+                      Confirm Request
                     </button>
                   </div>
                 </>
