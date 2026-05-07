@@ -13,6 +13,7 @@ import MyRequests from './pages/Organization/MyRequests';
 import DonationHistory from './pages/Organization/DonationHistory';
 import OrganizationDashboard from './pages/Organization/OrganizationDashboard';
 import ImpactAnalysis from './pages/Organization/ImpactAnalysis';
+import OrganizationSettings from './pages/Organization/OrganizationSettings';
 
 // Auth pages
 import SignIn from './pages/Auth/SignIn';
@@ -47,7 +48,7 @@ function App() {
             <Route path="/organization/my-requests" element={<MyRequests />} />
             <Route path="/organization/donation-history" element={<DonationHistory />} />
             <Route path="/organization/impact-analytics" element={<ImpactAnalysis />} />
-            <Route path="/organization/settings" element={<div className="p-6"><h1 className="text-3xl font-bold text-gray-900 mb-6">Settings</h1><div className="bg-white rounded-lg shadow p-6"><p className="text-gray-600">Profile and notification management.</p></div></div>} />
+            <Route path="/organization/settings" element={<OrganizationSettings />} />
           </Route>
 
           {/* Customer Routes - WITH Sidebar Navigation */}
