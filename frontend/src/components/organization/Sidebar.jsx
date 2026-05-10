@@ -18,7 +18,7 @@ import {
   Bell
 } from 'lucide-react';
 
-const Sidebar = () => {
+const Sidebar = ({ unreadCount }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
@@ -56,7 +56,7 @@ const Sidebar = () => {
       subItems: [
         { name: 'Profile', path: '/organization/settings/profile', icon: User },
         { name: 'Security', path: '/organization/settings/security', icon: Shield },
-        { name: 'Notifications', path: '/organization/settings/notifications', icon: Bell },
+        { name: 'Notifications', path: '/organization/settings/notifications', icon: Bell, badge: unreadCount },
       ]
     },
   ];
@@ -144,7 +144,14 @@ const Sidebar = () => {
                         <Icon size={20} />
                         <span className="font-medium">{link.name}</span>
                       </div>
-                      {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                      <div className="flex items-center gap-2">
+                        {unreadCount > 0 && link.name === 'Settings' && !isExpanded && (
+                          <span className="flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-emerald-500 text-white text-[10px] font-bold shadow-sm">
+                            {unreadCount}
+                          </span>
+                        )}
+                        {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                      </div>
                     </button>
                   ) : (
                     <NavLink
@@ -176,7 +183,7 @@ const Sidebar = () => {
                             key={subItem.path}
                             to={subItem.path}
                             className={({ isActive }) => `
-                              flex items-center space-x-3 px-4 py-2.5 rounded-lg transition-all duration-200
+                              flex items-center justify-between px-4 py-2.5 rounded-lg transition-all duration-200
                               ${isActive
                                 ? 'bg-emerald-600 text-white shadow-md shadow-emerald-100'
                                 : 'text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 text-sm'
@@ -188,8 +195,21 @@ const Sidebar = () => {
                               }
                             }}
                           >
-                            <SubIcon size={16} />
-                            <span className="font-medium">{subItem.name}</span>
+                            <div className="flex items-center space-x-3">
+                              <SubIcon size={16} />
+                              <span className="font-medium">{subItem.name}</span>
+                            </div>
+                            {subItem.badge > 0 && (
+                              <span className={`
+                                flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-bold
+                                ${window.location.pathname === subItem.path 
+                                  ? 'bg-white text-emerald-600' 
+                                  : 'bg-emerald-500 text-white shadow-sm'
+                                }
+                              `}>
+                                {subItem.badge}
+                              </span>
+                            )}
                           </NavLink>
                         );
                       })}

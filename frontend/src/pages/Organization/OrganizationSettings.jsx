@@ -4,13 +4,15 @@ import {
   Globe, Lock, Eye, EyeOff, Save,
   CheckCircle2, Building2, ChevronRight, Upload,
   Key, ShieldCheck, Smartphone, History, ArrowRight, Laptop, LogOut,
-  MapPin, UserCircle, FileText, Calendar, Hash, Trash2, Pencil, X
+  MapPin, UserCircle, FileText, Calendar, Hash, Trash2, Pencil, X,
+  ClipboardList, AlertTriangle, BarChart3
 } from 'lucide-react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 
 const OrganizationSettings = () => {
   const { tab } = useParams();
   const navigate = useNavigate();
+  const { notifications: notificationsList, setNotifications: setNotificationsList } = useOutletContext();
   const activeTab = tab || 'profile';
   
   const [showPassword, setShowPassword] = useState(false);
@@ -28,6 +30,8 @@ const OrganizationSettings = () => {
     os: 'Windows',
     icon: Laptop
   });
+
+  const [showOlder, setShowOlder] = useState(false);
 
   useEffect(() => {
     const ua = navigator.userAgent;
@@ -467,12 +471,124 @@ const OrganizationSettings = () => {
 
                 {/* ── NOTIFICATIONS SECTION (Placeholder) ── */}
                 {activeTab === 'notifications' && (
-                  <div className="flex flex-col items-center justify-center py-20 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="p-6 rounded-full bg-gray-50 border border-gray-100 mb-4">
-                      <Bell size={48} className="text-gray-300" />
+                  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <h2 className="text-xl font-bold text-gray-900 mb-1">Notifications</h2>
+                        <p className="text-sm text-gray-500">Stay updated with your organization's activities.</p>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          setNotificationsList(prev => prev.map(n => ({...n, unread: false})));
+                        }}
+                        className="text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg transition-colors active:scale-95"
+                      >
+                        Mark all as read
+                      </button>
                     </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">Notification Preferences</h3>
-                    <p className="text-gray-500 max-w-sm">Manage how and when you receive updates from Fresh Track.</p>
+
+                    <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                      {notificationsList.map((notif) => (
+                        <div 
+                          key={notif.id}
+                          onClick={() => {
+                            setNotificationsList(prev => prev.map(n => 
+                              n.id === notif.id ? { ...n, unread: false } : n
+                            ));
+                          }}
+                          className={`group relative flex items-start gap-4 p-4 rounded-2xl border transition-all duration-300 hover:shadow-md cursor-pointer ${
+                            notif.unread 
+                              ? 'bg-emerald-50/60 border-emerald-200 border-l-4 border-l-emerald-500 shadow-sm' 
+                              : 'bg-white border-gray-100'
+                          }`}
+                        >
+                          <div className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${
+                            notif.type === 'success' ? 'bg-emerald-100 text-emerald-600' :
+                            notif.type === 'warning' ? 'bg-orange-100 text-orange-600' :
+                            'bg-blue-100 text-blue-600'
+                          }`}>
+                            <notif.icon size={24} />
+                          </div>
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-1">
+                              <h4 className={`text-sm font-bold ${notif.unread ? 'text-emerald-900' : 'text-gray-700'}`}>
+                                {notif.title}
+                              </h4>
+                              <div className="flex flex-col items-end">
+                                <span className={`text-[10px] font-bold ${notif.unread ? 'text-emerald-600' : 'text-gray-400'}`}>
+                                  {notif.time}
+                                </span>
+                                {notif.unread && (
+                                  <div className="flex items-center gap-1.5 mt-1">
+                                    <span className="text-[9px] font-black text-emerald-600 uppercase tracking-tighter">New</span>
+                                    <div className="w-2 h-2 bg-emerald-500 rounded-full border-2 border-white shadow-sm animate-pulse" />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <p className={`text-sm leading-relaxed truncate group-hover:whitespace-normal transition-all ${
+                              notif.unread ? 'text-gray-700 font-medium' : 'text-gray-500'
+                            }`}>
+                              {notif.message}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {showOlder && [
+                        {
+                          id: 5,
+                          title: "Listing Expired",
+                          message: "Your listing for 'Mixed Vegetables' has expired and been removed.",
+                          time: "3 days ago",
+                          type: "warning",
+                          unread: false,
+                          icon: AlertTriangle
+                        },
+                        {
+                          id: 6,
+                          title: "Profile Updated",
+                          message: "Your organization profile was successfully updated.",
+                          time: "1 week ago",
+                          type: "success",
+                          unread: false,
+                          icon: UserCircle
+                        }
+                      ].map((notif) => (
+                        <div 
+                          key={notif.id}
+                          className="flex items-start gap-4 p-4 rounded-2xl border bg-white border-gray-100 transition-all hover:shadow-md opacity-70 hover:opacity-100"
+                        >
+                          <div className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${
+                            notif.type === 'success' ? 'bg-emerald-100 text-emerald-600' :
+                            notif.type === 'warning' ? 'bg-orange-100 text-orange-600' :
+                            'bg-blue-100 text-blue-600'
+                          }`}>
+                            <notif.icon size={24} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-1">
+                              <h4 className="text-sm font-bold text-gray-700">{notif.title}</h4>
+                              <span className="text-[10px] font-bold text-gray-400">{notif.time}</span>
+                            </div>
+                            <p className="text-sm text-gray-500 leading-relaxed truncate group-hover:whitespace-normal transition-all">
+                              {notif.message}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="pt-4 text-center">
+                      <button 
+                        onClick={() => setShowOlder(!showOlder)}
+                        className="text-sm font-bold text-gray-400 hover:text-emerald-600 transition-colors flex items-center justify-center gap-2 mx-auto"
+                      >
+                        {showOlder ? "Hide older notifications" : "View older notifications"}
+                        <ChevronRight size={16} className={`transition-transform ${showOlder ? 'rotate-90' : ''}`} />
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -499,32 +615,6 @@ const OrganizationSettings = () => {
                 className="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 shadow-lg shadow-red-200 transition-all"
               >
                 Yes, Log Out
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Delete Logo Confirmation Modal */}
-      {showDeleteLogoConfirm && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setShowDeleteLogoConfirm(false)} />
-          <div className="relative w-full max-w-sm bg-white border border-gray-200 rounded-3xl shadow-2xl p-8 flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-300">
-            <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center mb-6">
-              <Trash2 size={36} className="text-red-500" />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Remove logo?</h3>
-            <p className="text-gray-500 text-sm mb-8 leading-relaxed">This will permanently remove your organization logo.</p>
-            <div className="flex gap-3 w-full">
-              <button onClick={() => setShowDeleteLogoConfirm(false)} className="flex-1 py-3 rounded-xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 transition-all">Cancel</button>
-              <button 
-                onClick={() => { 
-                  setProfileData({...profileData, logo: null}); 
-                  setShowDeleteLogoConfirm(false); 
-                }} 
-                className="flex-1 py-3 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 shadow-lg shadow-red-200 transition-all"
-              >
-                Delete Logo
               </button>
             </div>
           </div>
