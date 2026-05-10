@@ -25,6 +25,56 @@ const OrganizationSettings = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [originalData, setOriginalData] = useState(null);
   
+  const [passwords, setPasswords] = useState({
+    current: '',
+    new: '',
+    confirm: ''
+  });
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+  const [show2FAModal, setShow2FAModal] = useState(false);
+  const [twoFACode, setTwoFACode] = useState('');
+  const [isVerifying2FA, setIsVerifying2FA] = useState(false);
+
+  const handlePasswordUpdate = () => {
+    // Simulated check for demonstration
+    const MOCK_CURRENT_PASSWORD = "password123";
+
+    if (!passwords.current || !passwords.new || !passwords.confirm) {
+      alert("Please fill in all password fields.");
+      return;
+    }
+
+    if (passwords.current !== MOCK_CURRENT_PASSWORD) {
+      alert("Incorrect current password. Please try 'password123' for this demo.");
+      return;
+    }
+
+    if (passwords.new !== passwords.confirm) {
+      alert("New passwords do not match.");
+      return;
+    }
+    
+    setIsSaving(true);
+    setTimeout(() => {
+      setIsSaving(false);
+      setSaveSuccess(true);
+      setPasswords({ current: '', new: '', confirm: '' });
+      setTimeout(() => setSaveSuccess(false), 3000);
+    }, 1500);
+  };
+
+  const handleEnable2FA = () => {
+    setIsVerifying2FA(true);
+    setTimeout(() => {
+      setIsVerifying2FA(false);
+      setIs2FAEnabled(true);
+      setShow2FAModal(false);
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    }, 2000);
+  };
+  
   const [deviceInfo, setDeviceInfo] = useState({
     browser: 'Chrome',
     os: 'Windows',
@@ -83,6 +133,21 @@ const OrganizationSettings = () => {
           <h1 className="text-2xl font-bold text-gray-900 mb-1 tracking-tight">Settings</h1>
           <p className="text-sm text-gray-500">Manage your organization's account and preferences.</p>
         </header>
+
+        {/* Global Save Notification */}
+        {saveSuccess && (
+          <div className="fixed top-6 right-6 z-[200] animate-in slide-in-from-right duration-300">
+            <div className="bg-emerald-600 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border border-emerald-500">
+              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                <CheckCircle2 size={18} />
+              </div>
+              <div>
+                <p className="font-bold text-sm">Action Successful</p>
+                <p className="text-xs text-emerald-50">Changes have been updated successfully.</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="flex flex-col gap-8">
           {/* Main Content Area */}
@@ -360,6 +425,8 @@ const OrganizationSettings = () => {
                                 </div>
                                 <input 
                                   type={showPassword ? "text" : "password"}
+                                  value={passwords.current}
+                                  onChange={(e) => setPasswords({...passwords, current: e.target.value})}
                                   className="w-full pl-11 pr-12 py-3.5 rounded-2xl bg-gray-50 border border-gray-200 focus:border-emerald-500 focus:bg-white outline-none transition-all text-sm font-medium text-gray-900 placeholder-gray-400"
                                   placeholder="Enter current password"
                                 />
@@ -381,10 +448,19 @@ const OrganizationSettings = () => {
                                     <Shield size={18} />
                                   </div>
                                   <input 
-                                    type="password"
-                                    className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-gray-50 border border-gray-200 focus:border-emerald-500 focus:bg-white outline-none transition-all text-sm font-medium text-gray-900 placeholder-gray-400"
+                                    type={showNewPassword ? "text" : "password"}
+                                    value={passwords.new}
+                                    onChange={(e) => setPasswords({...passwords, new: e.target.value})}
+                                    className="w-full pl-11 pr-12 py-3.5 rounded-2xl bg-gray-50 border border-gray-200 focus:border-emerald-500 focus:bg-white outline-none transition-all text-sm font-medium text-gray-900 placeholder-gray-400"
                                     placeholder="New password"
                                   />
+                                  <button 
+                                    type="button"
+                                    onClick={() => setShowNewPassword(!showNewPassword)}
+                                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                                  >
+                                    {showNewPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                  </button>
                                 </div>
                               </div>
                               <div className="space-y-2">
@@ -394,7 +470,9 @@ const OrganizationSettings = () => {
                                     <Shield size={18} />
                                   </div>
                                   <input 
-                                    type="password"
+                                    type={showNewPassword ? "text" : "password"}
+                                    value={passwords.confirm}
+                                    onChange={(e) => setPasswords({...passwords, confirm: e.target.value})}
                                     className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-gray-50 border border-gray-200 focus:border-emerald-500 focus:bg-white outline-none transition-all text-sm font-medium text-gray-900 placeholder-gray-400"
                                     placeholder="Confirm password"
                                   />
@@ -403,8 +481,12 @@ const OrganizationSettings = () => {
                             </div>
 
                             <div className="pt-4 flex justify-end">
-                              <button className="px-8 py-3.5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 shadow-lg shadow-emerald-100 transition-all active:scale-[0.98] flex items-center gap-2">
-                                Update Password
+                              <button 
+                                onClick={handlePasswordUpdate}
+                                disabled={isSaving}
+                                className={`px-8 py-3.5 rounded-xl bg-emerald-600 text-white text-sm font-bold hover:bg-emerald-700 shadow-lg shadow-emerald-100 transition-all active:scale-[0.98] flex items-center gap-2 ${isSaving ? 'opacity-70 cursor-not-allowed' : ''}`}
+                              >
+                                {isSaving ? 'Updating...' : 'Update Password'}
                                 <ArrowRight size={16} />
                               </button>
                             </div>
@@ -458,10 +540,19 @@ const OrganizationSettings = () => {
                         <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
                           <h4 className="font-bold text-gray-900 mb-4">Two-Factor Auth</h4>
                           <p className="text-xs text-gray-500 mb-6 leading-relaxed">
-                            Add an extra layer of security by requiring a code from your phone.
+                            {is2FAEnabled 
+                              ? "Your account is protected with 2FA. We will ask for a code on unrecognized devices."
+                              : "Add an extra layer of security by requiring a code from your phone."}
                           </p>
-                          <button className="w-full py-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-700 text-sm font-bold hover:bg-gray-100 transition-all">
-                            Enable 2FA
+                          <button 
+                            onClick={() => is2FAEnabled ? setIs2FAEnabled(false) : setShow2FAModal(true)}
+                            className={`w-full py-3 rounded-xl border text-sm font-bold transition-all ${
+                              is2FAEnabled 
+                                ? 'bg-red-50 border-red-100 text-red-600 hover:bg-red-100' 
+                                : 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100'
+                            }`}
+                          >
+                            {is2FAEnabled ? 'Disable 2FA' : 'Enable 2FA'}
                           </button>
                         </div>
                       </div>
@@ -469,7 +560,7 @@ const OrganizationSettings = () => {
                   </div>
                 )}
 
-                {/* ── NOTIFICATIONS SECTION (Placeholder) ── */}
+                {/* ── NOTIFICATIONS SECTION ── */}
                 {activeTab === 'notifications' && (
                   <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <div className="flex items-center justify-between mb-2">
@@ -696,6 +787,64 @@ const OrganizationSettings = () => {
               >
                 Save Changes
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* 2FA Setup Modal */}
+      {show2FAModal && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setShow2FAModal(false)} />
+          <div className="relative w-full max-w-md bg-white border border-gray-200 rounded-3xl shadow-2xl p-8 animate-in fade-in zoom-in-95 duration-300">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Setup 2FA</h3>
+                <p className="text-sm text-gray-500">Scan the QR code to secure your account.</p>
+              </div>
+              <button onClick={() => setShow2FAModal(false)} className="p-2 hover:bg-gray-100 rounded-xl transition-colors">
+                <X size={20} className="text-gray-400" />
+              </button>
+            </div>
+
+            <div className="flex flex-col items-center gap-6 py-4">
+              <div className="w-48 h-48 bg-gray-100 rounded-2xl border-4 border-white shadow-inner flex items-center justify-center relative overflow-hidden group">
+                {/* Mock QR Code Pattern */}
+                <div className="grid grid-cols-6 gap-1 opacity-20 group-hover:opacity-30 transition-opacity">
+                  {[...Array(36)].map((_, i) => (
+                    <div key={i} className={`w-6 h-6 ${Math.random() > 0.5 ? 'bg-emerald-900' : 'bg-transparent'}`} />
+                  ))}
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center bg-white/40 backdrop-blur-[1px]">
+                  <Smartphone size={48} className="text-emerald-600 animate-bounce" />
+                </div>
+              </div>
+
+              <div className="w-full space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-widest ml-1">Verification Code</label>
+                  <input 
+                    type="text" 
+                    value={twoFACode}
+                    onChange={(e) => setTwoFACode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    className="w-full px-4 py-3.5 rounded-2xl bg-gray-50 border border-gray-200 focus:border-emerald-500 focus:bg-white text-center text-2xl font-mono font-bold tracking-[0.5em] outline-none transition-all"
+                    placeholder="000000"
+                  />
+                </div>
+                <button 
+                  onClick={handleEnable2FA}
+                  disabled={twoFACode.length !== 6 || isVerifying2FA}
+                  className={`w-full py-4 rounded-2xl bg-emerald-600 text-white font-bold shadow-lg shadow-emerald-200 transition-all active:scale-95 flex items-center justify-center gap-3 ${
+                    (twoFACode.length !== 6 || isVerifying2FA) ? 'opacity-70 cursor-not-allowed' : 'hover:bg-emerald-700'
+                  }`}
+                >
+                  {isVerifying2FA ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <ShieldCheck size={20} />
+                  )}
+                  {isVerifying2FA ? 'Verifying...' : 'Complete Setup'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
