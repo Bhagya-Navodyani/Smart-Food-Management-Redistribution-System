@@ -176,12 +176,12 @@ export default function CustomerDashboard() {
         <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Customer Dashboard</h1>
-              <p className="text-gray-600">Find great food deals and reduce waste in your community</p>
+              <h1 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2 tracking-tight">Customer Dashboard</h1>
+              <p className="text-sm text-gray-500 font-normal">Find great food deals and reduce waste in your community</p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-500">Welcome back!</p>
-              <p className="text-lg font-semibold text-green-600">Smart Saver</p>
+              <p className="text-xs md:text-sm text-gray-400 font-bold uppercase tracking-[0.2em]">Welcome back!</p>
+              <p className="text-sm md:text-base font-semibold text-green-600">Smart Saver</p>
             </div>
           </div>
         </div>
@@ -194,9 +194,9 @@ export default function CustomerDashboard() {
           <Link to="/customer/orders" className="group">
             <div className="bg-red-500 rounded-xl p-8 hover:bg-red-600 transition-all duration-300 transform hover:scale-105 cursor-pointer shadow-lg">
               <div className="text-center">
-                <div className="text-6xl font-bold text-white mb-2">3</div>
-                <p className="text-xl font-semibold text-white mb-1">Items Expiring Today</p>
-                <p className="text-red-100 text-sm">Act now to save food!</p>
+                <div className="text-3xl md:text-4xl font-semibold text-white mb-2">3</div>
+                <p className="text-sm md:text-base font-semibold text-white mb-1 tracking-tight">Items Expiring Today</p>
+                <p className="text-red-100 text-xs font-normal">Act now to save food!</p>
               </div>
             </div>
           </Link>
@@ -205,9 +205,9 @@ export default function CustomerDashboard() {
           <Link to="/customer/impact" className="group">
             <div className="bg-green-500 rounded-xl p-8 hover:bg-green-600 transition-all duration-300 transform hover:scale-105 cursor-pointer shadow-lg">
               <div className="text-center">
-                <div className="text-6xl font-bold text-white mb-2">247</div>
-                <p className="text-xl font-semibold text-white mb-1">Total Items Saved</p>
-                <p className="text-green-100 text-sm">Great job helping!</p>
+                <div className="text-3xl md:text-4xl font-semibold text-white mb-2">247</div>
+                <p className="text-sm md:text-base font-semibold text-white mb-1 tracking-tight">Total Items Saved</p>
+                <p className="text-green-100 text-xs font-normal">Great job helping!</p>
               </div>
             </div>
           </Link>
@@ -216,9 +216,9 @@ export default function CustomerDashboard() {
           <Link to="/customer/browse-food" className="group">
             <div className="bg-blue-500 rounded-xl p-8 hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 cursor-pointer shadow-lg">
               <div className="text-center">
-                <div className="text-6xl font-bold text-white mb-2">12</div>
-                <p className="text-xl font-semibold text-white mb-1">New Deals Available</p>
-                <p className="text-blue-100 text-sm">Save money now!</p>
+                <div className="text-3xl md:text-4xl font-semibold text-white mb-2">12</div>
+                <p className="text-sm md:text-base font-semibold text-white mb-1 tracking-tight">New Deals Available</p>
+                <p className="text-blue-100 text-xs font-normal">Save money now!</p>
               </div>
             </div>
           </Link>
@@ -246,8 +246,8 @@ export default function CustomerDashboard() {
                 <div className="flex items-center gap-3">
                   <img src={stat.image} alt="" className="w-12 h-12 rounded-lg object-cover" />
                   <div>
-                    <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                    <p className="text-sm text-gray-600">{stat.title}</p>
+                    <p className="text-xl md:text-2xl font-semibold text-gray-900">{stat.value}</p>
+                    <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.18em]">{stat.title}</p>
                   </div>
                 </div>
               </div>
@@ -260,7 +260,7 @@ export default function CustomerDashboard() {
         {/* Quick Actions */}
         <div className="lg:col-span-2">
           <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <h2 className="text-lg md:text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2 tracking-tight">
               <Target className="w-5 h-5 text-green-600" />
               Quick Actions
             </h2>
@@ -275,8 +275,8 @@ export default function CustomerDashboard() {
                           <Icon className="w-8 h-8" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-semibold text-gray-900 mb-1">{action.title}</h3>
-                          <p className="text-sm text-gray-600">{action.description}</p>
+                          <h3 className="font-medium text-gray-900 mb-1 text-sm md:text-base">{action.title}</h3>
+                          <p className="text-xs md:text-sm text-gray-500">{action.description}</p>
                         </div>
                       </div>
                       <div className="mt-4 h-20 rounded-lg overflow-hidden">
@@ -295,7 +295,7 @@ export default function CustomerDashboard() {
 
           {/* Recent Activities */}
           <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <h2 className="text-lg md:text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2 tracking-tight">
               <Clock className="w-5 h-5 text-blue-600" />
               Recent Activities
             </h2>
@@ -313,11 +313,11 @@ export default function CustomerDashboard() {
                     </div>
                   </div>
                   <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900">{activity.title}</h3>
-                    <p className="text-sm text-gray-600">{activity.description}</p>
+                    <h3 className="font-medium text-gray-900 text-sm md:text-base">{activity.title}</h3>
+                    <p className="text-xs md:text-sm text-gray-500">{activity.description}</p>
                     <div className="flex items-center gap-4 mt-1">
-                      <span className="text-xs text-gray-500">{activity.time}</span>
-                      <span className="text-xs font-medium text-green-600">{activity.impact}</span>
+                      <span className="text-[11px] md:text-xs text-gray-400 font-medium">{activity.time}</span>
+                      <span className="text-[11px] md:text-xs font-semibold text-green-600">{activity.impact}</span>
                     </div>
                   </div>
                 </div>
@@ -329,7 +329,7 @@ export default function CustomerDashboard() {
         {/* Tips & Insights */}
         <div className="space-y-6">
           <div className="bg-white rounded-xl shadow-sm p-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+            <h2 className="text-lg md:text-xl font-semibold text-gray-900 mb-6 flex items-center gap-2 tracking-tight">
               <Lightbulb className="w-5 h-5 text-yellow-500" />
               Smart Tips
             </h2>
@@ -343,8 +343,8 @@ export default function CustomerDashboard() {
                         <Icon className="w-5 h-5" />
                       </div>
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-900 text-sm mb-1">{tip.title}</h3>
-                        <p className="text-xs text-gray-600">{tip.description}</p>
+                        <h3 className="font-medium text-gray-900 text-sm mb-1">{tip.title}</h3>
+                        <p className="text-[11px] md:text-xs text-gray-500">{tip.description}</p>
                       </div>
                     </div>
                     <div className="mt-2 h-24 rounded-lg overflow-hidden">
@@ -362,9 +362,9 @@ export default function CustomerDashboard() {
 
           {/* Progress Card */}
           <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl p-6 text-white">
-            <h3 className="text-lg font-bold mb-4">Monthly Savings Goal</h3>
+            <h3 className="text-sm md:text-base font-semibold mb-4 tracking-tight">Monthly Savings Goal</h3>
             <div className="mb-4">
-              <div className="flex justify-between text-sm mb-2">
+              <div className="flex justify-between text-xs mb-2 font-medium">
                 <span>Progress</span>
                 <span>75%</span>
               </div>
@@ -372,7 +372,7 @@ export default function CustomerDashboard() {
                 <div className="bg-white rounded-full h-3 transition-all duration-500" style={{width: '75%'}}></div>
               </div>
             </div>
-            <p className="text-sm text-white/90">Great job! You've saved $892 this month. Just $108 more to reach your goal!</p>
+            <p className="text-xs text-white/90 font-normal">Great job! You've saved $892 this month. Just $108 more to reach your goal!</p>
           </div>
         </div>
       </div>
