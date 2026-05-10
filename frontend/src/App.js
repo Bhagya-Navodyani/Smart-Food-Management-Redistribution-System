@@ -49,6 +49,7 @@ function App() {
             <Route path="/organization/donation-history" element={<DonationHistory />} />
             <Route path="/organization/impact-analytics" element={<ImpactAnalysis />} />
             <Route path="/organization/settings" element={<OrganizationSettings />} />
+            <Route path="/organization/settings/:tab" element={<OrganizationSettings />} />
           </Route>
 
           {/* Customer Routes - WITH Sidebar Navigation */}
