@@ -1,70 +1,56 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard,
-  ShoppingBasket,
-  Package,
+  Home,
+  Refrigerator,
+  Search,
   Heart,
-  TrendingUp,
-  User,
+  BarChart3,
   Settings,
-  ListChecks,
-  AlertTriangle,
-  HandHeart,
-  Zap,
+  Menu,
   X,
   LogOut,
-  ChevronDown
+  AlertTriangle,
+  HelpCircle
 } from 'lucide-react';
 
 const CustomerSidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
-  const [expandedGroup, setExpandedGroup] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const navigationGroups = [
+  const navigationLinks = [
     {
-      name: 'Dashboard',
+      name: 'Home',
       path: '/customer/dashboard',
-      icon: LayoutDashboard,
-      group: null
+      icon: Home,
     },
     {
-      groupName: 'Food Management',
-      icon: ListChecks,
-      items: [
-        { name: 'My Food Items', path: '/customer/food-list' },
-        { name: 'Track Expiry', path: '/customer/expiry-tracking' }
-      ]
+      name: 'My Kitchen',
+      path: '/customer/orders',
+      icon: Refrigerator,
     },
     {
-      groupName: 'Actions & Impact',
-      icon: Zap,
-      items: [
-        { name: 'Action Panel', path: '/customer/actions' },
-        { name: 'Donate / Sell', path: '/customer/create-listing' },
-        { name: 'Analytics', path: '/customer/impact' }
-      ]
+      name: 'Find Food',
+      path: '/customer/browse-food',
+      icon: Search,
     },
     {
-      groupName: 'Shopping',
-      icon: ShoppingBasket,
-      items: [
-        { name: 'Marketplace', path: '/customer/marketplace' },
-        { name: 'My Orders', path: '/customer/orders' },
-        { name: 'Saved Items', path: '/customer/saved' }
-      ]
+      name: 'Give Food',
+      path: '/customer/give-food',
+      icon: Heart,
     },
     {
-      groupName: 'Account',
-      icon: User,
-      items: [
-        { name: 'Profile', path: '/customer/profile' },
-        { name: 'Settings', path: '/customer/settings' }
-      ]
-    }
+      name: 'My Impact',
+      path: '/customer/impact',
+      icon: BarChart3,
+    },
+    {
+      name: 'Settings',
+      path: '/customer/settings',
+      icon: Settings,
+    },
   ];
 
   const handleLogout = () => {
@@ -83,12 +69,12 @@ const CustomerSidebar = () => {
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-                <ShoppingBasket className="w-6 h-6 text-white" />
+              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+                <Home className="w-7 h-7 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">Customer</h1>
-                <p className="text-sm text-gray-500">Portal</p>
+                <h1 className="text-2xl font-bold text-gray-900">Food Portal</h1>
+                <p className="text-sm text-gray-600">Simple & Easy</p>
               </div>
             </div>
             <button
@@ -101,87 +87,43 @@ const CustomerSidebar = () => {
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto p-4 space-y-1">
-          {navigationGroups.map((item, index) => {
-            // Single item (Dashboard)
-            if (!item.groupName) {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.path;
-              return (
-                <button
-                  key={item.path}
-                  onClick={() => navigate(item.path)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                    isActive
-                      ? 'bg-green-50 text-green-600 border-l-4 border-green-600'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-medium">{item.name}</span>
-                </button>
-              );
-            }
-
-            // Group items
-            const GroupIcon = item.icon;
-            const isGroupExpanded = expandedGroup === index;
-            const isGroupActive = item.items.some((subItem) => location.pathname === subItem.path);
+        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+          {navigationLinks.map((link) => {
+            const Icon = link.icon;
+            const isActive = location.pathname === link.path;
 
             return (
-              <div key={item.groupName}>
-                <button
-                  onClick={() => setExpandedGroup(isGroupExpanded ? null : index)}
-                  className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
-                    isGroupActive
-                      ? 'bg-green-50 text-green-600'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <GroupIcon className="w-5 h-5" />
-                    <span className="font-medium">{item.groupName}</span>
-                  </div>
-                  <ChevronDown
-                    className={`w-4 h-4 transition-transform duration-200 ${
-                      isGroupExpanded ? 'rotate-180' : ''
-                    }`}
-                  />
-                </button>
-
-                {isGroupExpanded && (
-                  <div className="ml-2 mt-1 space-y-1 border-l border-gray-200 pl-3">
-                    {item.items.map((subItem) => {
-                      const isActive = location.pathname === subItem.path;
-                      return (
-                        <button
-                          key={subItem.path}
-                          onClick={() => navigate(subItem.path)}
-                          className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 text-sm ${
-                            isActive
-                              ? 'text-green-600 font-medium bg-green-50'
-                              : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                          }`}
-                        >
-                          <span>{subItem.name}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+              <button
+                key={link.path}
+                onClick={() => navigate(link.path)}
+                className={`w-full flex items-center gap-4 px-4 py-4 rounded-lg transition-all duration-200
+                  ${isActive
+                    ? 'bg-green-50 text-gray-900 border-l-4 border-green-600 font-bold'
+                    : 'text-gray-800 hover:bg-gray-100 hover:text-gray-900 font-medium'
+                  }
+                `}
+              >
+                <Icon className="w-6 h-6" />
+                <span className="text-lg">{link.name}</span>
+              </button>
             );
           })}
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-200">
+        <div className="p-4 border-t border-gray-200 space-y-2">
+          <button
+            className="w-full flex items-center gap-4 px-4 py-4 text-gray-800 hover:bg-gray-50 rounded-lg transition-colors font-medium"
+          >
+            <HelpCircle className="w-6 h-6" />
+            <span className="text-lg">Help</span>
+          </button>
           <button
             onClick={() => setShowLogoutModal(true)}
-            className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            className="w-full flex items-center gap-4 px-4 py-4 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium"
           >
-            <LogOut className="w-5 h-5" />
-            <span className="font-medium">Sign Out</span>
+            <LogOut className="w-6 h-6" />
+            <span className="text-lg">Sign Out</span>
           </button>
         </div>
       </div>
