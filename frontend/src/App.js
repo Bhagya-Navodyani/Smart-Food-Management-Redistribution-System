@@ -26,16 +26,10 @@ import FoodSellerDashboard from './pages/Dashboards/FoodSellerDashboard';
 // Customer pages
 import BrowseFood from './pages/Customer/BrowseFood';
 import FoodList from './pages/Customer/FoodList';
-import ExpiryTracking from './pages/Customer/ExpiryTracking';
-import ActionPanel from './pages/Customer/ActionPanel';
 import MyOrders from './pages/Customer/MyOrders';
-import SavedItems from './pages/Customer/SavedItems';
-import SchedulePickup from './pages/Customer/SchedulePickup';
 import Impact from './pages/Customer/Impact';
-import Profile from './pages/Customer/Profile';
 import Settings from './pages/Customer/Settings';
 import GiveFood from './pages/Customer/GiveFood';
-import CreateListing from './pages/Customer/CreateListing';
 
 function App() {
   return (
@@ -58,16 +52,10 @@ function App() {
             <Route path="/customer/dashboard" element={<CustomerDashboard />} />
             <Route path="/customer/browse-food" element={<BrowseFood />} />
             <Route path="/customer/food-list" element={<FoodList />} />
-            <Route path="/customer/expiry-tracking" element={<ExpiryTracking />} />
-            <Route path="/customer/actions" element={<ActionPanel />} />
-            <Route path="/customer/create-listing" element={<CreateListing />} />
             <Route path="/customer/marketplace" element={<BrowseFood />} />
             <Route path="/customer/orders" element={<MyOrders />} />
-            <Route path="/customer/saved" element={<SavedItems />} />
             <Route path="/customer/give-food" element={<GiveFood />} />
-            <Route path="/customer/schedule" element={<SchedulePickup />} />
             <Route path="/customer/impact" element={<Impact />} />
-            <Route path="/customer/profile" element={<Profile />} />
             <Route path="/customer/settings" element={<Settings />} />
           </Route>
 
