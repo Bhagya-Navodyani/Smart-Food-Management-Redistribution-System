@@ -66,28 +66,28 @@ const CustomerSidebar = () => {
         lg:translate-x-0 flex flex-col
       `}>
         {/* Header */}
-        <div className="p-6 border-b border-gray-200">
+        <div className="p-4 border-b border-gray-200">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
-                <Home className="w-7 h-7 text-white" />
+              <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+                <Home className="w-5 h-5 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Food Portal</h1>
-                <p className="text-sm text-gray-600">Simple & Easy</p>
+                <h1 className="text-lg font-bold leading-tight text-gray-900">Food Portal</h1>
+                <p className="text-xs leading-tight mt-0.5 text-gray-600">Simple & Easy</p>
               </div>
             </div>
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
               className="lg:hidden p-2 rounded-lg hover:bg-gray-100"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto">
           {navigationLinks.map((link) => {
             const Icon = link.icon;
             const isActive = location.pathname === link.path;
@@ -96,34 +96,34 @@ const CustomerSidebar = () => {
               <button
                 key={link.path}
                 onClick={() => navigate(link.path)}
-                className={`w-full flex items-center gap-4 px-4 py-4 rounded-lg transition-all duration-200
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
                   ${isActive
-                    ? 'bg-green-50 text-gray-900 border-l-4 border-green-600 font-bold'
-                    : 'text-gray-800 hover:bg-gray-100 hover:text-gray-900 font-medium'
+                    ? 'bg-green-50 text-gray-900 border-l-4 border-green-600 font-semibold'
+                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900 font-medium'
                   }
                 `}
               >
-                <Icon className="w-6 h-6" />
-                <span className="text-lg">{link.name}</span>
+                <Icon className="w-5 h-5" />
+                <span className="text-sm lg:text-[15px]">{link.name}</span>
               </button>
             );
           })}
         </nav>
 
         {/* Footer */}
-        <div className="p-4 border-t border-gray-200 space-y-2">
+        <div className="p-3 border-t border-gray-200 space-y-1.5">
           <button
-            className="w-full flex items-center gap-4 px-4 py-4 text-gray-800 hover:bg-gray-50 rounded-lg transition-colors font-medium"
+            className="w-full flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-50 rounded-lg transition-colors font-medium"
           >
-            <HelpCircle className="w-6 h-6" />
-            <span className="text-lg">Help</span>
+            <HelpCircle className="w-5 h-5" />
+            <span className="text-sm lg:text-[15px]">Help</span>
           </button>
           <button
             onClick={() => setShowLogoutModal(true)}
-            className="w-full flex items-center gap-4 px-4 py-4 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium"
+            className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium"
           >
-            <LogOut className="w-6 h-6" />
-            <span className="text-lg">Sign Out</span>
+            <LogOut className="w-5 h-5" />
+            <span className="text-sm lg:text-[15px]">Sign Out</span>
           </button>
         </div>
       </div>
