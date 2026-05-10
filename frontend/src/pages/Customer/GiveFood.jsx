@@ -303,7 +303,7 @@ const GiveFood = () => {
                   className={`
                     px-4 py-2 rounded-lg font-medium transition-all
                     ${selectedFilter === filter.id
-                      ? 'bg-gray-900 text-white'
+                      ? 'bg-green-500 text-white'
                       : 'text-gray-600 hover:bg-gray-100'
                     }
                   `}
@@ -371,7 +371,7 @@ const GiveFood = () => {
                   <span>Requests: {listing.requests}</span>
                 </div>
 
-                <button className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors font-medium text-sm flex items-center gap-2">
+                <button className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium text-sm flex items-center gap-2">
                   VIEW DETAILS
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
