@@ -4,9 +4,12 @@ import {
   Globe, Lock, Eye, EyeOff, Save,
   CheckCircle2, Building2, ChevronRight, Upload
 } from 'lucide-react';
-
+import { useParams, useNavigate } from 'react-router-dom';
 const OrganizationSettings = () => {
-  const [activeTab, setActiveTab] = useState('profile');
+  const { tab } = useParams();
+  const navigate = useNavigate();
+  const activeTab = tab || 'profile';
+  
   const [showPassword, setShowPassword] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -43,36 +46,10 @@ const OrganizationSettings = () => {
           <p className="text-gray-500">Manage your organization's account and preferences.</p>
         </header>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar Tabs */}
-          <aside className="w-full lg:w-64 flex-shrink-0">
-            <nav className="space-y-2">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-2xl transition-all duration-300 text-left border ${
-                    activeTab === tab.id
-                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200 border-emerald-600'
-                      : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-900'
-                  }`}
-                >
-                  <tab.icon size={18} className={activeTab === tab.id ? 'text-white' : 'text-gray-400'} />
-                  <div className="flex-1">
-                    <p className="text-sm font-bold">{tab.label}</p>
-                    <p className={`text-[10px] font-medium ${activeTab === tab.id ? 'text-emerald-100' : 'text-gray-400'}`}>
-                      {tab.description}
-                    </p>
-                  </div>
-                  {activeTab === tab.id && <ChevronRight size={14} className="text-white opacity-70" />}
-                </button>
-              ))}
-            </nav>
-          </aside>
-
+        <div className="flex flex-col gap-8">
           {/* Main Content Area */}
           <main className="flex-1">
-            <div className="bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-sm animate-in fade-in slide-in-from-right-4 duration-500">
+            <div className="bg-white border border-gray-200 rounded-3xl overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
               
               <div className="p-8">
                 {/* ── ORGANIZATION PROFILE SECTION ── */}

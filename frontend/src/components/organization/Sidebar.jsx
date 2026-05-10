@@ -10,7 +10,12 @@ import {
   Menu,
   X,
   LogOut,
-  AlertTriangle
+  AlertTriangle,
+  ChevronDown,
+  ChevronRight,
+  User,
+  Shield,
+  Bell
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -48,8 +53,23 @@ const Sidebar = () => {
       name: 'Settings',
       path: '/organization/settings',
       icon: Settings,
+      subItems: [
+        { name: 'Profile', path: '/organization/settings/profile', icon: User },
+        { name: 'Security', path: '/organization/settings/security', icon: Shield },
+        { name: 'Notifications', path: '/organization/settings/notifications', icon: Bell },
+      ]
     },
   ];
+
+  const [expandedItems, setExpandedItems] = useState(['Settings']);
+
+  const toggleExpand = (name) => {
+    setExpandedItems(prev => 
+      prev.includes(name) 
+        ? prev.filter(item => item !== name) 
+        : [...prev, name]
+    );
+  };
 
   const handleLogoutClick = () => {
     setShowLogoutModal(true);
@@ -101,29 +121,81 @@ const Sidebar = () => {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2">
+          <nav className="flex-1 p-4 space-y-1">
             {navigationLinks.map((link) => {
               const Icon = link.icon;
+              const hasSubItems = link.subItems && link.subItems.length > 0;
+              const isExpanded = expandedItems.includes(link.name);
+
               return (
-                <NavLink
-                  key={link.path}
-                  to={link.path}
-                  className={({ isActive }) => `
-                    flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200
-                    ${isActive
-                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200'
-                      : 'text-gray-500 hover:bg-emerald-50 hover:text-emerald-600'
-                    }
-                  `}
-                  onClick={() => {
-                    if (window.innerWidth < 1024) {
-                      setIsCollapsed(true);
-                    }
-                  }}
-                >
-                  <Icon size={20} />
-                  <span className="font-medium">{link.name}</span>
-                </NavLink>
+                <div key={link.path} className="space-y-1">
+                  {hasSubItems ? (
+                    <button
+                      onClick={() => toggleExpand(link.name)}
+                      className={`
+                        w-full flex items-center justify-between px-4 py-3 rounded-lg transition-all duration-200
+                        ${window.location.pathname.startsWith(link.path)
+                          ? 'bg-emerald-50 text-emerald-600'
+                          : 'text-gray-500 hover:bg-emerald-50 hover:text-emerald-600'
+                        }
+                      `}
+                    >
+                      <div className="flex items-center space-x-3">
+                        <Icon size={20} />
+                        <span className="font-medium">{link.name}</span>
+                      </div>
+                      {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                    </button>
+                  ) : (
+                    <NavLink
+                      to={link.path}
+                      className={({ isActive }) => `
+                        flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200
+                        ${isActive
+                          ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200'
+                          : 'text-gray-500 hover:bg-emerald-50 hover:text-emerald-600'
+                        }
+                      `}
+                      onClick={() => {
+                        if (window.innerWidth < 1024) {
+                          setIsCollapsed(true);
+                        }
+                      }}
+                    >
+                      <Icon size={20} />
+                      <span className="font-medium">{link.name}</span>
+                    </NavLink>
+                  )}
+
+                  {hasSubItems && isExpanded && (
+                    <div className="ml-4 pl-4 border-l border-gray-100 space-y-1 mt-1">
+                      {link.subItems.map((subItem) => {
+                        const SubIcon = subItem.icon;
+                        return (
+                          <NavLink
+                            key={subItem.path}
+                            to={subItem.path}
+                            className={({ isActive }) => `
+                              flex items-center space-x-3 px-4 py-2.5 rounded-lg transition-all duration-200
+                              ${isActive
+                                ? 'bg-emerald-600 text-white shadow-md shadow-emerald-100'
+                                : 'text-gray-500 hover:bg-emerald-50 hover:text-emerald-600 text-sm'
+                              }
+                            `}
+                            onClick={() => {
+                              if (window.innerWidth < 1024) {
+                                setIsCollapsed(true);
+                              }
+                            }}
+                          >
+                            <SubIcon size={16} />
+                            <span className="font-medium">{subItem.name}</span>
+                          </NavLink>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </nav>
