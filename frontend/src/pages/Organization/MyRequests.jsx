@@ -135,7 +135,7 @@ const MyRequests = () => {
   const completedCount = requests.filter(r => r.status === 'Completed').length;
 
   const tabColors = {
-    All: 'bg-gray-900 text-white shadow-lg',
+    All: 'bg-green-500 text-white shadow-lg',
     Pending: 'bg-amber-50 text-amber-600 border border-amber-200',
     Approved: 'bg-blue-50 text-blue-600 border border-blue-200',
     Awaiting: 'bg-indigo-50 text-indigo-600 border border-indigo-200',
