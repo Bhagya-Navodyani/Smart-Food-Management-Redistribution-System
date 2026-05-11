@@ -19,6 +19,7 @@ import {
   X
 } from 'lucide-react';
 import { deleteGiveFoodListing, getGiveFoodListings, updateGiveFoodListing } from '../../data/giveFoodListings';
+import LocationPicker from '../../components/LocationPicker';
 
 const FoodDetails = () => {
   const { id } = useParams();
@@ -27,6 +28,7 @@ const FoodDetails = () => {
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [editForm, setEditForm] = useState(null);
   const updateImageInputRef = useRef(null);
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
 
   const listing = getGiveFoodListings().find(item => item.id === parseInt(id));
 
@@ -89,6 +91,10 @@ const FoodDetails = () => {
       availableFrom: listing.availableFrom || '',
       availableUntil: listing.availableUntil || '',
       preferredRecipient: listing.preferredRecipient || 'any',
+      wholesalePrice: listing.wholesalePrice || '',
+      retailPrice: listing.retailPrice || '',
+      priceUnit: listing.priceUnit || '',
+      offer: listing.offer || '',
       status: listing.status || 'available',
       images: Array.isArray(listing.images) ? listing.images : []
     });
@@ -108,6 +114,14 @@ const FoodDetails = () => {
       ...currentForm,
       [name]: value
     }));
+  };
+
+  const handleUpdateLocationSelect = (location) => {
+    setEditForm((currentForm) => ({
+      ...currentForm,
+      pickupLocation: location
+    }));
+    setShowLocationPicker(false);
   };
 
   const handleUpdateImageUpload = async (event) => {
@@ -159,6 +173,10 @@ const FoodDetails = () => {
       expiryDate: editForm.expiryDate,
       description: editForm.description,
       pickupLocation: editForm.pickupLocation,
+      wholesalePrice: editForm.wholesalePrice || '',
+      retailPrice: editForm.retailPrice || '',
+      priceUnit: editForm.priceUnit || '',
+      offer: editForm.offer || '',
       availableFrom: editForm.availableFrom,
       availableUntil: editForm.availableUntil,
       preferredRecipient: editForm.preferredRecipient,
@@ -462,12 +480,23 @@ const FoodDetails = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Pickup Location</label>
-                  <input
-                    name="pickupLocation"
-                    value={editForm.pickupLocation}
-                    onChange={handleEditChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
+                  <div className="flex gap-2 items-stretch">
+                    <input
+                      name="pickupLocation"
+                      value={editForm.pickupLocation}
+                      onChange={handleEditChange}
+                      className="flex-1 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowLocationPicker(true)}
+                      className="shrink-0 inline-flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-semibold rounded-lg hover:shadow-lg transition-all"
+                      title="Open map to select location"
+                    >
+                      <MapPin className="w-4 h-4" />
+                      Map
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -517,6 +546,37 @@ const FoodDetails = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Pricing & Offers in update modal */}
+              {editForm.preferredRecipient === 'seller' && (
+                <div className="space-y-4">
+                  <h4 className="text-sm font-semibold text-gray-800">Pricing (Seller)</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Wholesale Price</label>
+                      <input name="wholesalePrice" value={editForm.wholesalePrice || ''} onChange={handleEditChange} className="w-full px-4 py-2 border border-gray-200 rounded-lg" />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Retail Price</label>
+                      <input name="retailPrice" value={editForm.retailPrice || ''} onChange={handleEditChange} className="w-full px-4 py-2 border border-gray-200 rounded-lg" />
+                    </div>
+                    <div>
+                      <label className="block text-sm text-gray-600 mb-1">Price Unit</label>
+                      <input name="priceUnit" value={editForm.priceUnit || ''} onChange={handleEditChange} className="w-full px-4 py-2 border border-gray-200 rounded-lg" />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {editForm.preferredRecipient === 'individual' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Special Offer</label>
+                  <input name="offer" value={editForm.offer || ''} onChange={handleEditChange} className="w-full px-4 py-2 border border-gray-200 rounded-lg" />
+                </div>
+              )}
+              {editForm.preferredRecipient === 'organization' && (
+                <div className="text-sm text-gray-600">No pricing required for organizations</div>
+              )}
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-3">
@@ -588,6 +648,13 @@ const FoodDetails = () => {
           </div>
         </div>
       )}
+      {/* Location picker for update modal */}
+      <LocationPicker
+        isOpen={showLocationPicker}
+        onClose={() => setShowLocationPicker(false)}
+        onSelectLocation={handleUpdateLocationSelect}
+        currentLocation={editForm?.pickupLocation}
+      />
     </div>
   );
 };

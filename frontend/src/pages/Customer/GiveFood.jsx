@@ -41,7 +41,21 @@ const GiveFood = () => {
     availableFrom: '',
     availableUntil: '',
     preferredRecipient: 'any',
-    images: []
+    images: [],
+    // Organization-specific fields
+    donationType: 'free',
+    taxReceipt: false,
+    organizationNotes: '',
+    // Seller-specific fields
+    businessType: 'retail',
+    wholesalePrice: '',
+    retailPrice: '',
+    minOrderQuantity: '',
+    bulkDiscount: false,
+    // Individual-specific fields
+    offerType: 'regular',
+    discount: '',
+    promotionEnd: ''
   });
   const [errors, setErrors] = useState({});
 
@@ -107,6 +121,13 @@ const GiveFood = () => {
       newErrors.pickupLocation = 'Pickup location is required';
     } else if (formData.pickupLocation.trim().length < 5) {
       newErrors.pickupLocation = 'Pickup location must be at least 5 characters';
+    }
+
+    // Conditional validation for sellers
+    if (formData.preferredRecipient === 'seller') {
+      if (!formData.retailPrice || Number(formData.retailPrice) <= 0) {
+        newErrors.retailPrice = 'Retail price is required for sellers';
+      }
     }
 
     setErrors(newErrors);
@@ -194,11 +215,25 @@ const GiveFood = () => {
       availableFrom: formData.availableFrom,
       availableUntil: formData.availableUntil,
       preferredRecipient: formData.preferredRecipient,
+      images: formData.images.length ? formData.images : [defaultListingImage],
+      listedDate: new Date().toISOString().split('T')[0],
       status: 'available',
       views: 0,
       requests: 0,
-      images: formData.images.length ? formData.images : [defaultListingImage],
-      listedDate: new Date().toISOString().split('T')[0]
+      // Organization-specific fields
+      donationType: formData.donationType || 'free',
+      taxReceipt: formData.taxReceipt || false,
+      organizationNotes: formData.organizationNotes || '',
+      // Seller-specific fields
+      businessType: formData.businessType || 'retail',
+      wholesalePrice: formData.wholesalePrice || '',
+      retailPrice: formData.retailPrice || '',
+      minOrderQuantity: formData.minOrderQuantity || '',
+      bulkDiscount: formData.bulkDiscount || false,
+      // Individual-specific fields
+      offerType: formData.offerType || 'regular',
+      discount: formData.discount || '',
+      promotionEnd: formData.promotionEnd || ''
     };
 
     setMyListings((currentListings) => {
@@ -225,7 +260,20 @@ const GiveFood = () => {
       availableFrom: '',
       availableUntil: '',
       preferredRecipient: 'any',
-      images: []
+      wholesalePrice: '',
+      retailPrice: '',
+      priceUnit: 'per unit',
+      offer: '',
+      images: [],
+      donationType: 'free',
+      taxReceipt: false,
+      organizationNotes: '',
+      businessType: 'retail',
+      minOrderQuantity: '',
+      bulkDiscount: false,
+      offerType: 'regular',
+      discount: '',
+      promotionEnd: ''
     });
   };
 
@@ -613,6 +661,179 @@ const GiveFood = () => {
                   </select>
                 </div>
               </div>
+
+              {/* Organization-Specific Fields */}
+              {formData.preferredRecipient === 'organization' && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-6 bg-blue-500 rounded"></div>
+                    <h3 className="font-bold text-lg text-gray-900">Donation Details</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-800 mb-2">Donation Type</label>
+                      <select
+                        name="donationType"
+                        value={formData.donationType}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 transition-all"
+                      >
+                        <option value="free">Free Donation (No Charge)</option>
+                        <option value="partial">Partial Donation (Reduced Price)</option>
+                        <option value="bulk">Bulk Donation (Large Quantity)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          name="taxReceipt"
+                          checked={formData.taxReceipt}
+                          onChange={(e) => setFormData({...formData, taxReceipt: e.target.checked})}
+                          className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                        />
+                        Tax Receipt Required
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1">Check if you need a tax-deductible receipt</p>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Notes for Organizations</label>
+                    <textarea
+                      name="organizationNotes"
+                      value={formData.organizationNotes}
+                      onChange={handleInputChange}
+                      rows={2}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 transition-all"
+                      placeholder="Any specific requirements or notes for recipient organizations..."
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Seller-Specific Fields */}
+              {formData.preferredRecipient === 'seller' && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-6 bg-emerald-500 rounded"></div>
+                    <h3 className="font-bold text-lg text-gray-900">Business Details</h3>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Business Type</label>
+                    <select
+                      name="businessType"
+                      value={formData.businessType}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 transition-all"
+                    >
+                      <option value="retail">Retail Store</option>
+                      <option value="wholesale">Wholesale Supplier</option>
+                      <option value="restaurant">Restaurant</option>
+                      <option value="manufacturer">Food Manufacturer</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-800 mb-2">Wholesale Price (Optional)</label>
+                      <input
+                        type="number"
+                        name="wholesalePrice"
+                        value={formData.wholesalePrice || ''}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 transition-all"
+                        placeholder="Price for bulk buyers"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-800 mb-2">Retail Price *</label>
+                      <input
+                        type="number"
+                        name="retailPrice"
+                        value={formData.retailPrice || ''}
+                        onChange={handleInputChange}
+                        className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.retailPrice ? 'border-red-400 focus:ring-red-300 bg-red-50' : 'border-gray-300 focus:ring-emerald-400 focus:border-emerald-500'}`}
+                        placeholder="Standard price"
+                      />
+                      {errors.retailPrice && <p className="text-red-600 text-xs mt-2">{errors.retailPrice}</p>}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-800 mb-2">Minimum Order Quantity</label>
+                      <input
+                        type="number"
+                        name="minOrderQuantity"
+                        value={formData.minOrderQuantity || ''}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 transition-all"
+                        placeholder="e.g., 10 units"
+                      />
+                    </div>
+                    <div className="flex items-center">
+                      <label className="block text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          name="bulkDiscount"
+                          checked={formData.bulkDiscount}
+                          onChange={(e) => setFormData({...formData, bulkDiscount: e.target.checked})}
+                          className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
+                        />
+                        Offer Bulk Discount Available
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Individual-Specific Fields */}
+              {formData.preferredRecipient === 'individual' && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-6 bg-purple-500 rounded"></div>
+                    <h3 className="font-bold text-lg text-gray-900">Customer Offers</h3>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Offer Type</label>
+                    <select
+                      name="offerType"
+                      value={formData.offerType}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-500 transition-all"
+                    >
+                      <option value="regular">Regular Price</option>
+                      <option value="discount">Discounted Price</option>
+                      <option value="free">Free Giveaway</option>
+                      <option value="exchange">Exchange/Barter</option>
+                    </select>
+                  </div>
+                  {formData.offerType === 'discount' && (
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-800 mb-2">Discount %</label>
+                      <input
+                        type="number"
+                        name="discount"
+                        value={formData.discount || ''}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-500 transition-all"
+                        placeholder="e.g., 20"
+                        min="0"
+                        max="100"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Promotion End Date (Optional)</label>
+                    <input
+                      type="date"
+                      name="promotionEnd"
+                      value={formData.promotionEnd}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-500 transition-all"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Leave empty if no time limit</p>
+                  </div>
+                </div>
+              )}
 
               {/* Images */}
               <div className="space-y-4">
