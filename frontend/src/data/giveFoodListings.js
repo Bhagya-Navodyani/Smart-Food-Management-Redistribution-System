@@ -1,4 +1,11 @@
 const STORAGE_KEY = 'give-food-listings';
+const ROLE_STORAGE_KEY = 'appUserRole';
+
+const roleToRecipientMap = {
+  Customer: 'individual',
+  'Food sellers': 'seller',
+  Organizations: 'organization'
+};
 
 export const defaultGiveFoodListings = [
   {
@@ -148,6 +155,35 @@ export const defaultGiveFoodListings = [
 ];
 
 const cloneListings = (listings) => listings.map((listing) => ({ ...listing }));
+
+export const getCurrentUserRole = () => {
+  if (typeof window === 'undefined') {
+    return 'Customer';
+  }
+
+  return window.localStorage.getItem(ROLE_STORAGE_KEY) || 'Customer';
+};
+
+export const canViewGiveFoodListing = (listing, userRole = getCurrentUserRole()) => {
+  if (!listing) {
+    return false;
+  }
+
+  if (userRole === 'Admin') {
+    return true;
+  }
+
+  if (!listing.preferredRecipient || listing.preferredRecipient === 'any') {
+    return true;
+  }
+
+  const normalizedRecipient = roleToRecipientMap[userRole] || String(userRole).toLowerCase();
+  return listing.preferredRecipient === normalizedRecipient;
+};
+
+export const getVisibleGiveFoodListings = (userRole = getCurrentUserRole()) => (
+  getGiveFoodListings().filter((listing) => canViewGiveFoodListing(listing, userRole))
+);
 
 export const getGiveFoodListings = () => {
   if (typeof window === 'undefined') {

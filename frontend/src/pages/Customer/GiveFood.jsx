@@ -49,7 +49,7 @@ const GiveFood = () => {
     { id: 'any', name: 'Anyone', description: 'Available to all' },
     { id: 'organization', name: 'Organizations', description: 'Food banks, charities' },
     { id: 'seller', name: 'Sellers', description: 'Restaurants, stores' },
-    { id: 'individual', name: 'Individuals', description: 'People in need' }
+    { id: 'individual', name: 'Individuals / Customers', description: 'People in need' }
   ];
 
   const getStatusColor = (status) => {
@@ -623,13 +623,13 @@ const GiveFood = () => {
                 <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-green-400 transition-colors bg-gray-50 hover:bg-green-50">
                   <Camera className="w-12 h-12 text-gray-400 mx-auto mb-3" />
                   <p className="text-gray-700 font-medium mb-2">Add photos of your food item</p>
-                  <p className="text-gray-500 text-sm mb-4">High quality photos help others trust your listing</p>
+                  <p className="text-gray-500 text-sm mb-4">You can upload multiple photos to show the item clearly</p>
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:shadow-lg hover:shadow-green-500/50 transition-all font-medium"
                   >
-                    Choose Files
+                    Add Photos
                   </button>
                   <p className="text-xs text-gray-500 mt-3">PNG, JPG up to 10MB each</p>
                   <input
@@ -641,13 +641,18 @@ const GiveFood = () => {
                     className="hidden"
                   />
                   {formData.images.length > 0 && (
-                    <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3 text-left">
                       {formData.images.map((image, index) => (
                         <div key={`${image}-${index}`} className="rounded-lg overflow-hidden border-2 border-green-200 bg-white shadow-sm hover:shadow-md transition-shadow">
                           <img src={image} alt={`Uploaded preview ${index + 1}`} className="w-full h-24 object-cover" />
                         </div>
                       ))}
                     </div>
+                  )}
+                  {formData.images.length > 0 && (
+                    <p className="text-xs text-green-700 mt-3 font-medium">
+                      {formData.images.length} photo{formData.images.length > 1 ? 's' : ''} added
+                    </p>
                   )}
                 </div>
               </div>
