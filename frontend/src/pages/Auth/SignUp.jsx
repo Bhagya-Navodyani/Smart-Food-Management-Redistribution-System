@@ -18,6 +18,7 @@ export default function SignUp() {
   function handleSubmit(e) {
     e.preventDefault();
     console.log({ name, email, password, role });
+    window.localStorage.setItem('appUserRole', role);
     // TODO: call backend signup, then redirect
     const redirectMap = {
       'Customer': '/customer/dashboard',
