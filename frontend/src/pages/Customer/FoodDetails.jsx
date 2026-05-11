@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
+  Camera,
   MapPin,
   Calendar,
   Clock,
@@ -25,6 +26,7 @@ const FoodDetails = () => {
   const [liked, setLiked] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [editForm, setEditForm] = useState(null);
+  const updateImageInputRef = useRef(null);
 
   const listing = getGiveFoodListings().find(item => item.id === parseInt(id));
 
@@ -68,6 +70,13 @@ const FoodDetails = () => {
   const donorPhone = listing.donorPhone || 'Not available';
   const donorEmail = listing.donorEmail || 'Not available';
 
+  const recipientTypes = [
+    { id: 'any', name: 'Anyone' },
+    { id: 'organization', name: 'Organizations' },
+    { id: 'seller', name: 'Sellers' },
+    { id: 'individual', name: 'Individuals / Customers' }
+  ];
+
   const openUpdateModal = () => {
     setEditForm({
       itemName: listing.itemName || '',
@@ -80,16 +89,62 @@ const FoodDetails = () => {
       availableFrom: listing.availableFrom || '',
       availableUntil: listing.availableUntil || '',
       preferredRecipient: listing.preferredRecipient || 'any',
-      status: listing.status || 'available'
+      status: listing.status || 'available',
+      images: Array.isArray(listing.images) ? listing.images : []
     });
     setShowUpdateModal(true);
   };
+
+  const readFileAsDataUrl = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
 
   const handleEditChange = (event) => {
     const { name, value } = event.target;
     setEditForm((currentForm) => ({
       ...currentForm,
       [name]: value
+    }));
+  };
+
+  const handleUpdateImageUpload = async (event) => {
+    const files = Array.from(event.target.files || []);
+
+    if (!files.length) {
+      return;
+    }
+
+    const imageFiles = files.filter((file) => file.type.startsWith('image/'));
+    const uploadedImages = [];
+
+    for (const file of imageFiles) {
+      if (file.size > 10 * 1024 * 1024) {
+        continue;
+      }
+
+      try {
+        const dataUrl = await readFileAsDataUrl(file);
+        uploadedImages.push(dataUrl);
+      } catch (error) {
+        console.error('Failed to read image file:', error);
+      }
+    }
+
+    setEditForm((currentForm) => ({
+      ...currentForm,
+      images: [...(currentForm.images || []), ...uploadedImages]
+    }));
+
+    event.target.value = '';
+  };
+
+  const handleRemoveUpdateImage = (indexToRemove) => {
+    setEditForm((currentForm) => ({
+      ...currentForm,
+      images: (currentForm.images || []).filter((_, index) => index !== indexToRemove)
     }));
   };
 
@@ -107,7 +162,8 @@ const FoodDetails = () => {
       availableFrom: editForm.availableFrom,
       availableUntil: editForm.availableUntil,
       preferredRecipient: editForm.preferredRecipient,
-      status: editForm.status
+      status: editForm.status,
+      images: editForm.images && editForm.images.length > 0 ? editForm.images : listing.images
     });
 
     setShowUpdateModal(false);
@@ -435,6 +491,70 @@ const FoodDetails = () => {
                     onChange={handleEditChange}
                     className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Recipient</label>
+                  <select
+                    name="preferredRecipient"
+                    value={editForm.preferredRecipient}
+                    onChange={handleEditChange}
+                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  >
+                    {recipientTypes.map((type) => (
+                      <option key={type.id} value={type.id}>
+                        {type.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">System Info</label>
+                  <div className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-500">
+                    Views, requests, listed date, and donor info are managed automatically.
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Listing Photos</label>
+                    <p className="text-xs text-gray-500">Add or replace photos for this listing</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => updateImageInputRef.current?.click()}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium"
+                  >
+                    <Camera className="w-4 h-4" />
+                    Add Photos
+                  </button>
+                </div>
+                <input
+                  ref={updateImageInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleUpdateImageUpload}
+                  className="hidden"
+                />
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {(editForm.images || []).map((image, index) => (
+                    <div key={`${image}-${index}`} className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
+                      <img src={image} alt={`Listing preview ${index + 1}`} className="w-full h-24 object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveUpdateImage(index)}
+                        className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-red-600 transition-colors"
+                        aria-label={`Remove image ${index + 1}`}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
               </div>
 

@@ -17,6 +17,7 @@ export default function SignIn() {
   function handleSubmit(e) {
     e.preventDefault();
     console.log({ email, password, role });
+    window.localStorage.setItem('appUserRole', role);
     // TODO: call backend auth, then redirect based on role
     const redirectMap = {
       'Customer': '/customer/dashboard',
