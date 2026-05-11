@@ -12,12 +12,14 @@ import {
   AlertCircle,
   X,
   Search,
-  Heart
+  Heart,
+  Map
 } from 'lucide-react';
 import {
   getGiveFoodListings,
   saveGiveFoodListings
 } from '../../data/giveFoodListings';
+import LocationPicker from '../../components/LocationPicker';
 
 const GiveFood = () => {
   const navigate = useNavigate();
@@ -27,6 +29,7 @@ const GiveFood = () => {
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [myListings, setMyListings] = useState(() => getGiveFoodListings());
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [formData, setFormData] = useState({
     itemName: '',
     category: 'vegetables',
@@ -119,6 +122,19 @@ const GiveFood = () => {
       setErrors({
         ...errors,
         [e.target.name]: ''
+      });
+    }
+  };
+
+  const handleLocationSelect = (location) => {
+    setFormData({
+      ...formData,
+      pickupLocation: location
+    });
+    if (errors.pickupLocation) {
+      setErrors({
+        ...errors,
+        pickupLocation: ''
       });
     }
   };
@@ -459,15 +475,21 @@ const GiveFood = () => {
                       type="number"
                       name="quantity"
                       value={formData.quantity}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || parseFloat(value) >= 0) {
+                          handleInputChange(e);
+                        }
+                      }}
                       min="0"
+                      max="999999"
                       step="0.1"
                       className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${
                         errors.quantity
                           ? 'border-red-400 focus:ring-red-300 bg-red-50'
                           : 'border-gray-300 focus:ring-blue-400 focus:border-blue-500'
                       }`}
-                      placeholder="Amount"
+                      placeholder="Enter amount"
                     />
                     {errors.quantity && <p className="text-red-600 text-xs mt-2 font-medium flex items-center gap-1"><AlertCircle className="w-4 h-4" />{errors.quantity}</p>}
                   </div>
@@ -547,18 +569,31 @@ const GiveFood = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-800 mb-2">Pickup Location *</label>
-                  <input
-                    type="text"
-                    name="pickupLocation"
-                    value={formData.pickupLocation}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${
-                      errors.pickupLocation
-                        ? 'border-red-400 focus:ring-red-300 bg-red-50'
-                        : 'border-gray-300 focus:ring-purple-400 focus:border-purple-500'
-                    }`}
-                    placeholder="Enter pickup address"
-                  />
+                  <div className="flex flex-col sm:flex-row gap-2 sm:items-stretch">
+                    <input
+                      type="text"
+                      name="pickupLocation"
+                      value={formData.pickupLocation}
+                      onChange={handleInputChange}
+                      autoComplete="off"
+                      className={`flex-1 px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                        errors.pickupLocation
+                          ? 'border-red-400 focus:ring-red-300 bg-red-50'
+                          : 'border-gray-300 focus:ring-purple-400 focus:border-purple-500'
+                      }`}
+                      placeholder="Enter pickup address"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowLocationPicker(true)}
+                      className="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-blue-500/40 transition-all whitespace-nowrap sm:self-auto self-start"
+                      title="Open map to select location"
+                    >
+                      <Map className="w-4 h-4" />
+                      <span>Map</span>
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Use the map button to pick a location visually.</p>
                   {errors.pickupLocation && <p className="text-red-600 text-xs mt-2 font-medium flex items-center gap-1"><AlertCircle className="w-4 h-4" />{errors.pickupLocation}</p>}
                 </div>
 
@@ -640,6 +675,14 @@ const GiveFood = () => {
           </div>
         </div>
       )}
+
+      {/* Location Picker Modal */}
+      <LocationPicker
+        isOpen={showLocationPicker}
+        onClose={() => setShowLocationPicker(false)}
+        onSelectLocation={handleLocationSelect}
+        currentLocation={formData.pickupLocation}
+      />
     </div>
   );
 };
