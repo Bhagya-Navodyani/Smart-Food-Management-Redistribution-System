@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Plus,
@@ -23,6 +23,8 @@ import {
 
 const GiveFood = () => {
   const navigate = useNavigate();
+  const defaultListingImage = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80';
+  const fileInputRef = useRef(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -74,6 +76,44 @@ const GiveFood = () => {
     });
   };
 
+  const readFileAsDataUrl = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+
+  const handleImageUpload = async (event) => {
+    const files = Array.from(event.target.files || []);
+
+    if (!files.length) {
+      return;
+    }
+
+    const imageFiles = files.filter((file) => file.type.startsWith('image/'));
+    const uploadedImages = [];
+
+    for (const file of imageFiles) {
+      if (file.size > 10 * 1024 * 1024) {
+        continue;
+      }
+
+      try {
+        const dataUrl = await readFileAsDataUrl(file);
+        uploadedImages.push(dataUrl);
+      } catch (error) {
+        console.error('Failed to read image file:', error);
+      }
+    }
+
+    setFormData((currentFormData) => ({
+      ...currentFormData,
+      images: [...currentFormData.images, ...uploadedImages]
+    }));
+
+    event.target.value = '';
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     // Logic to submit the food listing
@@ -93,7 +133,7 @@ const GiveFood = () => {
       status: 'available',
       views: 0,
       requests: 0,
-      images: [],
+      images: formData.images.length ? formData.images : [defaultListingImage],
       listedDate: new Date().toISOString().split('T')[0]
     };
 
@@ -104,6 +144,8 @@ const GiveFood = () => {
     });
 
     setShowAddModal(false);
+    setSelectedFilter('all');
+    setSearchTerm('');
     // Reset form
     setFormData({
       itemName: '',
@@ -118,6 +160,9 @@ const GiveFood = () => {
       preferredRecipient: 'any',
       images: []
     });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleDeleteListing = (listingId) => {
@@ -142,12 +187,18 @@ const GiveFood = () => {
     return matchesFilter && matchesSearch;
   });
 
+  const listingCounts = myListings.reduce((counts, listing) => {
+    counts[listing.status] = (counts[listing.status] || 0) + 1;
+    counts.all += 1;
+    return counts;
+  }, { all: 0, available: 0, requested: 0, claimed: 0, expired: 0 });
+
   const statusFilters = [
-    { id: 'all', name: 'All', count: 8, color: 'text-gray-900' },
-    { id: 'available', name: 'Available', count: 4, color: 'text-green-600' },
-    { id: 'requested', name: 'Requested', count: 2, color: 'text-yellow-600' },
-    { id: 'claimed', name: 'Claimed', count: 1, color: 'text-blue-600' },
-    { id: 'expired', name: 'Expired', count: 1, color: 'text-red-600' }
+    { id: 'all', name: 'All', count: listingCounts.all, color: 'text-gray-900' },
+    { id: 'available', name: 'Available', count: listingCounts.available, color: 'text-green-600' },
+    { id: 'requested', name: 'Requested', count: listingCounts.requested, color: 'text-yellow-600' },
+    { id: 'claimed', name: 'Claimed', count: listingCounts.claimed, color: 'text-blue-600' },
+    { id: 'expired', name: 'Expired', count: listingCounts.expired, color: 'text-red-600' }
   ];
 
   return (
@@ -227,7 +278,7 @@ const GiveFood = () => {
               {/* Left: Food Image */}
               <div className="flex-shrink-0">
                 <img
-                  src={listing.images[0]}
+                  src={listing.images[0] || defaultListingImage}
                   alt={listing.itemName}
                   className="w-32 h-32 rounded-xl object-cover"
                 />
@@ -476,10 +527,31 @@ const GiveFood = () => {
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                   <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-600 mb-2">Add photos of your food item</p>
-                  <button type="button" className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                  >
                     Choose Files
                   </button>
                   <p className="text-xs text-gray-500 mt-2">PNG, JPG up to 10MB each</p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                  {formData.images.length > 0 && (
+                    <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3 text-left">
+                      {formData.images.map((image, index) => (
+                        <div key={`${image}-${index}`} className="rounded-lg overflow-hidden border border-gray-200 bg-white">
+                          <img src={image} alt={`Uploaded preview ${index + 1}`} className="w-full h-24 object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
 
