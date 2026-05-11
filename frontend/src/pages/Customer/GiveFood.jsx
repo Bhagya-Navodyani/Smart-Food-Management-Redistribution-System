@@ -12,11 +12,9 @@ import {
   AlertCircle,
   X,
   Search,
-  Heart,
-  Trash2
+  Heart
 } from 'lucide-react';
 import {
-  deleteGiveFoodListing,
   getGiveFoodListings,
   saveGiveFoodListings
 } from '../../data/giveFoodListings';
@@ -42,6 +40,7 @@ const GiveFood = () => {
     preferredRecipient: 'any',
     images: []
   });
+  const [errors, setErrors] = useState({});
 
   const recipientTypes = [
     { id: 'any', name: 'Anyone', description: 'Available to all' },
@@ -69,11 +68,59 @@ const GiveFood = () => {
     }
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    const today = new Date().toISOString().split('T')[0];
+
+    if (!formData.itemName.trim()) {
+      newErrors.itemName = 'Item name is required';
+    } else if (formData.itemName.trim().length < 3) {
+      newErrors.itemName = 'Item name must be at least 3 characters';
+    }
+
+    if (!formData.quantity || formData.quantity <= 0) {
+      newErrors.quantity = 'Quantity must be greater than 0';
+    }
+
+    if (!formData.expiryDate) {
+      newErrors.expiryDate = 'Expiry date is required';
+    } else if (formData.expiryDate < today) {
+      newErrors.expiryDate = 'Expiry date must be in the future';
+    }
+
+    if (!formData.availableFrom) {
+      newErrors.availableFrom = 'Available from date is required';
+    } else if (formData.availableFrom < today) {
+      newErrors.availableFrom = 'Must be today or later';
+    }
+
+    if (!formData.availableUntil) {
+      newErrors.availableUntil = 'Available until date is required';
+    } else if (formData.availableUntil < formData.availableFrom) {
+      newErrors.availableUntil = 'Must be after available from date';
+    }
+
+    if (!formData.pickupLocation.trim()) {
+      newErrors.pickupLocation = 'Pickup location is required';
+    } else if (formData.pickupLocation.trim().length < 5) {
+      newErrors.pickupLocation = 'Pickup location must be at least 5 characters';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+    if (errors[e.target.name]) {
+      setErrors({
+        ...errors,
+        [e.target.name]: ''
+      });
+    }
   };
 
   const readFileAsDataUrl = (file) => new Promise((resolve, reject) => {
@@ -116,13 +163,14 @@ const GiveFood = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Logic to submit the food listing
-    console.log('Submitting food listing:', formData);
+    if (!validateForm()) {
+      return;
+    }
     const nextListing = {
       id: Date.now(),
       itemName: formData.itemName,
       category: String(formData.category).toUpperCase(),
-      quantity: formData.quantity,
+      quantity: parseFloat(formData.quantity),
       unit: formData.unit,
       expiryDate: formData.expiryDate,
       description: formData.description,
@@ -146,7 +194,10 @@ const GiveFood = () => {
     setShowAddModal(false);
     setSelectedFilter('all');
     setSearchTerm('');
-    // Reset form
+    setErrors({});
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setFormData({
       itemName: '',
       category: 'vegetables',
@@ -160,25 +211,6 @@ const GiveFood = () => {
       preferredRecipient: 'any',
       images: []
     });
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const handleDeleteListing = (listingId) => {
-    const confirmDelete = window.confirm('Delete this food listing? This action cannot be undone.');
-
-    if (!confirmDelete) {
-      return;
-    }
-
-    setMyListings((currentListings) => {
-      const nextListings = currentListings.filter((listing) => listing.id !== listingId);
-      saveGiveFoodListings(nextListings);
-      return nextListings;
-    });
-
-    deleteGiveFoodListing(listingId);
   };
 
   const filteredListings = myListings.filter(listing => {
@@ -187,18 +219,12 @@ const GiveFood = () => {
     return matchesFilter && matchesSearch;
   });
 
-  const listingCounts = myListings.reduce((counts, listing) => {
-    counts[listing.status] = (counts[listing.status] || 0) + 1;
-    counts.all += 1;
-    return counts;
-  }, { all: 0, available: 0, requested: 0, claimed: 0, expired: 0 });
-
   const statusFilters = [
-    { id: 'all', name: 'All', count: listingCounts.all, color: 'text-gray-900' },
-    { id: 'available', name: 'Available', count: listingCounts.available, color: 'text-green-600' },
-    { id: 'requested', name: 'Requested', count: listingCounts.requested, color: 'text-yellow-600' },
-    { id: 'claimed', name: 'Claimed', count: listingCounts.claimed, color: 'text-blue-600' },
-    { id: 'expired', name: 'Expired', count: listingCounts.expired, color: 'text-red-600' }
+    { id: 'all', name: 'All' },
+    { id: 'available', name: 'Available' },
+    { id: 'requested', name: 'Requested' },
+    { id: 'claimed', name: 'Claimed' },
+    { id: 'expired', name: 'Expired' }
   ];
 
   return (
@@ -217,18 +243,6 @@ const GiveFood = () => {
             <Plus className="w-5 h-5" />
             List New Item
           </button>
-        </div>
-      </div>
-
-      {/* Status Cards */}
-      <div className="max-w-7xl mx-auto mb-6">
-        <div className="grid grid-cols-5 gap-4">
-          {statusFilters.map((filter) => (
-            <div key={filter.id} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-              <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">{filter.name}</p>
-              <p className={`text-3xl font-bold ${filter.color}`}>{filter.count}</p>
-            </div>
-          ))}
         </div>
       </div>
 
@@ -289,7 +303,11 @@ const GiveFood = () => {
                 <h3 className="font-bold text-gray-900 text-xl mb-1">{listing.itemName}</h3>
                 <p className="text-green-600 font-semibold text-sm uppercase tracking-wide mb-3">{listing.category}</p>
                 
-                <div className="flex items-center gap-6 text-sm text-gray-600 mb-2">
+                {listing.description && (
+                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">{listing.description}</p>
+                )}
+
+                <div className="flex items-center gap-6 text-sm text-gray-600 mb-3">
                   <div className="flex items-center gap-1">
                     <Package className="w-4 h-4" />
                     <span>{listing.quantity} {listing.unit}</span>
@@ -303,10 +321,21 @@ const GiveFood = () => {
                     <span>Expires {new Date(listing.expiryDate).toLocaleDateString()}</span>
                   </div>
                 </div>
+
+                <div className="flex items-center gap-6 text-xs text-gray-500 pt-2 border-t border-gray-100">
+                  <div>
+                    <span className="font-medium text-gray-600">Available:</span> {new Date(listing.availableFrom).toLocaleDateString()} - {new Date(listing.availableUntil).toLocaleDateString()}
+                  </div>
+                  {listing.preferredRecipient && listing.preferredRecipient !== 'any' && (
+                    <div>
+                      <span className="font-medium text-gray-600">For:</span> {String(listing.preferredRecipient).charAt(0).toUpperCase() + String(listing.preferredRecipient).slice(1)}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Right: Status and Actions */}
-              <div className="flex-shrink-0 flex flex-col items-end justify-between">
+              <div className="flex-shrink-0 flex flex-col items-end justify-between min-w-[220px]">
                 <div className="text-right mb-4">
                   <span className={"inline-flex items-center gap-1 px-4 py-2 rounded-full text-sm font-semibold " + getStatusColor(listing.status)}>
                     {getStatusIcon(listing.status)}
@@ -325,23 +354,15 @@ const GiveFood = () => {
                   <span>Requests: {listing.requests}</span>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleDeleteListing(listing.id)}
-                    className="px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors font-medium text-sm flex items-center gap-2"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Delete
-                  </button>
-                  <button
-                    onClick={() => navigate(`/food-details/${listing.id}`)}
-                    className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium text-sm flex items-center gap-2">
-                    VIEW DETAILS
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </div>
+                <button
+                  onClick={() => navigate(`/food-details/${listing.id}`)}
+                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 hover:shadow-lg hover:shadow-green-500/50 transform hover:scale-105 transition-all duration-300 font-semibold text-sm flex items-center gap-2 group"
+                >
+                  <span>VIEW DETAILS</span>
+                  <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
@@ -351,94 +372,112 @@ const GiveFood = () => {
       {/* Add New Listing Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900">List New Food Item</h2>
-                <button
-                  onClick={() => setShowAddModal(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            {/* Header */}
+            <div className="sticky top-0 p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-b-2 border-green-200 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">List New Food Item</h2>
+                <p className="text-sm text-gray-600 mt-1">Share your excess food with those in need</p>
               </div>
+              <button
+                onClick={() => {
+                  setShowAddModal(false);
+                  setErrors({});
+                }}
+                className="p-2 hover:bg-red-100 rounded-lg transition-colors text-gray-600 hover:text-red-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
               {/* Basic Information */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-gray-900">Basic Information</h3>
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-6 bg-green-500 rounded"></div>
+                  <h3 className="font-bold text-lg text-gray-900">Basic Information</h3>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Item Name *</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Item Name *</label>
                     <input
                       type="text"
                       name="itemName"
                       value={formData.itemName}
                       onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                        errors.itemName
+                          ? 'border-red-400 focus:ring-red-300 bg-red-50'
+                          : 'border-gray-300 focus:ring-green-400 focus:border-green-500'
+                      }`}
                       placeholder="e.g., Fresh Organic Vegetables"
                     />
+                    {errors.itemName && <p className="text-red-600 text-xs mt-2 font-medium flex items-center gap-1"><AlertCircle className="w-4 h-4" />{errors.itemName}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Category *</label>
                     <select
                       name="category"
                       value={formData.category}
                       onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-500 transition-all"
                     >
-                      <option value="vegetables">Vegetables</option>
-                      <option value="fruits">Fruits</option>
-                      <option value="dairy">Dairy</option>
-                      <option value="bakery">Bakery</option>
-                      <option value="cooked">Cooked Food</option>
-                      <option value="packaged">Packaged</option>
+                      <option value="vegetables">🥬 Vegetables</option>
+                      <option value="fruits">🍎 Fruits</option>
+                      <option value="dairy">🥛 Dairy</option>
+                      <option value="bakery">🍞 Bakery</option>
+                      <option value="cooked">🍲 Cooked Food</option>
+                      <option value="packaged">📦 Packaged</option>
                     </select>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                  <label className="block text-sm font-semibold text-gray-800 mb-2">Description</label>
                   <textarea
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-500 transition-all resize-none"
                     placeholder="Describe your food item, condition, and any special notes..."
                   />
+                  <p className="text-xs text-gray-500 mt-1">Help others understand what you're offering</p>
                 </div>
               </div>
 
               {/* Quantity & Availability */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-gray-900">Quantity & Availability</h3>
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-6 bg-blue-500 rounded"></div>
+                  <h3 className="font-bold text-lg text-gray-900">Quantity & Availability</h3>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Quantity *</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Quantity *</label>
                     <input
                       type="number"
                       name="quantity"
                       value={formData.quantity}
                       onChange={handleInputChange}
-                      required
                       min="0"
                       step="0.1"
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                        errors.quantity
+                          ? 'border-red-400 focus:ring-red-300 bg-red-50'
+                          : 'border-gray-300 focus:ring-blue-400 focus:border-blue-500'
+                      }`}
                       placeholder="Amount"
                     />
+                    {errors.quantity && <p className="text-red-600 text-xs mt-2 font-medium flex items-center gap-1"><AlertCircle className="w-4 h-4" />{errors.quantity}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Unit *</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Unit *</label>
                     <select
                       name="unit"
                       value={formData.unit}
                       onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 transition-all"
                     >
                       <option value="kg">Kilograms</option>
                       <option value="g">Grams</option>
@@ -450,67 +489,86 @@ const GiveFood = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Expiry Date *</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Expiry Date *</label>
                     <input
                       type="date"
                       name="expiryDate"
                       value={formData.expiryDate}
                       onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                        errors.expiryDate
+                          ? 'border-red-400 focus:ring-red-300 bg-red-50'
+                          : 'border-gray-300 focus:ring-blue-400 focus:border-blue-500'
+                      }`}
                     />
+                    {errors.expiryDate && <p className="text-red-600 text-xs mt-2 font-medium flex items-center gap-1"><AlertCircle className="w-4 h-4" />{errors.expiryDate}</p>}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Available From *</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Available From *</label>
                     <input
                       type="date"
                       name="availableFrom"
                       value={formData.availableFrom}
                       onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                        errors.availableFrom
+                          ? 'border-red-400 focus:ring-red-300 bg-red-50'
+                          : 'border-gray-300 focus:ring-blue-400 focus:border-blue-500'
+                      }`}
                     />
+                    {errors.availableFrom && <p className="text-red-600 text-xs mt-2 font-medium flex items-center gap-1"><AlertCircle className="w-4 h-4" />{errors.availableFrom}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Available Until *</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Available Until *</label>
                     <input
                       type="date"
                       name="availableUntil"
                       value={formData.availableUntil}
                       onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                        errors.availableUntil
+                          ? 'border-red-400 focus:ring-red-300 bg-red-50'
+                          : 'border-gray-300 focus:ring-blue-400 focus:border-blue-500'
+                      }`}
                     />
+                    {errors.availableUntil && <p className="text-red-600 text-xs mt-2 font-medium flex items-center gap-1"><AlertCircle className="w-4 h-4" />{errors.availableUntil}</p>}
                   </div>
                 </div>
               </div>
 
               {/* Location & Recipient */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-gray-900">Location & Recipient</h3>
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-6 bg-purple-500 rounded"></div>
+                  <h3 className="font-bold text-lg text-gray-900">Location & Recipient</h3>
+                </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Pickup Location *</label>
+                  <label className="block text-sm font-semibold text-gray-800 mb-2">Pickup Location *</label>
                   <input
                     type="text"
                     name="pickupLocation"
                     value={formData.pickupLocation}
                     onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                      errors.pickupLocation
+                        ? 'border-red-400 focus:ring-red-300 bg-red-50'
+                        : 'border-gray-300 focus:ring-purple-400 focus:border-purple-500'
+                    }`}
                     placeholder="Enter pickup address"
                   />
+                  {errors.pickupLocation && <p className="text-red-600 text-xs mt-2 font-medium flex items-center gap-1"><AlertCircle className="w-4 h-4" />{errors.pickupLocation}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Recipient</label>
+                  <label className="block text-sm font-semibold text-gray-800 mb-2">Preferred Recipient</label>
                   <select
                     name="preferredRecipient"
                     value={formData.preferredRecipient}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-500 transition-all"
                   >
                     {recipientTypes.map((type) => (
                       <option key={type.id} value={type.id}>
@@ -523,18 +581,22 @@ const GiveFood = () => {
 
               {/* Images */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-gray-900">Photos</h3>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 mb-2">Add photos of your food item</p>
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-6 bg-orange-500 rounded"></div>
+                  <h3 className="font-bold text-lg text-gray-900">Photos</h3>
+                </div>
+                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-green-400 transition-colors bg-gray-50 hover:bg-green-50">
+                  <Camera className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-700 font-medium mb-2">Add photos of your food item</p>
+                  <p className="text-gray-500 text-sm mb-4">High quality photos help others trust your listing</p>
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                    className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:shadow-lg hover:shadow-green-500/50 transition-all font-medium"
                   >
                     Choose Files
                   </button>
-                  <p className="text-xs text-gray-500 mt-2">PNG, JPG up to 10MB each</p>
+                  <p className="text-xs text-gray-500 mt-3">PNG, JPG up to 10MB each</p>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -544,9 +606,9 @@ const GiveFood = () => {
                     className="hidden"
                   />
                   {formData.images.length > 0 && (
-                    <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3 text-left">
+                    <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
                       {formData.images.map((image, index) => (
-                        <div key={`${image}-${index}`} className="rounded-lg overflow-hidden border border-gray-200 bg-white">
+                        <div key={`${image}-${index}`} className="rounded-lg overflow-hidden border-2 border-green-200 bg-white shadow-sm hover:shadow-md transition-shadow">
                           <img src={image} alt={`Uploaded preview ${index + 1}`} className="w-full h-24 object-cover" />
                         </div>
                       ))}
@@ -556,17 +618,20 @@ const GiveFood = () => {
               </div>
 
               {/* Form Actions */}
-              <div className="flex gap-3 pt-4 border-t border-gray-200">
+              <div className="flex gap-3 pt-6 border-t-2 border-gray-200">
                 <button
                   type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setErrors({});
+                  }}
+                  className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 hover:border-gray-400 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-green-500/50 transform hover:scale-105 transition-all"
                 >
                   List Food Item
                 </button>
