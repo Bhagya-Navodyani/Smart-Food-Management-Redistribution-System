@@ -5,6 +5,10 @@ import {
   ChevronDown, Truck, Leaf, X, Store, SlidersHorizontal,
   CheckCircle, AlertTriangle
 } from 'lucide-react';
+import {
+  getCurrentUserRole,
+  getVisibleGiveFoodListings
+} from '../../data/giveFoodListings';
 
 /* ── Realistic Sample Data ── */
 const initialFeedData = [
@@ -47,6 +51,7 @@ const SOURCE_TYPES = [
 ];
 
 const DISTANCES = ['Any Distance', '< 5 km', '< 10 km', '< 20 km'];
+const defaultSharedListingImage = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80';
 
 /* ── Category badge colour map ── */
 const categoryStyle = {
@@ -75,6 +80,7 @@ const sourceStyle = {
 /* ── Component ── */
 const FoodFeed = () => {
   const navigate = useNavigate();
+  const currentUserRole = getCurrentUserRole();
   const [feedItems, setFeedItems] = useState(() => {
     const saved = localStorage.getItem('foodFeedItemsData');
     return saved ? JSON.parse(saved) : initialFeedData;
@@ -109,6 +115,7 @@ const FoodFeed = () => {
   const [pickupConfirmed, setPickupConfirmed] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
+  const sharedListings = getVisibleGiveFoodListings(currentUserRole);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -326,6 +333,63 @@ const FoodFeed = () => {
               >
                 Clear all
               </button>
+            </div>
+          )}
+        </div>
+
+        {/* ────────────── Shared Food Listings ────────────── */}
+        <div className="mb-10">
+          <div className="flex items-end justify-between gap-4 mb-4">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Listings Visible to {currentUserRole}</h2>
+              <p className="text-sm text-gray-500">Food donations are shown only when the recipient matches your role.</p>
+            </div>
+            <span className="px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-bold uppercase tracking-widest border border-emerald-100">
+              {sharedListings.length} visible
+            </span>
+          </div>
+
+          {sharedListings.length === 0 ? (
+            <div className="rounded-3xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+              <p className="text-gray-900 font-bold mb-2">No listings available for this role yet</p>
+              <p className="text-gray-500 text-sm">When a donation is tagged for your role, it will appear here automatically.</p>
+            </div>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+              {sharedListings.map((item) => (
+                <div key={item.id} className="rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden flex flex-col h-full">
+                  <div className="relative h-40 overflow-hidden">
+                    <img src={item.images?.[0] || item.image || defaultSharedListingImage} alt={item.itemName} className="w-full h-full object-cover" />
+                    <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-white/90 text-[10px] font-black uppercase tracking-wider text-gray-800">
+                      {item.status}
+                    </div>
+                  </div>
+                  <div className="p-4 flex flex-col gap-3 flex-1">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-1">For: {item.preferredRecipient}</p>
+                      <h3 className="text-lg font-black text-gray-900 leading-snug">{item.itemName}</h3>
+                      <p className="text-sm text-gray-500 mt-1">{item.category}</p>
+                    </div>
+                    <p className="text-sm text-gray-600 line-clamp-2">{item.description}</p>
+                    <div className="grid grid-cols-2 gap-2 text-xs text-gray-500">
+                      <div className="rounded-xl bg-gray-50 px-3 py-2">
+                        <span className="block font-bold text-gray-900">{item.quantity} {item.unit}</span>
+                        Quantity
+                      </div>
+                      <div className="rounded-xl bg-gray-50 px-3 py-2">
+                        <span className="block font-bold text-gray-900">{new Date(item.expiryDate).toLocaleDateString()}</span>
+                        Expiry
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => navigate(`/food-details/${item.id}`)}
+                      className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white hover:bg-emerald-700 transition-colors"
+                    >
+                      View Details
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>

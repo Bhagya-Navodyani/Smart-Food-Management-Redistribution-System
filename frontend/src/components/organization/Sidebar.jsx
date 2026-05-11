@@ -15,7 +15,10 @@ import {
   ChevronRight,
   User,
   Shield,
-  Bell
+  Bell,
+  ShoppingCart,
+  Heart,
+  Package
 } from 'lucide-react';
 
 const Sidebar = ({ unreadCount }) => {
@@ -48,6 +51,17 @@ const Sidebar = ({ unreadCount }) => {
       name: 'Impact Analytics',
       path: '/organization/impact-analytics',
       icon: BarChart3,
+    },
+    {
+      name: 'Shopping',
+      path: '/organization/shopping',
+      icon: ShoppingCart,
+      subItems: [
+        { name: 'Marketplace', path: '/organization/shopping', icon: LayoutDashboard },
+        { name: 'Wishlist', path: '/organization/shopping/wishlist', icon: Heart },
+        { name: 'Cart', path: '/organization/shopping/cart', icon: ShoppingCart },
+        { name: 'My Orders', path: '/organization/shopping/orders', icon: Package },
+      ]
     },
     {
       name: 'Settings',

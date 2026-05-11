@@ -30,6 +30,7 @@ import MyOrders from './pages/Customer/MyOrders';
 import Impact from './pages/Customer/Impact';
 import Settings from './pages/Customer/Settings';
 import GiveFood from './pages/Customer/GiveFood';
+import FoodDetails from './pages/Customer/FoodDetails';
 
 function App() {
   return (
@@ -55,6 +56,7 @@ function App() {
             <Route path="/customer/marketplace" element={<BrowseFood />} />
             <Route path="/customer/orders" element={<MyOrders />} />
             <Route path="/customer/give-food" element={<GiveFood />} />
+            <Route path="/food-details/:id" element={<FoodDetails />} />
             <Route path="/customer/impact" element={<Impact />} />
             <Route path="/customer/settings" element={<Settings />} />
           </Route>
