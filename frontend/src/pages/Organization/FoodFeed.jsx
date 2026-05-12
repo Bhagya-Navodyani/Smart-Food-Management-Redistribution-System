@@ -382,7 +382,7 @@ const FoodFeed = () => {
                       </div>
                     </div>
                     <button
-                      onClick={() => navigate(`/food-details/${item.id}`)}
+                      onClick={() => navigate(`/organization/food-details/${item.id}`)}
                       className="mt-auto inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white hover:bg-emerald-700 transition-colors"
                     >
                       View Details
