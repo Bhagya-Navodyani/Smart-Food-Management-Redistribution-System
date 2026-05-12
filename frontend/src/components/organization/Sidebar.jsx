@@ -196,6 +196,7 @@ const Sidebar = ({ unreadCount }) => {
                           <NavLink
                             key={subItem.path}
                             to={subItem.path}
+                            end
                             className={({ isActive }) => `
                               flex items-center justify-between px-4 py-2.5 rounded-lg transition-all duration-200
                               ${isActive
