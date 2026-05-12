@@ -38,7 +38,8 @@ export default function CustomerDashboard() {
     if (query) params.set('search', query);
     if (selectedCategory !== 'all') params.set('category', selectedCategory);
 
-    navigate(params.toString() ? `/customer/browse-food?${params.toString()}` : '/customer/browse-food');
+    const queryString = params.toString();
+    navigate(queryString ? `/customer/browse-food?${queryString}` : '/customer/browse-food');
   };
 
   const stats = [
