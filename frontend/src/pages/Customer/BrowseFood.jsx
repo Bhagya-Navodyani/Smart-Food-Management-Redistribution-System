@@ -169,7 +169,18 @@ const BrowseFood = () => {
       return;
     }
 
-    const storedOrders = JSON.parse(localStorage.getItem('customerClaimedOrders') || '[]');
+    let storedOrders = [];
+    const rawStoredOrders = localStorage.getItem('customerClaimedOrders');
+
+    if (rawStoredOrders) {
+      try {
+        const parsedOrders = JSON.parse(rawStoredOrders);
+        storedOrders = Array.isArray(parsedOrders) ? parsedOrders : [];
+      } catch {
+        storedOrders = [];
+      }
+    }
+
     if (storedOrders.some((order) => order.sourceItemId === item.id)) {
       setClaimedItems(new Set(storedOrders.map((order) => order.sourceItemId)));
       navigate('/customer/orders');
