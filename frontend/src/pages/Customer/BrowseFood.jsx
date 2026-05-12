@@ -318,7 +318,12 @@ const BrowseFood = () => {
                   <div className="relative h-48 overflow-hidden">
                     <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                     {item.discount > 0 && <div className="absolute top-3 left-3 bg-rose-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-sm">{item.discount}% OFF</div>}
-                    <button onClick={() => toggleSave(item.id)} className="absolute top-3 right-3 p-2.5 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors shadow-sm">
+                    <button
+                      onClick={() => toggleSave(item.id)}
+                      aria-label={isSaved ? 'Unsave item' : 'Save item'}
+                      aria-pressed={isSaved}
+                      className="absolute top-3 right-3 p-2.5 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors shadow-sm"
+                    >
                       <Heart className={`w-5 h-5 ${isSaved ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
                     </button>
                     <div className={`absolute bottom-3 left-3 px-2.5 py-1.5 rounded-full text-xs font-medium shadow-sm ${getExpiryColor(daysUntilExpiry)}`}>
