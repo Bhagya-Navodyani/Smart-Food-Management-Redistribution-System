@@ -1,116 +1,222 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Search,
-  Filter,
   Clock,
   MapPin,
   Star,
   Heart,
   ShoppingCart,
-  AlertCircle,
+  CheckCircle,
+  SlidersHorizontal,
+  Layers,
   TrendingUp
 } from 'lucide-react';
+import { getVisibleGiveFoodListings, updateGiveFoodListing } from '../../data/giveFoodListings';
+
+const CATEGORY_OPTIONS = [
+  { id: 'all', name: 'All Items' },
+  { id: 'vegetables', name: 'Vegetables' },
+  { id: 'fruits', name: 'Fruits' },
+  { id: 'dairy', name: 'Dairy' },
+  { id: 'bakery', name: 'Bakery' },
+  { id: 'cooked-food', name: 'Cooked Food' },
+  { id: 'packaged', name: 'Packaged' }
+];
+
+const STATUS_OPTIONS = [
+  { id: 'all', name: 'All Status' },
+  { id: 'available', name: 'Available' },
+  { id: 'requested', name: 'Requested' },
+  { id: 'claimed', name: 'Claimed' },
+  { id: 'expired', name: 'Expired' }
+];
+
+const normalizeCategory = (categoryValue) => {
+  const lowered = String(categoryValue || '').toLowerCase();
+  if (lowered.includes('vegetable')) return 'vegetables';
+  if (lowered.includes('fruit')) return 'fruits';
+  if (lowered.includes('dairy') || lowered.includes('egg')) return 'dairy';
+  if (lowered.includes('bakery') || lowered.includes('bread')) return 'bakery';
+  if (lowered.includes('cooked')) return 'cooked-food';
+  if (lowered.includes('packaged')) return 'packaged';
+  return 'all';
+};
+
+const parseNumber = (value, fallback = 0) => {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
 
 const BrowseFood = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [savedItems, setSavedItems] = useState(new Set());
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [savedItems, setSavedItems] = useState(() => {
+    try {
+      return new Set(JSON.parse(localStorage.getItem('savedFoodItemIds') || '[]'));
+    } catch {
+      return new Set();
+    }
+  });
+  const [claimedItems, setClaimedItems] = useState(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('customerClaimedOrders') || '[]');
+      return new Set(stored.map((order) => order.sourceItemId));
+    } catch {
+      return new Set();
+    }
+  });
+  const [sortBy, setSortBy] = useState('newest');
+  const [maxDistance, setMaxDistance] = useState(20);
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [toast, setToast] = useState('');
 
-  const categories = [
-    { id: 'all', name: 'All Items', color: 'bg-gray-100' },
-    { id: 'vegetables', name: 'Vegetables', color: 'bg-green-100' },
-    { id: 'fruits', name: 'Fruits', color: 'bg-red-100' },
-    { id: 'dairy', name: 'Dairy', color: 'bg-blue-100' },
-    { id: 'bakery', name: 'Bakery', color: 'bg-yellow-100' },
-  ];
+  useEffect(() => {
+    const incomingSearch = searchParams.get('search') || '';
+    const incomingCategory = searchParams.get('category') || 'all';
 
-  const foodItems = [
-    {
-      id: 1,
-      name: 'Fresh Organic Vegetables',
-      store: 'Green Market',
-      originalPrice: 24.99,
-      discountedPrice: 12.99,
-      discount: 48,
-      expiryDate: '2024-05-08',
-      quantity: '5kg',
-      image: 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80',
-      rating: 4.8,
-      distance: '0.5 km',
-      description: 'Fresh organic vegetables including carrots, broccoli, and spinach',
-      category: 'vegetables'
-    },
-    {
-      id: 2,
-      name: 'Artisan Bread Collection',
-      store: 'City Bakery',
-      originalPrice: 18.99,
-      discountedPrice: 8.99,
-      discount: 53,
-      expiryDate: '2024-05-05',
-      quantity: '6 pieces',
-      image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=400&q=80',
-      rating: 4.9,
-      distance: '0.8 km',
-      description: 'Freshly baked sourdough, whole wheat, and rye bread',
-      category: 'bakery'
-    },
-    {
-      id: 3,
-      name: 'Mixed Fruits Basket',
-      store: 'Fruit Paradise',
-      originalPrice: 32.99,
-      discountedPrice: 16.99,
-      discount: 48,
-      expiryDate: '2024-05-07',
-      quantity: '3kg',
-      image: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=400&q=80',
-      rating: 4.7,
-      distance: '1.2 km',
-      description: 'Seasonal fruits including apples, oranges, and bananas',
-      category: 'fruits'
-    },
-    {
-      id: 4,
-      name: 'Dairy Products Pack',
-      store: 'Fresh Dairy Co.',
-      originalPrice: 28.99,
-      discountedPrice: 14.99,
-      discount: 48,
-      expiryDate: '2024-05-06',
-      quantity: '2L milk + 500g cheese',
-      image: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=400&q=80',
-      rating: 4.6,
-      distance: '0.3 km',
-      description: 'Fresh milk and artisanal cheese from local farms',
-      category: 'dairy'
-    },
-  ];
+    setSearchTerm(incomingSearch);
+    setSelectedCategory(incomingCategory);
+  }, [searchParams]);
 
-  const filteredItems = foodItems.filter(item => {
-    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+  useEffect(() => {
+    localStorage.setItem('savedFoodItemIds', JSON.stringify([...savedItems]));
+  }, [savedItems]);
+
+  useEffect(() => {
+    if (!toast) return undefined;
+    const timerId = setTimeout(() => setToast(''), 2000);
+    return () => clearTimeout(timerId);
+  }, [toast]);
+
+  const marketplaceItems = getVisibleGiveFoodListings('Customer').map((listing) => {
+    const categoryId = normalizeCategory(listing.category);
+    const basePrice = parseNumber(listing.retailPrice, parseNumber(listing.wholesalePrice, 0));
+    const computedOriginalPrice = basePrice > 0 ? Number((basePrice * 1.3).toFixed(2)) : 0;
+    const distanceKm = Number((((listing.id % 16) + 2) / 2).toFixed(1));
+    const rating = Number((4 + ((listing.requests || 0) % 10) / 10).toFixed(1));
+
+    return {
+      id: listing.id,
+      sourceId: listing.id,
+      name: listing.itemName,
+      category: categoryId,
+      categoryLabel: listing.category,
+      recipient: listing.preferredRecipient || 'any',
+      recipientLabel: listing.preferredRecipient || 'any',
+      status: String(listing.status || 'available').toLowerCase(),
+      store: listing.donorName || 'Community Donor',
+      originalPrice: computedOriginalPrice,
+      discountedPrice: basePrice,
+      discount: basePrice > 0 ? Math.round(((computedOriginalPrice - basePrice) / computedOriginalPrice) * 100) : 0,
+      expiryDate: listing.expiryDate,
+      quantity: `${listing.quantity} ${listing.unit}`,
+      image: listing.images?.[0] || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80',
+      rating,
+      distance: `${distanceKm} km`,
+      distanceValue: distanceKm,
+      description: listing.description,
+      pickupLocation: listing.pickupLocation,
+      listedDate: listing.listedDate,
+      requests: listing.requests || 0
+    };
+  });
+
+  const filteredItems = marketplaceItems.filter((item) => {
+    const loweredSearch = searchTerm.toLowerCase();
+    const matchesSearch = item.name.toLowerCase().includes(loweredSearch)
+      || item.store.toLowerCase().includes(loweredSearch)
+      || item.description.toLowerCase().includes(loweredSearch)
+      || item.categoryLabel.toLowerCase().includes(loweredSearch);
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesStatus = selectedStatus === 'all' || item.status === selectedStatus;
+    const withinDistance = item.distanceValue <= maxDistance;
+    const matchesSaved = !favoritesOnly || savedItems.has(item.id);
+    return matchesSearch && matchesCategory && matchesStatus && withinDistance && matchesSaved;
+  });
+
+  const sortedItems = [...filteredItems].sort((first, second) => {
+    if (sortBy === 'price-low') return first.discountedPrice - second.discountedPrice;
+    if (sortBy === 'price-high') return second.discountedPrice - first.discountedPrice;
+    if (sortBy === 'distance') return first.distanceValue - second.distanceValue;
+    if (sortBy === 'rating') return second.rating - first.rating;
+    if (sortBy === 'discount') return second.discount - first.discount;
+    return new Date(second.listedDate) - new Date(first.listedDate);
   });
 
   const toggleSave = (itemId) => {
-    setSavedItems(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(itemId)) {
-        newSet.delete(itemId);
-      } else {
-        newSet.add(itemId);
-      }
-      return newSet;
+    setSavedItems((currentSavedItems) => {
+      const nextSaved = new Set(currentSavedItems);
+      if (nextSaved.has(itemId)) nextSaved.delete(itemId);
+      else nextSaved.add(itemId);
+      return nextSaved;
     });
   };
 
+  const handleClaim = (item) => {
+    if (item.status === 'expired') {
+      setToast('This listing is expired');
+      return;
+    }
+
+    if (claimedItems.has(item.id) || item.status === 'claimed') {
+      navigate('/customer/orders');
+      return;
+    }
+
+    let storedOrders = [];
+    const rawStoredOrders = localStorage.getItem('customerClaimedOrders');
+
+    if (rawStoredOrders) {
+      try {
+        const parsedOrders = JSON.parse(rawStoredOrders);
+        storedOrders = Array.isArray(parsedOrders) ? parsedOrders : [];
+      } catch {
+        storedOrders = [];
+      }
+    }
+
+    if (storedOrders.some((order) => order.sourceItemId === item.id)) {
+      setClaimedItems(new Set(storedOrders.map((order) => order.sourceItemId)));
+      navigate('/customer/orders');
+      return;
+    }
+
+    const createdAt = new Date();
+    const deliveryDate = new Date(createdAt);
+    deliveryDate.setDate(deliveryDate.getDate() + 1);
+
+    const newOrder = {
+      id: `ORD-${createdAt.getTime()}`,
+      sourceItemId: item.id,
+      storeName: item.store,
+      items: [{ name: item.name, quantity: item.quantity, price: item.discountedPrice }],
+      status: 'processing',
+      orderDate: createdAt.toISOString().slice(0, 10),
+      deliveryDate: deliveryDate.toISOString().slice(0, 10),
+      totalAmount: item.discountedPrice,
+      savings: Number((item.originalPrice - item.discountedPrice).toFixed(2)),
+      image: item.image,
+      rating: 0,
+      address: item.pickupLocation,
+      trackingNumber: `TRK${Math.floor(100000000 + Math.random() * 900000000)}`
+    };
+
+    localStorage.setItem('customerClaimedOrders', JSON.stringify([newOrder, ...storedOrders]));
+    updateGiveFoodListing(item.sourceId, {
+      status: 'claimed',
+      requests: parseNumber(item.requests, 0) + 1
+    });
+    setClaimedItems((currentClaimed) => new Set([...currentClaimed, item.id]));
+    setToast(`Claimed ${item.name}`);
+  };
+
   const getDaysUntilExpiry = (expiryDate) => {
-    const today = new Date();
-    const expiry = new Date(expiryDate);
-    const diffTime = expiry - today;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+    const diffTime = new Date(expiryDate) - new Date();
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
   const getExpiryColor = (days) => {
@@ -119,120 +225,160 @@ const BrowseFood = () => {
     return 'text-green-600 bg-green-50';
   };
 
-  return (
-    <div className="p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Browse Food</h1>
-        <p className="text-gray-600">Find amazing deals on fresh food near you</p>
-      </div>
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setSelectedCategory('all');
+    setSelectedStatus('all');
+    setSortBy('newest');
+    setMaxDistance(20);
+    setFavoritesOnly(false);
+  };
 
-      {/* Search and Filters */}
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+  return (
+    <div className="min-h-screen bg-slate-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
+        <div className="mb-8">
+          <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">Browse Food</h1>
+          <p className="mt-2 text-base lg:text-lg text-gray-600 max-w-3xl">Food on this page is loaded from Give Food listings stored in local data. Customers only see listings available to their role.</p>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 sm:p-5 lg:p-6 mb-8">
+          <div className="flex flex-col xl:flex-row gap-3 items-stretch">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
               <input
                 type="text"
-                placeholder="Search for food items..."
+                placeholder="Search items, donor names, descriptions..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
+                onChange={(event) => setSearchTerm(event.target.value)}
+                className="w-full h-12 pl-12 pr-4 border border-gray-200 rounded-xl bg-gray-50/70 focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-400"
               />
             </div>
+
+            <select value={selectedCategory} onChange={(event) => setSelectedCategory(event.target.value)} className="h-12 px-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 min-w-[150px]">
+              {CATEGORY_OPTIONS.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
+            </select>
+
+            <select value={selectedStatus} onChange={(event) => setSelectedStatus(event.target.value)} className="h-12 px-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 min-w-[140px]">
+              {STATUS_OPTIONS.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
+            </select>
+
+            <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="h-12 px-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 min-w-[160px]">
+              <option value="newest">Newest</option>
+              <option value="discount">Best discount</option>
+              <option value="distance">Nearest</option>
+              <option value="rating">Top rated</option>
+              <option value="price-low">Price: Low to high</option>
+              <option value="price-high">Price: High to low</option>
+            </select>
           </div>
-          
-          <div className="flex gap-2">
-            {categories.map(cat => (
+
+          <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600">
+                <SlidersHorizontal className="w-4 h-4" />
+                Refine Results
+              </span>
+              <label className="text-sm text-gray-500">Distance: <span className="font-semibold text-gray-800">{maxDistance} km</span></label>
+              <input type="range" min="1" max="20" value={maxDistance} onChange={(event) => setMaxDistance(Number(event.target.value))} className="w-40 accent-emerald-500" />
               <button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`
-                  px-4 py-2 rounded-full font-medium transition-all
-                  ${selectedCategory === cat.id
-                    ? 'bg-green-500 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }
-                `}
+                type="button"
+                onClick={() => setFavoritesOnly((currentValue) => !currentValue)}
+                className={`px-3 py-1.5 rounded-full text-sm font-semibold border ${favoritesOnly ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white border-gray-200 text-gray-600'}`}
               >
-                {cat.name}
+                Saved only
               </button>
-            ))}
+            </div>
+
+            <button type="button" onClick={clearAllFilters} className="text-sm font-semibold text-emerald-600 hover:text-emerald-700">Reset Filters</button>
           </div>
         </div>
-      </div>
 
-      {/* Food Items Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredItems.map((item) => {
-          const daysUntilExpiry = getDaysUntilExpiry(item.expiryDate);
-          const isSaved = savedItems.has(item.id);
-          
-          return (
-            <div key={item.id} className="bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group">
-              {/* Image with Discount Badge */}
-              <div className="relative h-48 overflow-hidden">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-                <div className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                  {item.discount}% OFF
-                </div>
-                <button
-                  onClick={() => toggleSave(item.id)}
-                  className="absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors"
-                >
-                  <Heart
-                    className={`w-5 h-5 ${isSaved ? 'fill-red-500 text-red-500' : 'text-gray-600'}`}
-                  />
-                </button>
-                <div className={`absolute bottom-3 left-3 px-2 py-1 rounded-full text-xs font-medium ${getExpiryColor(daysUntilExpiry)}`}>
-                  <Clock className="w-3 h-3 inline mr-1" />
-                  {daysUntilExpiry} days left
-                </div>
-              </div>
+        <div className="flex items-center justify-between mb-5">
+          <p className="text-sm text-gray-500">Showing <span className="font-semibold text-gray-900">{sortedItems.length}</span> matched listings</p>
+          <p className="text-xs font-semibold text-gray-400">Data source: Give Food listings</p>
+        </div>
 
-              {/* Content */}
-              <div className="p-5">
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <h3 className="font-bold text-gray-900 text-lg mb-1">{item.name}</h3>
-                    <p className="text-sm text-gray-500">{item.store}</p>
-                  </div>
-                </div>
+        {sortedItems.length === 0 ? (
+          <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center shadow-sm">
+            <Layers className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+            <h3 className="text-lg font-bold text-gray-900">No listings match your filters</h3>
+            <p className="text-sm text-gray-500 mt-1">Try resetting filters or widening the distance.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sortedItems.map((item) => {
+              const daysUntilExpiry = getDaysUntilExpiry(item.expiryDate);
+              const isSaved = savedItems.has(item.id);
+              const isClaimed = claimedItems.has(item.id) || item.status === 'claimed';
+              const isExpired = item.status === 'expired' || daysUntilExpiry < 0;
 
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">{item.description}</p>
-
-                <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-4 h-4" />
-                    {item.distance}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Star className="w-4 h-4 text-yellow-500" />
-                    {item.rating}
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
-                  <div>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-bold text-green-600">${item.discountedPrice}</span>
-                      <span className="text-sm text-gray-400 line-through">${item.originalPrice}</span>
+              return (
+                <div key={item.id} className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group border border-gray-100">
+                  <div className="relative h-48 overflow-hidden">
+                    <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                    {item.discount > 0 && <div className="absolute top-3 left-3 bg-rose-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-sm">{item.discount}% OFF</div>}
+                    <button
+                      onClick={() => toggleSave(item.id)}
+                      aria-label={isSaved ? 'Unsave item' : 'Save item'}
+                      aria-pressed={isSaved}
+                      className="absolute top-3 right-3 p-2.5 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white transition-colors shadow-sm"
+                    >
+                      <Heart className={`w-5 h-5 ${isSaved ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
+                    </button>
+                    <div className={`absolute bottom-3 left-3 px-2.5 py-1.5 rounded-full text-xs font-medium shadow-sm ${getExpiryColor(daysUntilExpiry)}`}>
+                      <Clock className="w-3 h-3 inline mr-1" />
+                      {daysUntilExpiry < 0 ? 'Expired' : daysUntilExpiry === 0 ? 'Expires today' : `${daysUntilExpiry} days left`}
                     </div>
-                    <p className="text-sm text-gray-500">{item.quantity}</p>
                   </div>
-                  <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all transform hover:scale-105 flex items-center gap-2">
-                    <ShoppingCart className="w-4 h-4" />
-                    Claim
-                  </button>
+
+                  <div className="p-5">
+                    <h3 className="font-bold text-gray-900 text-lg mb-1">{item.name}</h3>
+                    <p className="text-sm text-gray-500 mb-1">{item.store}</p>
+                    <p className="text-xs text-gray-400 mb-3 truncate">{item.pickupLocation}</p>
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{item.description}</p>
+
+                    <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                      <div className="flex items-center gap-1"><MapPin className="w-4 h-4" />{item.distance}</div>
+                      <div className="flex items-center gap-1"><Star className="w-4 h-4 text-yellow-500" />{item.rating}</div>
+                      <div className="inline-flex items-center gap-1 text-emerald-700"><TrendingUp className="w-4 h-4" />{item.status}</div>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                      <div>
+                        {item.discountedPrice > 0 ? (
+                          <>
+                            <div className="flex items-baseline gap-2">
+                              <span className="text-2xl font-bold text-green-600">${item.discountedPrice.toFixed(2)}</span>
+                              {item.originalPrice > 0 && <span className="text-sm text-gray-400 line-through">${item.originalPrice.toFixed(2)}</span>}
+                            </div>
+                            <p className="text-sm text-gray-500">{item.quantity}</p>
+                          </>
+                        ) : (
+                          <>
+                            <span className="text-2xl font-bold text-emerald-600">Free</span>
+                            <p className="text-sm text-gray-500">{item.quantity}</p>
+                          </>
+                        )}
+                      </div>
+
+                      <button
+                        onClick={() => handleClaim(item)}
+                        disabled={isExpired}
+                        className={`px-4 py-2 text-white rounded-lg transition-all flex items-center gap-2 ${isExpired ? 'bg-gray-300 cursor-not-allowed' : isClaimed ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'}`}
+                      >
+                        {isClaimed ? <CheckCircle className="w-4 h-4" /> : <ShoppingCart className="w-4 h-4" />}
+                        {isExpired ? 'Expired' : isClaimed ? 'View Order' : 'Claim'}
+                      </button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          );
-        })}
+              );
+            })}
+          </div>
+        )}
+
+        {toast && <div className="fixed bottom-6 right-6 z-50 rounded-xl bg-gray-900 text-white px-4 py-3 shadow-xl text-sm font-semibold">{toast}</div>}
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Package,
   Clock,
@@ -16,11 +16,7 @@ import {
   MessageCircle
 } from 'lucide-react';
 
-const MyOrders = () => {
-  const [selectedStatus, setSelectedStatus] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const orders = [
+const defaultOrders = [
     {
       id: 'ORD-001',
       storeName: 'Green Market',
@@ -87,6 +83,25 @@ const MyOrders = () => {
       trackingNumber: 'TRK123456792'
     }
   ];
+
+const MyOrders = () => {
+  const [selectedStatus, setSelectedStatus] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [orders, setOrders] = useState(defaultOrders);
+
+  useEffect(() => {
+    const storedOrders = JSON.parse(localStorage.getItem('customerClaimedOrders') || '[]');
+    if (!storedOrders.length) {
+      setOrders(defaultOrders);
+      return;
+    }
+
+    const mergedOrders = [...storedOrders, ...defaultOrders.filter((defaultOrder) => (
+      !storedOrders.some((storedOrder) => storedOrder.id === defaultOrder.id)
+    ))];
+
+    setOrders(mergedOrders);
+  }, []);
 
   const statusOptions = [
     { value: 'all', label: 'All Orders', color: 'bg-gray-100 text-gray-700' },

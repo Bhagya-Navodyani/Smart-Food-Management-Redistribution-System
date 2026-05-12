@@ -42,6 +42,7 @@ function App() {
           <Route element={<OrganizationLayout />}>
             <Route path="/organization/dashboard" element={<OrganizationDashboard />} />
             <Route path="/organization/food-feed" element={<FoodFeed />} />
+            <Route path="/organization/food-details/:id" element={<FoodDetails />} />
             <Route path="/organization/my-requests" element={<MyRequests />} />
             <Route path="/organization/donation-history" element={<DonationHistory />} />
             <Route path="/organization/impact-analytics" element={<ImpactAnalysis />} />
