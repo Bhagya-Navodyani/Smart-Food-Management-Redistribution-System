@@ -92,8 +92,6 @@ const BrowseFood = () => {
     return () => clearTimeout(timerId);
   }, [toast]);
 
-  const parseDistance = (value) => parseFloat(String(value).replace(' km', ''));
-
   const marketplaceItems = getVisibleGiveFoodListings('Customer').map((listing) => {
     const categoryId = normalizeCategory(listing.category);
     const basePrice = parseNumber(listing.retailPrice, parseNumber(listing.wholesalePrice, 0));
