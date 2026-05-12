@@ -9,7 +9,6 @@ import {
   ShoppingCart,
   CheckCircle,
   SlidersHorizontal,
-  Sparkles,
   Layers,
   TrendingUp
 } from 'lucide-react';
@@ -23,14 +22,6 @@ const CATEGORY_OPTIONS = [
   { id: 'bakery', name: 'Bakery' },
   { id: 'cooked-food', name: 'Cooked Food' },
   { id: 'packaged', name: 'Packaged' }
-];
-
-const RECIPIENT_OPTIONS = [
-  { id: 'all', name: 'Any Audience' },
-  { id: 'any', name: 'Anyone' },
-  { id: 'individual', name: 'Individuals' },
-  { id: 'organization', name: 'Organizations' },
-  { id: 'seller', name: 'Sellers' }
 ];
 
 const STATUS_OPTIONS = [
@@ -62,7 +53,6 @@ const BrowseFood = () => {
   const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedRecipient, setSelectedRecipient] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [savedItems, setSavedItems] = useState(() => {
     try {
@@ -144,11 +134,10 @@ const BrowseFood = () => {
       || item.description.toLowerCase().includes(loweredSearch)
       || item.categoryLabel.toLowerCase().includes(loweredSearch);
     const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
-    const matchesRecipient = selectedRecipient === 'all' || item.recipient === selectedRecipient;
     const matchesStatus = selectedStatus === 'all' || item.status === selectedStatus;
     const withinDistance = item.distanceValue <= maxDistance;
     const matchesSaved = !favoritesOnly || savedItems.has(item.id);
-    return matchesSearch && matchesCategory && matchesRecipient && matchesStatus && withinDistance && matchesSaved;
+    return matchesSearch && matchesCategory && matchesStatus && withinDistance && matchesSaved;
   });
 
   const sortedItems = [...filteredItems].sort((first, second) => {
@@ -159,13 +148,6 @@ const BrowseFood = () => {
     if (sortBy === 'discount') return second.discount - first.discount;
     return new Date(second.listedDate) - new Date(first.listedDate);
   });
-
-  const expiringSoonCount = marketplaceItems.filter((item) => {
-    const days = Math.ceil((new Date(item.expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
-    return days >= 0 && days <= 2;
-  }).length;
-
-  const freeListingCount = marketplaceItems.filter((item) => item.discountedPrice <= 0).length;
 
   const toggleSave = (itemId) => {
     setSavedItems((currentSavedItems) => {
@@ -237,7 +219,6 @@ const BrowseFood = () => {
   const clearAllFilters = () => {
     setSearchTerm('');
     setSelectedCategory('all');
-    setSelectedRecipient('all');
     setSelectedStatus('all');
     setSortBy('newest');
     setMaxDistance(20);
@@ -250,24 +231,6 @@ const BrowseFood = () => {
         <div className="mb-8">
           <h1 className="text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">Browse Food</h1>
           <p className="mt-2 text-base lg:text-lg text-gray-600 max-w-3xl">Food on this page is loaded from Give Food listings stored in local data. Customers only see listings available to their role.</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
-            <p className="text-xs uppercase tracking-wider text-gray-400 font-bold mb-1">Live Listings</p>
-            <p className="text-2xl font-bold text-gray-900">{marketplaceItems.length}</p>
-            <p className="text-sm text-gray-500">Available for customer discovery</p>
-          </div>
-          <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
-            <p className="text-xs uppercase tracking-wider text-gray-400 font-bold mb-1">Expiring Soon</p>
-            <p className="text-2xl font-bold text-amber-600">{expiringSoonCount}</p>
-            <p className="text-sm text-gray-500">Within the next 48 hours</p>
-          </div>
-          <div className="bg-white border border-gray-100 rounded-2xl p-4 shadow-sm">
-            <p className="text-xs uppercase tracking-wider text-gray-400 font-bold mb-1">Free Picks</p>
-            <p className="text-2xl font-bold text-emerald-600">{freeListingCount}</p>
-            <p className="text-sm text-gray-500">No price set by donor</p>
-          </div>
         </div>
 
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-4 sm:p-5 lg:p-6 mb-8">
@@ -283,15 +246,15 @@ const BrowseFood = () => {
               />
             </div>
 
-            <select value={selectedRecipient} onChange={(event) => setSelectedRecipient(event.target.value)} className="h-12 px-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-700">
-              {RECIPIENT_OPTIONS.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
+            <select value={selectedCategory} onChange={(event) => setSelectedCategory(event.target.value)} className="h-12 px-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 min-w-[150px]">
+              {CATEGORY_OPTIONS.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
             </select>
 
-            <select value={selectedStatus} onChange={(event) => setSelectedStatus(event.target.value)} className="h-12 px-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-700">
+            <select value={selectedStatus} onChange={(event) => setSelectedStatus(event.target.value)} className="h-12 px-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 min-w-[140px]">
               {STATUS_OPTIONS.map((option) => <option key={option.id} value={option.id}>{option.name}</option>)}
             </select>
 
-            <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="h-12 px-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-700">
+            <select value={sortBy} onChange={(event) => setSortBy(event.target.value)} className="h-12 px-3 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 min-w-[160px]">
               <option value="newest">Newest</option>
               <option value="discount">Best discount</option>
               <option value="distance">Nearest</option>
@@ -301,24 +264,11 @@ const BrowseFood = () => {
             </select>
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-2">
-            {CATEGORY_OPTIONS.map((category) => (
-              <button
-                key={category.id}
-                type="button"
-                onClick={() => setSelectedCategory(category.id)}
-                className={`px-4 py-2 rounded-full text-sm font-semibold border ${selectedCategory === category.id ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-white text-gray-600 border-gray-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200'}`}
-              >
-                {category.name}
-              </button>
-            ))}
-          </div>
-
           <div className="mt-4 pt-4 border-t border-gray-100 flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-3">
               <span className="inline-flex items-center gap-2 text-sm font-semibold text-gray-600">
                 <SlidersHorizontal className="w-4 h-4" />
-                Smart Filters
+                Refine Results
               </span>
               <label className="text-sm text-gray-500">Distance: <span className="font-semibold text-gray-800">{maxDistance} km</span></label>
               <input type="range" min="1" max="20" value={maxDistance} onChange={(event) => setMaxDistance(Number(event.target.value))} className="w-40 accent-emerald-500" />
@@ -337,10 +287,7 @@ const BrowseFood = () => {
 
         <div className="flex items-center justify-between mb-5">
           <p className="text-sm text-gray-500">Showing <span className="font-semibold text-gray-900">{sortedItems.length}</span> matched listings</p>
-          <div className="flex items-center gap-2 text-xs font-semibold text-gray-500">
-            <Sparkles className="w-4 h-4 text-amber-500" />
-            Professional filter mode enabled
-          </div>
+          <p className="text-xs font-semibold text-gray-400">Data source: Give Food listings</p>
         </div>
 
         {sortedItems.length === 0 ? (
