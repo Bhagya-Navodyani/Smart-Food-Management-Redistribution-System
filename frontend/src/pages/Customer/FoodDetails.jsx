@@ -18,12 +18,14 @@ import {
   Edit3,
   X
 } from 'lucide-react';
-import { deleteGiveFoodListing, getGiveFoodListings, updateGiveFoodListing } from '../../data/giveFoodListings';
+import { deleteGiveFoodListing, getCurrentUserRole, getGiveFoodListings, updateGiveFoodListing } from '../../data/giveFoodListings';
 import LocationPicker from '../../components/LocationPicker';
 
 const FoodDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const currentUserRole = getCurrentUserRole();
+  const isOrganizationView = currentUserRole === 'Organizations';
   const [liked, setLiked] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [editForm, setEditForm] = useState(null);
@@ -364,32 +366,47 @@ const FoodDetails = () => {
             </div>
 
             {/* Bottom Actions */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-5">
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Manage Listing</h3>
-                  <p className="text-xs sm:text-sm text-gray-500">Update the post or remove it from circulation.</p>
+            {!isOrganizationView ? (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-sm sm:text-base">Manage Listing</h3>
+                    <p className="text-xs sm:text-sm text-gray-500">Update the post or remove it from circulation.</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 max-w-xl">
+                  <button
+                    onClick={openUpdateModal}
+                    className="w-full px-4 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all duration-200 font-medium text-sm flex items-center justify-center gap-2 shadow-sm shadow-green-200 hover:shadow-md hover:shadow-green-200"
+                  >
+                    <Edit3 className="w-4 h-4" strokeWidth={2} />
+                    Update Listing
+                  </button>
+
+                  <button
+                    onClick={handleDelete}
+                    className="w-full px-4 py-3 border border-red-200 bg-red-50/40 text-red-600 rounded-xl hover:bg-red-50 transition-all duration-200 font-medium text-sm flex items-center justify-center gap-2 hover:border-red-300"
+                  >
+                    <Trash2 className="w-4 h-4" strokeWidth={2} />
+                    Delete Listing
+                  </button>
                 </div>
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 max-w-xl">
+            ) : (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-5">
+                <h3 className="font-semibold text-gray-900 text-sm sm:text-base mb-2">Organization View</h3>
+                <p className="text-xs sm:text-sm text-gray-500 mb-4">
+                  This listing is shown in the organization feed. Use the feed page to continue browsing or request pickup.
+                </p>
                 <button
-                  onClick={openUpdateModal}
+                  onClick={() => navigate('/organization/food-feed')}
                   className="w-full px-4 py-3 bg-green-600 text-white rounded-xl hover:bg-green-700 transition-all duration-200 font-medium text-sm flex items-center justify-center gap-2 shadow-sm shadow-green-200 hover:shadow-md hover:shadow-green-200"
                 >
-                  <Edit3 className="w-4 h-4" strokeWidth={2} />
-                  Update Listing
-                </button>
-
-                <button
-                  onClick={handleDelete}
-                  className="w-full px-4 py-3 border border-red-200 bg-red-50/40 text-red-600 rounded-xl hover:bg-red-50 transition-all duration-200 font-medium text-sm flex items-center justify-center gap-2 hover:border-red-300"
-                >
-                  <Trash2 className="w-4 h-4" strokeWidth={2} />
-                  Delete Listing
+                  Back to Food Feed
                 </button>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
