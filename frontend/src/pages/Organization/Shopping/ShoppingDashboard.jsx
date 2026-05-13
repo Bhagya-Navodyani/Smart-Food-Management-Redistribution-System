@@ -5,6 +5,7 @@ import {
   Milk, Beef, Leaf, Star, Percent, Plus
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import './ShoppingDashboard.css';
 
 const ShoppingDashboard = () => {
   const navigate = useNavigate();
@@ -40,9 +41,9 @@ const ShoppingDashboard = () => {
     <div className="min-h-screen bg-gray-50 font-sans pb-12">
       {/* Sticky Header */}
       <header 
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+        className={`sticky top-0 z-50 transition-all duration-300 ${
           isScrolled ? 'bg-white shadow-xl py-3' : 'bg-transparent py-5'
-        } ${isScrolled ? 'px-6 lg:px-12' : 'px-6 lg:px-12'}`}
+        } px-6 lg:px-12`}
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           {/* Search Bar Container */}
@@ -63,7 +64,7 @@ const ShoppingDashboard = () => {
               <Sliders size={20} />
             </button>
             <button 
-              onClick={() => navigate('/organization/cart')}
+              onClick={() => navigate('/organization/shopping/cart')}
               className="relative p-3.5 bg-emerald-600 text-white rounded-2xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 active:scale-95"
             >
               <ShoppingCart size={20} />
@@ -78,7 +79,7 @@ const ShoppingDashboard = () => {
       </header>
 
       {/* Main Content (with top padding for sticky header) */}
-      <main className="pt-28 px-6 lg:px-12 max-w-7xl mx-auto">
+      <main className="pt-4 px-6 lg:px-12 max-w-7xl mx-auto">
         
         {/* Hero & Flash Deals Section */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
@@ -112,9 +113,9 @@ const ShoppingDashboard = () => {
             </div>
             {/* Decorative Element */}
             <div className="absolute top-8 right-8">
-              <div className="w-24 h-24 bg-white/10 backdrop-blur-xl rounded-full border border-white/20 flex flex-col items-center justify-center rotate-12">
-                <span className="text-white font-black text-2xl">50%</span>
-                <span className="text-white/60 text-[8px] font-bold uppercase tracking-widest">OFF</span>
+              <div className="w-24 h-24 bg-red-600 backdrop-blur-xl rounded-full border border-red-500 shadow-2xl flex flex-col items-center justify-center rotate-12 scale-110 group-hover:rotate-0 transition-all duration-500">
+                <span className="text-white font-black text-2xl drop-shadow-md">50%</span>
+                <span className="text-white/90 text-[8px] font-bold uppercase tracking-widest">OFF</span>
               </div>
             </div>
           </div>
@@ -240,7 +241,10 @@ const ShoppingDashboard = () => {
 
       {/* Mobile Sticky CTA */}
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 lg:hidden">
-        <button className="bg-gray-900 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 font-black">
+        <button 
+          onClick={() => navigate('/organization/shopping/cart')}
+          className="bg-gray-900 text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 font-black"
+        >
           <ShoppingCart size={20} />
           View Cart
           <span className="bg-emerald-500 text-white text-[10px] w-5 h-5 flex items-center justify-center rounded-full">
@@ -248,30 +252,6 @@ const ShoppingDashboard = () => {
           </span>
         </button>
       </div>
-
-      <style jsx>{`
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .hide-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: #f1f1f1;
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #e2e8f0;
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #cbd5e1;
-        }
-      `}</style>
     </div>
   );
 };

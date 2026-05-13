@@ -46,7 +46,7 @@ const OrganizationLayout = () => {
   const unreadCount = notifications.filter(n => n.unread).length;
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen overflow-hidden bg-gray-50">
       <Sidebar unreadCount={unreadCount} />
       <main className="flex-1 overflow-y-auto pt-0">
         <div className="p-0">
