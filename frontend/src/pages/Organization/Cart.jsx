@@ -62,7 +62,7 @@ const Cart = () => {
   };
 
   const goToMarketplace = () => {
-    navigate('/organization/food-feed');
+    navigate('/organization/shopping');
   };
 
   const updateQuantity = (id, delta) => {

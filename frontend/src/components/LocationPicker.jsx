@@ -1,16 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, X, Search } from 'lucide-react';
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import { MapPin, X, Search, AlertTriangle } from 'lucide-react';
 
-// Fix for marker icons
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-});
+// Dependencies check - Commented out to prevent build failure if missing
+// import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
+// import L from 'leaflet';
+// import 'leaflet/dist/leaflet.css';
 
 const LocationPicker = ({ isOpen, onClose, onSelectLocation, currentLocation }) => {
   const [position, setPosition] = useState([6.9271, 80.7789]); // Sri Lanka center
@@ -22,28 +16,6 @@ const LocationPicker = ({ isOpen, onClose, onSelectLocation, currentLocation }) 
       setSelectedAddress(currentLocation);
     }
   }, [currentLocation]);
-
-  const LocationMarker = () => {
-    useMapEvents({
-      click(e) {
-        const { lat, lng } = e.latlng;
-        setPosition([lat, lng]);
-        // In a real app, you'd use reverse geocoding here
-        const address = `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`;
-        setSelectedAddress(address);
-      },
-    });
-
-    return position ? (
-      <Marker position={position}>
-        <Popup>
-          Selected Location
-          <br />
-          Lat: {position[0].toFixed(4)}, Lng: {position[1].toFixed(4)}
-        </Popup>
-      </Marker>
-    ) : null;
-  };
 
   const handleSearch = async () => {
     if (!searchAddress.trim()) return;
@@ -126,20 +98,19 @@ const LocationPicker = ({ isOpen, onClose, onSelectLocation, currentLocation }) 
             </button>
           </div>
 
-          {/* Map Container */}
-          <div className="rounded-lg overflow-hidden border-2 border-gray-300 h-96 relative z-0">
-            <MapContainer
-              center={position}
-              zoom={9}
-              scrollWheelZoom={true}
-              className="w-full h-full"
-            >
-              <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-              <LocationMarker />
-            </MapContainer>
+          {/* Map Container Placeholder */}
+          <div className="rounded-lg overflow-hidden border-2 border-gray-300 h-96 relative z-0 bg-gray-50 flex flex-col items-center justify-center text-center p-8">
+            <div className="w-20 h-20 bg-amber-50 rounded-full flex items-center justify-center mb-4 ring-8 ring-amber-50/50">
+              <AlertTriangle className="w-10 h-10 text-amber-500" />
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Map Dependencies Missing</h3>
+            <p className="text-sm text-gray-500 max-w-xs mb-6">
+              The interactive map is currently disabled because the required dependencies (`leaflet` and `react-leaflet`) are not installed.
+            </p>
+            <div className="bg-gray-900 rounded-xl p-4 text-left w-full max-w-md">
+              <p className="text-xs font-mono text-emerald-400 mb-2"># Run this to enable map:</p>
+              <code className="text-xs font-mono text-white">npm install leaflet react-leaflet</code>
+            </div>
           </div>
 
           {/* Selected Address Display */}
@@ -149,16 +120,6 @@ const LocationPicker = ({ isOpen, onClose, onSelectLocation, currentLocation }) 
               <p className="text-sm text-gray-900 font-medium">{selectedAddress}</p>
             </div>
           )}
-
-          {/* Instructions */}
-          <div className="p-4 bg-amber-50 border-2 border-amber-200 rounded-lg">
-            <p className="text-xs font-semibold text-amber-900 mb-1">💡 How to Use:</p>
-            <ul className="text-xs text-amber-800 space-y-1">
-              <li>• Search for a location by name or address</li>
-              <li>• Or click directly on the map to set a pin</li>
-              <li>• Zoom in/out using the map controls</li>
-            </ul>
-          </div>
         </div>
 
         {/* Footer Actions */}

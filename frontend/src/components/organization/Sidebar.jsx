@@ -22,7 +22,7 @@ import {
 } from 'lucide-react';
 
 const Sidebar = ({ unreadCount }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const navigate = useNavigate();
 
@@ -135,7 +135,7 @@ const Sidebar = ({ unreadCount }) => {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1">
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto overflow-x-hidden">
             {navigationLinks.map((link) => {
               const Icon = link.icon;
               const hasSubItems = link.subItems && link.subItems.length > 0;
