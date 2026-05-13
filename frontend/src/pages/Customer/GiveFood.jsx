@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Plus,
   Camera,
@@ -11,13 +12,24 @@ import {
   AlertCircle,
   X,
   Search,
-  Heart
+  Heart,
+  Map
 } from 'lucide-react';
+import {
+  getGiveFoodListings,
+  saveGiveFoodListings
+} from '../../data/giveFoodListings';
+import LocationPicker from '../../components/LocationPicker';
 
 const GiveFood = () => {
+  const navigate = useNavigate();
+  const defaultListingImage = 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80';
+  const fileInputRef = useRef(null);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedFilter, setSelectedFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [myListings, setMyListings] = useState(() => getGiveFoodListings());
+  const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [formData, setFormData] = useState({
     itemName: '',
     category: 'vegetables',
@@ -29,161 +41,29 @@ const GiveFood = () => {
     availableFrom: '',
     availableUntil: '',
     preferredRecipient: 'any',
-    images: []
+    images: [],
+    // Organization-specific fields
+    donationType: 'free',
+    taxReceipt: false,
+    organizationNotes: '',
+    // Seller-specific fields
+    businessType: 'retail',
+    wholesalePrice: '',
+    retailPrice: '',
+    minOrderQuantity: '',
+    bulkDiscount: false,
+    // Individual-specific fields
+    offerType: 'regular',
+    discount: '',
+    promotionEnd: ''
   });
+  const [errors, setErrors] = useState({});
 
   const recipientTypes = [
     { id: 'any', name: 'Anyone', description: 'Available to all' },
     { id: 'organization', name: 'Organizations', description: 'Food banks, charities' },
     { id: 'seller', name: 'Sellers', description: 'Restaurants, stores' },
-    { id: 'individual', name: 'Individuals', description: 'People in need' }
-  ];
-
-  const myListings = [
-    {
-      id: 1,
-      itemName: 'Fresh Organic Vegetables',
-      category: 'VEGETABLES',
-      quantity: 5,
-      unit: 'kg',
-      expiryDate: '2024-05-08',
-      description: 'Mixed vegetables including carrots, broccoli, and spinach. Perfect for soups and salads.',
-      pickupLocation: '123 Green Street, Downtown',
-      availableFrom: '2024-05-05',
-      availableUntil: '2024-05-08',
-      preferredRecipient: 'any',
-      status: 'available',
-      views: 24,
-      requests: 3,
-      images: ['https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=400&q=80'],
-      listedDate: '2024-05-01'
-    },
-    {
-      id: 2,
-      itemName: 'Artisan Bread Collection',
-      category: 'BAKERY',
-      quantity: 6,
-      unit: 'pieces',
-      expiryDate: '2024-05-06',
-      description: 'Freshly baked sourdough, whole wheat, and rye bread. Still fresh and perfect for consumption.',
-      pickupLocation: '456 Bakery Avenue, Midtown',
-      availableFrom: '2024-05-04',
-      availableUntil: '2024-05-06',
-      preferredRecipient: 'organization',
-      status: 'requested',
-      views: 18,
-      requests: 2,
-      images: ['https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=400&q=80'],
-      listedDate: '2024-05-02'
-    },
-    {
-      id: 3,
-      itemName: 'Mixed Fruits Basket',
-      category: 'FRUITS',
-      quantity: 3,
-      unit: 'kg',
-      expiryDate: '2024-05-07',
-      description: 'Seasonal fruits including apples, oranges, and bananas. All ripe and ready to eat.',
-      pickupLocation: '789 Fruit Lane, Uptown',
-      availableFrom: '2024-05-05',
-      availableUntil: '2024-05-07',
-      preferredRecipient: 'individual',
-      status: 'claimed',
-      views: 31,
-      requests: 5,
-      images: ['https://images.unsplash.com/photo-1610832958506-aa56368176cf?auto=format&fit=crop&w=400&q=80'],
-      listedDate: '2024-05-03'
-    },
-    {
-      id: 4,
-      itemName: 'Dairy Products Pack',
-      category: 'DAIRY',
-      quantity: 2,
-      unit: 'liters',
-      expiryDate: '2024-05-05',
-      description: 'Fresh milk and artisanal cheese from local farms. High quality dairy products.',
-      pickupLocation: '321 Dairy Road, Westside',
-      availableFrom: '2024-05-04',
-      availableUntil: '2024-05-05',
-      preferredRecipient: 'seller',
-      status: 'expired',
-      views: 12,
-      requests: 1,
-      images: ['https://images.unsplash.com/photo-1550583724-b2692b85b150?auto=format&fit=crop&w=400&q=80'],
-      listedDate: '2024-05-01'
-    },
-    {
-      id: 5,
-      itemName: 'Cooked Rice & Curry',
-      category: 'COOKED FOOD',
-      quantity: 10,
-      unit: 'portions',
-      expiryDate: '2024-05-09',
-      description: 'Freshly cooked rice and vegetable curry from restaurant surplus. Hot and ready to serve.',
-      pickupLocation: '555 Restaurant Row, Eastside',
-      availableFrom: '2024-05-08',
-      availableUntil: '2024-05-09',
-      preferredRecipient: 'organization',
-      status: 'available',
-      views: 42,
-      requests: 6,
-      images: ['https://images.unsplash.com/photo-1565557623262-b51c2513a641?auto=format&fit=crop&w=400&q=80'],
-      listedDate: '2024-05-04'
-    },
-    {
-      id: 6,
-      itemName: 'Packaged Cereal Boxes',
-      category: 'PACKAGED',
-      quantity: 8,
-      unit: 'boxes',
-      expiryDate: '2024-08-15',
-      description: 'Unopened cereal boxes - corn flakes, oat rings, and granola. Long shelf life remaining.',
-      pickupLocation: '777 Grocery Lane, Northside',
-      availableFrom: '2024-05-05',
-      availableUntil: '2024-08-15',
-      preferredRecipient: 'any',
-      status: 'available',
-      views: 28,
-      requests: 4,
-      images: ['https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=400&q=80'],
-      listedDate: '2024-05-05'
-    },
-    {
-      id: 7,
-      itemName: 'Fresh Eggs Carton',
-      category: 'DAIRY',
-      quantity: 24,
-      unit: 'eggs',
-      expiryDate: '2024-05-12',
-      description: 'Farm fresh organic eggs. Perfect condition, no cracks. Great for breakfast or baking.',
-      pickupLocation: '999 Farm Road, Countryside',
-      availableFrom: '2024-05-06',
-      availableUntil: '2024-05-12',
-      preferredRecipient: 'individual',
-      status: 'requested',
-      views: 35,
-      requests: 3,
-      images: ['https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?auto=format&fit=crop&w=400&q=80'],
-      listedDate: '2024-05-06'
-    },
-    {
-      id: 8,
-      itemName: 'Lettuce & Greens Bundle',
-      category: 'VEGETABLES',
-      quantity: 2,
-      unit: 'kg',
-      expiryDate: '2024-05-10',
-      description: 'Fresh romaine lettuce, kale, and mixed salad greens. Crisp and washed.',
-      pickupLocation: '111 Health Street, Westside',
-      availableFrom: '2024-05-07',
-      availableUntil: '2024-05-10',
-      preferredRecipient: 'seller',
-      status: 'available',
-      views: 19,
-      requests: 2,
-      images: ['https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?auto=format&fit=crop&w=400&q=80'],
-      listedDate: '2024-05-07'
-    }
+    { id: 'individual', name: 'Individuals / Customers', description: 'People in need' }
   ];
 
   const getStatusColor = (status) => {
@@ -205,19 +85,170 @@ const GiveFood = () => {
     }
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    const today = new Date().toISOString().split('T')[0];
+
+    if (!formData.itemName.trim()) {
+      newErrors.itemName = 'Item name is required';
+    } else if (formData.itemName.trim().length < 3) {
+      newErrors.itemName = 'Item name must be at least 3 characters';
+    }
+
+    if (!formData.quantity || formData.quantity <= 0) {
+      newErrors.quantity = 'Quantity must be greater than 0';
+    }
+
+    if (!formData.expiryDate) {
+      newErrors.expiryDate = 'Expiry date is required';
+    } else if (formData.expiryDate < today) {
+      newErrors.expiryDate = 'Expiry date must be in the future';
+    }
+
+    if (!formData.availableFrom) {
+      newErrors.availableFrom = 'Available from date is required';
+    } else if (formData.availableFrom < today) {
+      newErrors.availableFrom = 'Must be today or later';
+    }
+
+    if (!formData.availableUntil) {
+      newErrors.availableUntil = 'Available until date is required';
+    } else if (formData.availableUntil < formData.availableFrom) {
+      newErrors.availableUntil = 'Must be after available from date';
+    }
+
+    if (!formData.pickupLocation.trim()) {
+      newErrors.pickupLocation = 'Pickup location is required';
+    } else if (formData.pickupLocation.trim().length < 5) {
+      newErrors.pickupLocation = 'Pickup location must be at least 5 characters';
+    }
+
+    // Conditional validation for sellers
+    if (formData.preferredRecipient === 'seller') {
+      if (!formData.retailPrice || Number(formData.retailPrice) <= 0) {
+        newErrors.retailPrice = 'Retail price is required for sellers';
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleInputChange = (e) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
     });
+    if (errors[e.target.name]) {
+      setErrors({
+        ...errors,
+        [e.target.name]: ''
+      });
+    }
+  };
+
+  const handleLocationSelect = (location) => {
+    setFormData({
+      ...formData,
+      pickupLocation: location
+    });
+    if (errors.pickupLocation) {
+      setErrors({
+        ...errors,
+        pickupLocation: ''
+      });
+    }
+  };
+
+  const readFileAsDataUrl = (file) => new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+
+  const handleImageUpload = async (event) => {
+    const files = Array.from(event.target.files || []);
+
+    if (!files.length) {
+      return;
+    }
+
+    const imageFiles = files.filter((file) => file.type.startsWith('image/'));
+    const uploadedImages = [];
+
+    for (const file of imageFiles) {
+      if (file.size > 10 * 1024 * 1024) {
+        continue;
+      }
+
+      try {
+        const dataUrl = await readFileAsDataUrl(file);
+        uploadedImages.push(dataUrl);
+      } catch (error) {
+        console.error('Failed to read image file:', error);
+      }
+    }
+
+    setFormData((currentFormData) => ({
+      ...currentFormData,
+      images: [...currentFormData.images, ...uploadedImages]
+    }));
+
+    event.target.value = '';
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Logic to submit the food listing
-    console.log('Submitting food listing:', formData);
+    if (!validateForm()) {
+      return;
+    }
+    const nextListing = {
+      id: Date.now(),
+      itemName: formData.itemName,
+      category: String(formData.category).toUpperCase(),
+      quantity: parseFloat(formData.quantity),
+      unit: formData.unit,
+      expiryDate: formData.expiryDate,
+      description: formData.description,
+      pickupLocation: formData.pickupLocation,
+      availableFrom: formData.availableFrom,
+      availableUntil: formData.availableUntil,
+      preferredRecipient: formData.preferredRecipient,
+      images: formData.images.length ? formData.images : [defaultListingImage],
+      listedDate: new Date().toISOString().split('T')[0],
+      status: 'available',
+      views: 0,
+      requests: 0,
+      // Organization-specific fields
+      donationType: formData.donationType || 'free',
+      taxReceipt: formData.taxReceipt || false,
+      organizationNotes: formData.organizationNotes || '',
+      // Seller-specific fields
+      businessType: formData.businessType || 'retail',
+      wholesalePrice: formData.wholesalePrice || '',
+      retailPrice: formData.retailPrice || '',
+      minOrderQuantity: formData.minOrderQuantity || '',
+      bulkDiscount: formData.bulkDiscount || false,
+      // Individual-specific fields
+      offerType: formData.offerType || 'regular',
+      discount: formData.discount || '',
+      promotionEnd: formData.promotionEnd || ''
+    };
+
+    setMyListings((currentListings) => {
+      const nextListings = [nextListing, ...currentListings];
+      saveGiveFoodListings(nextListings);
+      return nextListings;
+    });
+
     setShowAddModal(false);
-    // Reset form
+    setSelectedFilter('all');
+    setSearchTerm('');
+    setErrors({});
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setFormData({
       itemName: '',
       category: 'vegetables',
@@ -229,7 +260,20 @@ const GiveFood = () => {
       availableFrom: '',
       availableUntil: '',
       preferredRecipient: 'any',
-      images: []
+      wholesalePrice: '',
+      retailPrice: '',
+      priceUnit: 'per unit',
+      offer: '',
+      images: [],
+      donationType: 'free',
+      taxReceipt: false,
+      organizationNotes: '',
+      businessType: 'retail',
+      minOrderQuantity: '',
+      bulkDiscount: false,
+      offerType: 'regular',
+      discount: '',
+      promotionEnd: ''
     });
   };
 
@@ -240,11 +284,11 @@ const GiveFood = () => {
   });
 
   const statusFilters = [
-    { id: 'all', name: 'All', count: 8, color: 'text-gray-900' },
-    { id: 'available', name: 'Available', count: 4, color: 'text-green-600' },
-    { id: 'requested', name: 'Requested', count: 2, color: 'text-yellow-600' },
-    { id: 'claimed', name: 'Claimed', count: 1, color: 'text-blue-600' },
-    { id: 'expired', name: 'Expired', count: 1, color: 'text-red-600' }
+    { id: 'all', name: 'All' },
+    { id: 'available', name: 'Available' },
+    { id: 'requested', name: 'Requested' },
+    { id: 'claimed', name: 'Claimed' },
+    { id: 'expired', name: 'Expired' }
   ];
 
   return (
@@ -263,18 +307,6 @@ const GiveFood = () => {
             <Plus className="w-5 h-5" />
             List New Item
           </button>
-        </div>
-      </div>
-
-      {/* Status Cards */}
-      <div className="max-w-7xl mx-auto mb-6">
-        <div className="grid grid-cols-5 gap-4">
-          {statusFilters.map((filter) => (
-            <div key={filter.id} className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 text-center">
-              <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">{filter.name}</p>
-              <p className={`text-3xl font-bold ${filter.color}`}>{filter.count}</p>
-            </div>
-          ))}
         </div>
       </div>
 
@@ -324,7 +356,7 @@ const GiveFood = () => {
               {/* Left: Food Image */}
               <div className="flex-shrink-0">
                 <img
-                  src={listing.images[0]}
+                  src={listing.images[0] || defaultListingImage}
                   alt={listing.itemName}
                   className="w-32 h-32 rounded-xl object-cover"
                 />
@@ -335,7 +367,11 @@ const GiveFood = () => {
                 <h3 className="font-bold text-gray-900 text-xl mb-1">{listing.itemName}</h3>
                 <p className="text-green-600 font-semibold text-sm uppercase tracking-wide mb-3">{listing.category}</p>
                 
-                <div className="flex items-center gap-6 text-sm text-gray-600 mb-2">
+                {listing.description && (
+                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">{listing.description}</p>
+                )}
+
+                <div className="flex items-center gap-6 text-sm text-gray-600 mb-3">
                   <div className="flex items-center gap-1">
                     <Package className="w-4 h-4" />
                     <span>{listing.quantity} {listing.unit}</span>
@@ -349,10 +385,21 @@ const GiveFood = () => {
                     <span>Expires {new Date(listing.expiryDate).toLocaleDateString()}</span>
                   </div>
                 </div>
+
+                <div className="flex items-center gap-6 text-xs text-gray-500 pt-2 border-t border-gray-100">
+                  <div>
+                    <span className="font-medium text-gray-600">Available:</span> {new Date(listing.availableFrom).toLocaleDateString()} - {new Date(listing.availableUntil).toLocaleDateString()}
+                  </div>
+                  {listing.preferredRecipient && listing.preferredRecipient !== 'any' && (
+                    <div>
+                      <span className="font-medium text-gray-600">For:</span> {String(listing.preferredRecipient).charAt(0).toUpperCase() + String(listing.preferredRecipient).slice(1)}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Right: Status and Actions */}
-              <div className="flex-shrink-0 flex flex-col items-end justify-between">
+              <div className="flex-shrink-0 flex flex-col items-end justify-between min-w-[220px]">
                 <div className="text-right mb-4">
                   <span className={"inline-flex items-center gap-1 px-4 py-2 rounded-full text-sm font-semibold " + getStatusColor(listing.status)}>
                     {getStatusIcon(listing.status)}
@@ -371,10 +418,13 @@ const GiveFood = () => {
                   <span>Requests: {listing.requests}</span>
                 </div>
 
-                <button className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-medium text-sm flex items-center gap-2">
-                  VIEW DETAILS
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                <button
+                  onClick={() => navigate(`/food-details/${listing.id}`)}
+                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 hover:shadow-lg hover:shadow-green-500/50 transform hover:scale-105 transition-all duration-300 font-semibold text-sm flex items-center gap-2 group"
+                >
+                  <span>VIEW DETAILS</span>
+                  <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
                   </svg>
                 </button>
               </div>
@@ -386,94 +436,118 @@ const GiveFood = () => {
       {/* Add New Listing Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900">List New Food Item</h2>
-                <button
-                  onClick={() => setShowAddModal(false)}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+            {/* Header */}
+            <div className="sticky top-0 p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-b-2 border-green-200 flex items-center justify-between">
+              <div>
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">List New Food Item</h2>
+                <p className="text-sm text-gray-600 mt-1">Share your excess food with those in need</p>
               </div>
+              <button
+                onClick={() => {
+                  setShowAddModal(false);
+                  setErrors({});
+                }}
+                className="p-2 hover:bg-red-100 rounded-lg transition-colors text-gray-600 hover:text-red-600"
+              >
+                <X className="w-6 h-6" />
+              </button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
               {/* Basic Information */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-gray-900">Basic Information</h3>
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-6 bg-green-500 rounded"></div>
+                  <h3 className="font-bold text-lg text-gray-900">Basic Information</h3>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Item Name *</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Item Name *</label>
                     <input
                       type="text"
                       name="itemName"
                       value={formData.itemName}
                       onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                        errors.itemName
+                          ? 'border-red-400 focus:ring-red-300 bg-red-50'
+                          : 'border-gray-300 focus:ring-green-400 focus:border-green-500'
+                      }`}
                       placeholder="e.g., Fresh Organic Vegetables"
                     />
+                    {errors.itemName && <p className="text-red-600 text-xs mt-2 font-medium flex items-center gap-1"><AlertCircle className="w-4 h-4" />{errors.itemName}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Category *</label>
                     <select
                       name="category"
                       value={formData.category}
                       onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-500 transition-all"
                     >
-                      <option value="vegetables">Vegetables</option>
-                      <option value="fruits">Fruits</option>
-                      <option value="dairy">Dairy</option>
-                      <option value="bakery">Bakery</option>
-                      <option value="cooked">Cooked Food</option>
-                      <option value="packaged">Packaged</option>
+                      <option value="vegetables">🥬 Vegetables</option>
+                      <option value="fruits">🍎 Fruits</option>
+                      <option value="dairy">🥛 Dairy</option>
+                      <option value="bakery">🍞 Bakery</option>
+                      <option value="cooked">🍲 Cooked Food</option>
+                      <option value="packaged">📦 Packaged</option>
                     </select>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                  <label className="block text-sm font-semibold text-gray-800 mb-2">Description</label>
                   <textarea
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
                     rows={3}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-500 transition-all resize-none"
                     placeholder="Describe your food item, condition, and any special notes..."
                   />
+                  <p className="text-xs text-gray-500 mt-1">Help others understand what you're offering</p>
                 </div>
               </div>
 
               {/* Quantity & Availability */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-gray-900">Quantity & Availability</h3>
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-6 bg-blue-500 rounded"></div>
+                  <h3 className="font-bold text-lg text-gray-900">Quantity & Availability</h3>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Quantity *</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Quantity *</label>
                     <input
                       type="number"
                       name="quantity"
                       value={formData.quantity}
-                      onChange={handleInputChange}
-                      required
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        if (value === '' || parseFloat(value) >= 0) {
+                          handleInputChange(e);
+                        }
+                      }}
                       min="0"
+                      max="999999"
                       step="0.1"
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                      placeholder="Amount"
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                        errors.quantity
+                          ? 'border-red-400 focus:ring-red-300 bg-red-50'
+                          : 'border-gray-300 focus:ring-blue-400 focus:border-blue-500'
+                      }`}
+                      placeholder="Enter amount"
                     />
+                    {errors.quantity && <p className="text-red-600 text-xs mt-2 font-medium flex items-center gap-1"><AlertCircle className="w-4 h-4" />{errors.quantity}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Unit *</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Unit *</label>
                     <select
                       name="unit"
                       value={formData.unit}
                       onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 transition-all"
                     >
                       <option value="kg">Kilograms</option>
                       <option value="g">Grams</option>
@@ -485,67 +559,99 @@ const GiveFood = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Expiry Date *</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Expiry Date *</label>
                     <input
                       type="date"
                       name="expiryDate"
                       value={formData.expiryDate}
                       onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                        errors.expiryDate
+                          ? 'border-red-400 focus:ring-red-300 bg-red-50'
+                          : 'border-gray-300 focus:ring-blue-400 focus:border-blue-500'
+                      }`}
                     />
+                    {errors.expiryDate && <p className="text-red-600 text-xs mt-2 font-medium flex items-center gap-1"><AlertCircle className="w-4 h-4" />{errors.expiryDate}</p>}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Available From *</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Available From *</label>
                     <input
                       type="date"
                       name="availableFrom"
                       value={formData.availableFrom}
                       onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                        errors.availableFrom
+                          ? 'border-red-400 focus:ring-red-300 bg-red-50'
+                          : 'border-gray-300 focus:ring-blue-400 focus:border-blue-500'
+                      }`}
                     />
+                    {errors.availableFrom && <p className="text-red-600 text-xs mt-2 font-medium flex items-center gap-1"><AlertCircle className="w-4 h-4" />{errors.availableFrom}</p>}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Available Until *</label>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Available Until *</label>
                     <input
                       type="date"
                       name="availableUntil"
                       value={formData.availableUntil}
                       onChange={handleInputChange}
-                      required
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                        errors.availableUntil
+                          ? 'border-red-400 focus:ring-red-300 bg-red-50'
+                          : 'border-gray-300 focus:ring-blue-400 focus:border-blue-500'
+                      }`}
                     />
+                    {errors.availableUntil && <p className="text-red-600 text-xs mt-2 font-medium flex items-center gap-1"><AlertCircle className="w-4 h-4" />{errors.availableUntil}</p>}
                   </div>
                 </div>
               </div>
 
               {/* Location & Recipient */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-gray-900">Location & Recipient</h3>
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-6 bg-purple-500 rounded"></div>
+                  <h3 className="font-bold text-lg text-gray-900">Location & Recipient</h3>
+                </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Pickup Location *</label>
-                  <input
-                    type="text"
-                    name="pickupLocation"
-                    value={formData.pickupLocation}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                    placeholder="Enter pickup address"
-                  />
+                  <label className="block text-sm font-semibold text-gray-800 mb-2">Pickup Location *</label>
+                  <div className="flex flex-col sm:flex-row gap-2 sm:items-stretch">
+                    <input
+                      type="text"
+                      name="pickupLocation"
+                      value={formData.pickupLocation}
+                      onChange={handleInputChange}
+                      autoComplete="off"
+                      className={`flex-1 px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${
+                        errors.pickupLocation
+                          ? 'border-red-400 focus:ring-red-300 bg-red-50'
+                          : 'border-gray-300 focus:ring-purple-400 focus:border-purple-500'
+                      }`}
+                      placeholder="Enter pickup address"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowLocationPicker(true)}
+                      className="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-blue-500/40 transition-all whitespace-nowrap sm:self-auto self-start"
+                      title="Open map to select location"
+                    >
+                      <Map className="w-4 h-4" />
+                      <span>Map</span>
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Use the map button to pick a location visually.</p>
+                  {errors.pickupLocation && <p className="text-red-600 text-xs mt-2 font-medium flex items-center gap-1"><AlertCircle className="w-4 h-4" />{errors.pickupLocation}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Recipient</label>
+                  <label className="block text-sm font-semibold text-gray-800 mb-2">Preferred Recipient</label>
                   <select
                     name="preferredRecipient"
                     value={formData.preferredRecipient}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-500 transition-all"
                   >
                     {recipientTypes.map((type) => (
                       <option key={type.id} value={type.id}>
@@ -556,31 +662,237 @@ const GiveFood = () => {
                 </div>
               </div>
 
+              {/* Organization-Specific Fields */}
+              {formData.preferredRecipient === 'organization' && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-6 bg-blue-500 rounded"></div>
+                    <h3 className="font-bold text-lg text-gray-900">Donation Details</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-800 mb-2">Donation Type</label>
+                      <select
+                        name="donationType"
+                        value={formData.donationType}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 transition-all"
+                      >
+                        <option value="free">Free Donation (No Charge)</option>
+                        <option value="partial">Partial Donation (Reduced Price)</option>
+                        <option value="bulk">Bulk Donation (Large Quantity)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          name="taxReceipt"
+                          checked={formData.taxReceipt}
+                          onChange={(e) => setFormData({...formData, taxReceipt: e.target.checked})}
+                          className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+                        />
+                        Tax Receipt Required
+                      </label>
+                      <p className="text-xs text-gray-500 mt-1">Check if you need a tax-deductible receipt</p>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Notes for Organizations</label>
+                    <textarea
+                      name="organizationNotes"
+                      value={formData.organizationNotes}
+                      onChange={handleInputChange}
+                      rows={2}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-500 transition-all"
+                      placeholder="Any specific requirements or notes for recipient organizations..."
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Seller-Specific Fields */}
+              {formData.preferredRecipient === 'seller' && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-6 bg-emerald-500 rounded"></div>
+                    <h3 className="font-bold text-lg text-gray-900">Business Details</h3>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Business Type</label>
+                    <select
+                      name="businessType"
+                      value={formData.businessType}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 transition-all"
+                    >
+                      <option value="retail">Retail Store</option>
+                      <option value="wholesale">Wholesale Supplier</option>
+                      <option value="restaurant">Restaurant</option>
+                      <option value="manufacturer">Food Manufacturer</option>
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-800 mb-2">Wholesale Price (Optional)</label>
+                      <input
+                        type="number"
+                        name="wholesalePrice"
+                        value={formData.wholesalePrice || ''}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 transition-all"
+                        placeholder="Price for bulk buyers"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-800 mb-2">Retail Price *</label>
+                      <input
+                        type="number"
+                        name="retailPrice"
+                        value={formData.retailPrice || ''}
+                        onChange={handleInputChange}
+                        className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 transition-all ${errors.retailPrice ? 'border-red-400 focus:ring-red-300 bg-red-50' : 'border-gray-300 focus:ring-emerald-400 focus:border-emerald-500'}`}
+                        placeholder="Standard price"
+                      />
+                      {errors.retailPrice && <p className="text-red-600 text-xs mt-2">{errors.retailPrice}</p>}
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-800 mb-2">Minimum Order Quantity</label>
+                      <input
+                        type="number"
+                        name="minOrderQuantity"
+                        value={formData.minOrderQuantity || ''}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-emerald-500 transition-all"
+                        placeholder="e.g., 10 units"
+                      />
+                    </div>
+                    <div className="flex items-center">
+                      <label className="block text-sm font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          name="bulkDiscount"
+                          checked={formData.bulkDiscount}
+                          onChange={(e) => setFormData({...formData, bulkDiscount: e.target.checked})}
+                          className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
+                        />
+                        Offer Bulk Discount Available
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Individual-Specific Fields */}
+              {formData.preferredRecipient === 'individual' && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1 h-6 bg-purple-500 rounded"></div>
+                    <h3 className="font-bold text-lg text-gray-900">Customer Offers</h3>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Offer Type</label>
+                    <select
+                      name="offerType"
+                      value={formData.offerType}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-500 transition-all"
+                    >
+                      <option value="regular">Regular Price</option>
+                      <option value="discount">Discounted Price</option>
+                      <option value="free">Free Giveaway</option>
+                      <option value="exchange">Exchange/Barter</option>
+                    </select>
+                  </div>
+                  {formData.offerType === 'discount' && (
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-800 mb-2">Discount %</label>
+                      <input
+                        type="number"
+                        name="discount"
+                        value={formData.discount || ''}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-500 transition-all"
+                        placeholder="e.g., 20"
+                        min="0"
+                        max="100"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-800 mb-2">Promotion End Date (Optional)</label>
+                    <input
+                      type="date"
+                      name="promotionEnd"
+                      value={formData.promotionEnd}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-500 transition-all"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Leave empty if no time limit</p>
+                  </div>
+                </div>
+              )}
+
               {/* Images */}
               <div className="space-y-4">
-                <h3 className="font-semibold text-gray-900">Photos</h3>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <Camera className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 mb-2">Add photos of your food item</p>
-                  <button type="button" className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-                    Choose Files
+                <div className="flex items-center gap-2">
+                  <div className="w-1 h-6 bg-orange-500 rounded"></div>
+                  <h3 className="font-bold text-lg text-gray-900">Photos</h3>
+                </div>
+                <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-green-400 transition-colors bg-gray-50 hover:bg-green-50">
+                  <Camera className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                  <p className="text-gray-700 font-medium mb-2">Add photos of your food item</p>
+                  <p className="text-gray-500 text-sm mb-4">You can upload multiple photos to show the item clearly</p>
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:shadow-lg hover:shadow-green-500/50 transition-all font-medium"
+                  >
+                    Add Photos
                   </button>
-                  <p className="text-xs text-gray-500 mt-2">PNG, JPG up to 10MB each</p>
+                  <p className="text-xs text-gray-500 mt-3">PNG, JPG up to 10MB each</p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                  {formData.images.length > 0 && (
+                    <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-3 text-left">
+                      {formData.images.map((image, index) => (
+                        <div key={`${image}-${index}`} className="rounded-lg overflow-hidden border-2 border-green-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+                          <img src={image} alt={`Uploaded preview ${index + 1}`} className="w-full h-24 object-cover" />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {formData.images.length > 0 && (
+                    <p className="text-xs text-green-700 mt-3 font-medium">
+                      {formData.images.length} photo{formData.images.length > 1 ? 's' : ''} added
+                    </p>
+                  )}
                 </div>
               </div>
 
               {/* Form Actions */}
-              <div className="flex gap-3 pt-4 border-t border-gray-200">
+              <div className="flex gap-3 pt-6 border-t-2 border-gray-200">
                 <button
                   type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setErrors({});
+                  }}
+                  className="flex-1 px-4 py-3 border-2 border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-100 hover:border-gray-400 transition-all"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold rounded-lg hover:shadow-lg hover:shadow-green-500/50 transform hover:scale-105 transition-all"
                 >
                   List Food Item
                 </button>
@@ -589,6 +901,14 @@ const GiveFood = () => {
           </div>
         </div>
       )}
+
+      {/* Location Picker Modal */}
+      <LocationPicker
+        isOpen={showLocationPicker}
+        onClose={() => setShowLocationPicker(false)}
+        onSelectLocation={handleLocationSelect}
+        currentLocation={formData.pickupLocation}
+      />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
+  Search,
   TrendingUp,
   Users,
   Package,
@@ -20,11 +21,26 @@ import {
 } from 'lucide-react';
 
 export default function CustomerDashboard() {
+  const navigate = useNavigate();
   const [animateStats, setAnimateStats] = useState(false);
+  const [foodSearch, setFoodSearch] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
   useEffect(() => {
     setAnimateStats(true);
   }, []);
+
+  const handleFoodSearch = (event) => {
+    event.preventDefault();
+    const query = foodSearch.trim();
+    const params = new URLSearchParams();
+
+    if (query) params.set('search', query);
+    if (selectedCategory !== 'all') params.set('category', selectedCategory);
+
+    const queryString = params.toString();
+    navigate(queryString ? `/customer/browse-food?${queryString}` : '/customer/browse-food');
+  };
 
   const stats = [
     {
@@ -171,20 +187,78 @@ export default function CustomerDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 p-6">
-      {/* Header */}
+      {/* Search & Filter Strip */}
       <div className="max-w-7xl mx-auto mb-8">
-        <div className="bg-white rounded-2xl shadow-sm p-8 border border-gray-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-xl md:text-2xl font-semibold text-gray-900 mb-2 tracking-tight">Customer Dashboard</h1>
-              <p className="text-sm text-gray-500 font-normal">Find great food deals and reduce waste in your community</p>
+        <form
+          onSubmit={handleFoodSearch}
+          className="rounded-[28px] border border-slate-200 bg-white shadow-[0_8px_24px_rgba(15,23,42,0.06)] p-4 sm:p-5"
+        >
+          <div className="flex flex-col xl:flex-row gap-4 xl:gap-5 items-stretch xl:items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+              <input
+                type="text"
+                value={foodSearch}
+                onChange={(e) => setFoodSearch(e.target.value)}
+                placeholder="Search for food items..."
+                className="h-14 w-full rounded-2xl border border-slate-200 bg-white pl-12 pr-4 text-slate-900 placeholder:text-slate-400 outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+              />
             </div>
-            <div className="text-right">
-              <p className="text-xs md:text-sm text-gray-400 font-bold uppercase tracking-[0.2em]">Welcome back!</p>
-              <p className="text-sm md:text-base font-semibold text-green-600">Smart Saver</p>
+
+            <div className="flex flex-wrap gap-3 xl:gap-4 justify-start xl:justify-end">
+              {[
+                { id: 'all', label: 'All Items' },
+                { id: 'vegetables', label: 'Vegetables' },
+                { id: 'fruits', label: 'Fruits' },
+                { id: 'dairy', label: 'Dairy' },
+                { id: 'bakery', label: 'Bakery' },
+              ].map((category) => {
+                const isActive = selectedCategory === category.id;
+
+                return (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => setSelectedCategory(category.id)}
+                    className={`h-14 rounded-full px-6 text-base font-semibold transition-all duration-200 ${isActive
+                      ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-200'
+                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                    }`}
+                  >
+                    {category.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
-        </div>
+
+          <div className="mt-5 flex flex-wrap items-center gap-2">
+            <span className="text-[11px] font-bold uppercase tracking-[0.18em] text-slate-400 mr-1">Quick:</span>
+            {[
+              { id: 'all', label: 'All Items' },
+              { id: 'vegetables', label: 'Vegetables' },
+              { id: 'fruits', label: 'Fruits' },
+              { id: 'dairy', label: 'Dairy' },
+              { id: 'bakery', label: 'Bakery' },
+            ].map((category) => {
+              const isActive = selectedCategory === category.id;
+
+              return (
+                <button
+                  key={category.id}
+                  type="button"
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`rounded-full border px-4 py-2 text-sm font-semibold transition-all duration-200 ${isActive
+                    ? 'border-emerald-500 bg-emerald-500 text-white shadow-sm'
+                    : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700'
+                  }`}
+                >
+                  {category.label}
+                </button>
+              );
+            })}
+          </div>
+        </form>
       </div>
 
       {/* High-Visibility Status Cards */}
