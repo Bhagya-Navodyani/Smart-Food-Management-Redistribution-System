@@ -75,7 +75,7 @@ const Sidebar = ({ unreadCount }) => {
     },
   ];
 
-  const [expandedItems, setExpandedItems] = useState(['Settings']);
+  const [expandedItems, setExpandedItems] = useState(['Shopping', 'Settings']);
 
   const toggleExpand = (name) => {
     setExpandedItems(prev => 

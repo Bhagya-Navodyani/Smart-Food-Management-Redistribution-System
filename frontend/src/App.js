@@ -15,6 +15,10 @@ import OrganizationDashboard from './pages/Organization/OrganizationDashboard';
 import ImpactAnalysis from './pages/Organization/ImpactAnalysis';
 import OrganizationSettings from './pages/Organization/OrganizationSettings';
 import Cart from './pages/Organization/Cart';
+import Marketplace from './pages/Organization/Shopping/Marketplace';
+import ShopDetails from './pages/Organization/Shopping/ShopDetails';
+import Wishlist from './pages/Organization/Shopping/Wishlist';
+import OrgMyOrders from './pages/Organization/Shopping/MyOrders';
 
 // Auth pages
 import SignIn from './pages/Auth/SignIn';
@@ -49,7 +53,12 @@ function App() {
             <Route path="/organization/settings" element={<OrganizationSettings />} />
             <Route path="/organization/settings/:tab" element={<OrganizationSettings />} />
             <Route path="/organization/cart" element={<Cart />} />
+            <Route path="/organization/shopping" element={<Marketplace />} />
+            <Route path="/organization/shopping/marketplace" element={<Marketplace />} />
+            <Route path="/organization/shopping/shop/:shopId" element={<ShopDetails />} />
+            <Route path="/organization/shopping/wishlist" element={<Wishlist />} />
             <Route path="/organization/shopping/cart" element={<Cart />} />
+            <Route path="/organization/shopping/orders" element={<OrgMyOrders />} />
           </Route>
 
           {/* Customer Routes - WITH Sidebar Navigation */}
