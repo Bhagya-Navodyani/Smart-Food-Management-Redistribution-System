@@ -43,10 +43,11 @@ A full-stack MERN application designed to reduce food waste by helping users and
 ---
 
 ### 🏢 Organization (Optional)
-
-* Receive food donations
-* Accept/reject donation requests
-* Track donation history
+ 
+ * Receive food donations
+ * Accept/reject donation requests
+ * Track donation history
+ * **Premium Shopping Dashboard** for marketplace interactions
 
 ---
 
@@ -85,8 +86,8 @@ A full-stack MERN application designed to reduce food waste by helping users and
 ## 📂 Project Structure
 
 ```
-/client        -> React frontend
-/server        -> Node.js backend
+/frontend      -> React frontend
+/Backend       -> Node.js backend
   /models      -> Database schemas
   /routes      -> API routes
   /controllers -> Business logic
@@ -166,25 +167,27 @@ cd food-management-system
 
 ### 2. Install dependencies
 
-#### Client
-
-```bash
-cd client
-npm install
-```
-
-#### Server
-
-```bash
-cd server
-npm install
-```
+#### Frontend (Client)
+ 
+ ```bash
+ cd frontend
+ npm install
+ # Install map dependencies if not present
+ npm install leaflet react-leaflet
+ ```
+ 
+ #### Backend (Server)
+ 
+ ```bash
+ cd Backend
+ npm install
+ ```
 
 ---
 
 ### 3. Environment Variables
 
-Create a `.env` file in `/server`:
+Create a `.env` file in `/Backend`:
 
 ```
 MONGO_URI=your_mongodb_connection

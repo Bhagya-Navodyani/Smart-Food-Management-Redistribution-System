@@ -15,6 +15,7 @@ import OrganizationDashboard from './pages/Organization/OrganizationDashboard';
 import ImpactAnalysis from './pages/Organization/ImpactAnalysis';
 import OrganizationSettings from './pages/Organization/OrganizationSettings';
 import Cart from './pages/Organization/Cart';
+import ShoppingDashboard from './pages/Organization/Shopping/ShoppingDashboard';
 
 // Auth pages
 import SignIn from './pages/Auth/SignIn';
@@ -48,7 +49,7 @@ function App() {
             <Route path="/organization/impact-analytics" element={<ImpactAnalysis />} />
             <Route path="/organization/settings" element={<OrganizationSettings />} />
             <Route path="/organization/settings/:tab" element={<OrganizationSettings />} />
-            <Route path="/organization/cart" element={<Cart />} />
+            <Route path="/organization/shopping" element={<ShoppingDashboard />} />
             <Route path="/organization/shopping/cart" element={<Cart />} />
           </Route>
 
